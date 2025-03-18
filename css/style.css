@@ -4,10 +4,11 @@ html, body {
 }
 
 body {
-    min-height: 100vh;
     background-color: #2c1d27;
     color: #ffd166;
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    min-width: fit-content;
+    min-height: fit-content;
 }
 
 .content {
@@ -15,8 +16,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    gap: 20px;
+    height: 100dvh;
 }
 
 h1 {
