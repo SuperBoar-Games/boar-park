@@ -1,0 +1,11 @@
+name = "boar-park"
+compatibility_date = "2025-03-21"
+main = "backend/index.js"
+
+[site]
+bucket = "./public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "boar-park-db"
+database_id = "be727e29-790e-4600-8541-104eb9dbc78f"
