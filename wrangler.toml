@@ -1,0 +1,9 @@
+name = "boar-park"
+compatibility_date = "2025-03-21"
+
+pages_build_output_dir = "frontend/"
+
+[[d1_databases]]
+binding = "BoarDB"
+database_name = "boar-park-db"
+database_id = "be727e29-790e-4600-8541-104eb9dbc78f"

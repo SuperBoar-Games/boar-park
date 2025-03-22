@@ -1,0 +1,8 @@
+# Ignore Emacs temporary files
+*~
+\#*#
+.\#*
+
+node_modules/
+
+.wrangler/
