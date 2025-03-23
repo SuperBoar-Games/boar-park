@@ -6,4 +6,4 @@ pages_build_output_dir = "frontend/"
 [[d1_databases]]
 binding = "BoarDB"
 database_name = "boar-park-db"
-database_id = "be727e29-790e-4600-8541-104eb9dbc78f"
+database_id = "5c36b70f-e6c2-4b33-a9f4-fcfd12039a86"
