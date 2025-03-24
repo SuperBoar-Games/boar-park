@@ -1,6 +1,6 @@
 export async function onRequest(context) {
     const ps = context.env.BoarDB.prepare("SELECT * from heroes");
-    const data = await ps.first();
+    const { results } = await ps.all();
 
-    return Response.json(data);
+    return Response.json(results);
 }
