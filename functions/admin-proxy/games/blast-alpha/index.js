@@ -2,7 +2,7 @@ import { fetchWithAccess } from "../../../utils/fetchWithAccess";
 
 export async function onRequest(context) {
     const baseUrl = new URL(context.request.url).origin;
-    const apiURL = `${baseUrl}/api/games/blast-alpha/heroes`;
+    const apiURL = `${baseUrl}/api/games/blast-alpha/`;
 
     const res = await fetchWithAccess(apiURL, context);
 

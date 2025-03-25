@@ -1,26 +1,24 @@
-const heroes = document.getElementById("heroes");
+const gameList = document.getElementById("games-list");
 
-async function loadHeroes() {
+async function loadGames() {
     try {
-        const res = await fetch("/admin-proxy/games/blast-alpha/heroes");
-        const heroesData = await res.json();
+        const res = await fetch("/admin-proxy/games");
+        const gamesRes = await res.json();
 
-        heroes.innerHTML = "";
+        gameList.innerHTML = "";
 
-        heroesData.forEach((hero) => {
+        gamesRes.forEach((game) => {
             const li = document.createElement("li");
             li.innerHTML = `
-                <strong>${hero.name}</strong>
-                <div class="actions">
-                    <a href="#">Open</a>
-                </div>
+              <strong>${game.name}</strong>
+              <a  href="/admin/games/${game.slug}">Enter</a>
             `;
-            heroes.appendChild(li);
+            gameList.appendChild(li);
         });
     } catch (err) {
-        console.error("Failed to load heroes:", err);
-        heroes.innerHTML = "<li>Error loading data</li>";
+        console.error("Failed to load games:", err);
+        gameList.innerHTML = "<li>Error loading data</li>";
     }
 }
 
-loadHeroes();
+loadGames();
