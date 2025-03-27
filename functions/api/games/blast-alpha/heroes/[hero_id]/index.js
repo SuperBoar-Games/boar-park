@@ -2,7 +2,7 @@ export async function onRequest(context) {
     const heroId = context.params.hero_id;
 
     const ps = context.env.BoarDB.prepare(
-        `SELECT id, title FROM movies
+        `SELECT * FROM movies
          WHERE hero_id = ?
         `);
 
