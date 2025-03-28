@@ -17,6 +17,7 @@ export async function onRequest(context) {
     const TEAM_DOMAIN = context.env.TEAM_DOMAIN;
     const CERTS_URL = `https://${TEAM_DOMAIN}/cdn-cgi/access/certs`;
 
+    console.log(`jwtAssertion: ${jwtAssertion}`);
     console.log(`AUD: ${AUD}`); // Log the Audience Tag
     console.log(`TEAM_DOMAIN: ${TEAM_DOMAIN}`); // Log the Team Domain
     console.log(`CERTS_URL: ${CERTS_URL}`); // Log the Certs URL
