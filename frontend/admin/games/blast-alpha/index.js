@@ -65,7 +65,7 @@ function generateMovieSection(moviesData, heroName) {
 async function loadHeroDetails(heroId) {
   try {
     const moviesData = await fetchData(
-      `/admin-proxy/games/blast-alpha/heroes/${heroId}`,
+      `/admin-proxy/games/?gameSlug=blast-alpha&heroID=${heroId}`,
     );
     contentSection.innerHTML = generateMovieSection(moviesData, "name");
 
@@ -99,7 +99,7 @@ async function loadHeroDetails(heroId) {
 async function loadMovieDetails(movieId, heroId) {
   try {
     const movieDetails = await fetchData(
-      `/admin-proxy/games/blast-alpha/heroes/${heroId}/movies/${movieId}`,
+      `/admin-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}&movieId=${movieId}`,
     );
     contentSection.innerHTML = generateMovieCards(movieDetails);
     contentSection.setAttribute("data-section", "movie");
@@ -168,7 +168,9 @@ async function renderGameSection() {
     await loadHeroDetails(heroId);
   } else {
     try {
-      const gameData = await fetchData("/admin-proxy/games/blast-alpha/");
+      const gameData = await fetchData(
+        "/admin-proxy/games/?gameSlug=blast-alpha",
+      );
       const industryListHTML = generateIndustryList(gameData);
       contentSection.innerHTML = `
         <h2>Blast Alpha</h2>
