@@ -15,7 +15,7 @@ export async function onRequest(context) {
   try {
     const AUD = context.env.ADMIN_POLICY_AUD;
     const TEAM_DOMAIN = context.env.TEAM_DOMAIN;
-    const CERTS_URL = `${TEAM_DOMAIN}/cdn-cgi/access/certs`;
+    const CERTS_URL = `https://${TEAM_DOMAIN}/cdn-cgi/access/certs`;
 
     console.log(`AUD: ${AUD}`); // Log the Audience Tag
     console.log(`TEAM_DOMAIN: ${TEAM_DOMAIN}`); // Log the Team Domain
