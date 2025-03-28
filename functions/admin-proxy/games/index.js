@@ -14,22 +14,29 @@ export async function onRequest(context) {
 
   try {
     const AUD = context.env.ADMIN_POLICY_AUD;
-    const TEAM_DOMAIN = context.env.TEAM_DOMAIN;
-    const CERTS_URL = `https://${TEAM_DOMAIN}/cdn-cgi/access/certs`;
+    const TEAM_DOMAIN = `https://${context.env.TEAM_DOMAIN}`;
+    const CERTS_URL = `${TEAM_DOMAIN}/cdn-cgi/access/certs`;
 
     console.log(`jwtAssertion: ${jwtAssertion}`);
     console.log(`AUD: ${AUD}`); // Log the Audience Tag
-    console.log(`TEAM_DOMAIN: ${TEAM_DOMAIN}`); // Log the Team Domain
     console.log(`CERTS_URL: ${CERTS_URL}`); // Log the Certs URL
+
+    const { payload1 } = jose.decodeJwt(jwtAssertion);
+    console.log("Actual iss in token:", payload1.iss);
+    console.log("Actual aud in token:", payload1.aud);
 
     const JWKS = jose.createRemoteJWKSet(new URL(CERTS_URL));
     console.log(`JWKS: ${JWKS}`); // Log JWKS
 
     // Verify the JWT using the JWKS
-    const jwtVerifyRes = await jose.jwtVerify(jwtAssertion, JWKS, {
-      issuer: TEAM_DOMAIN,
-      audience: AUD,
-    });
+    const { payload, protectedHeader } = await jose.jwtVerify(
+      jwtAssertion,
+      JWKS,
+      {
+        issuer: TEAM_DOMAIN,
+        audience: AUD,
+      },
+    );
 
     console.log("JWT verification successful!");
     console.log(`JWT Payload: ${JSON.stringify(jwtVerifyRes.payload)}`); // Log full payload
