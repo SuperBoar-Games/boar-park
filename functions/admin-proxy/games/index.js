@@ -39,8 +39,8 @@ export async function onRequest(context) {
     );
 
     console.log("JWT verification successful!");
-    console.log(`JWT Payload: ${JSON.stringify(jwtVerifyRes.payload)}`); // Log full payload
-    console.log(`JWT Headers: ${JSON.stringify(jwtVerifyRes.protectedHeader)}`);
+    console.log(`JWT Payload: ${JSON.stringify(payload)}`); // Log full payload
+    console.log(`JWT Headers: ${JSON.stringify(protectedHeader)}`);
 
     // If authorized, proceed to fetch the actual page
     const res = await fetchWithAccess(apiURL, context);
