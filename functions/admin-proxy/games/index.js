@@ -21,7 +21,7 @@ export async function onRequest(context) {
     console.log(`AUD: ${AUD}`); // Log the Audience Tag
     console.log(`CERTS_URL: ${CERTS_URL}`); // Log the Certs URL
 
-    const { payload1 } = jose.decodeJwt(jwtAssertion);
+    const payload1 = jose.decodeJwt(jwtAssertion);
     console.log("Actual iss in token:", payload1.iss);
     console.log("Actual aud in token:", payload1.aud);
 
