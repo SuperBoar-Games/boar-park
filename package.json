@@ -1,5 +1,9 @@
 {
   "dependencies": {
+    "jose": "^6.0.10"
+  },
+  "devDependencies": {
+    "jose": "^6.0.10",
     "wrangler": "^4.4.1"
   }
 }

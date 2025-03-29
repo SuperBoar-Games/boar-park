@@ -47,11 +47,21 @@ export async function onRequest(context) {
       },
     );
 
-    console.log("JWT verification successful!");
-    console.log(`JWT Payload: ${JSON.stringify(payload)}`); // Log full payload
+    const userEmail = payload.email;
+
+    if (!userEmail) {
+      console.log("No email found in JWT");
+      return new Response("Unauthorized - No user identifier", { status: 401 });
+    }
+
+    const customHeaders = {
+      "X-BP-User": userEmail, // Use a custom header (e.g., "X-BP-User")
+    };
 
     // If authorized, proceed to fetch the actual page
-    const res = await fetchWithAccess(apiURL, context);
+    const res = await fetchWithAccess(apiURL, context, {
+      headers: customHeaders,
+    });
     const result = await res.json();
     return Response.json(result);
   } catch (error) {
