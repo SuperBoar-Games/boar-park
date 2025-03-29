@@ -14,6 +14,8 @@ export async function onRequest(context) {
     return new Response("Unauthorized - No JWT", { status: 401 });
   }
 
+  let userEmail;
+
   try {
     const ADMIN_AUD = context.env.ADMIN_POLICY_AUD;
     const SUBDOMAIN_ADMIN_AUD = context.env.SUBDOMAIN_ADMIN_POLICY_AUD;
@@ -40,11 +42,8 @@ export async function onRequest(context) {
     }
 
     const AUD = isSubdomain ? SUBDOMAIN_ADMIN_AUD : ADMIN_AUD;
-    if (isDev) {
-      console.log("🧭 Determined Audience:", AUD);
-    }
+    if (isDev) console.log("🧭 Determined Audience:", AUD);
 
-    // Verify the JWT using the JWKS
     const { payload, protectedHeader } = await jose.jwtVerify(
       jwtAssertion,
       JWKS,
@@ -59,13 +58,20 @@ export async function onRequest(context) {
       console.log("🛡️ JWT Header:", protectedHeader);
     }
 
-    const userEmail = payload.email;
+    userEmail = payload.email;
 
     if (!userEmail) {
       if (isDev) console.log("❌ No email found in JWT payload");
       return new Response("Unauthorized - No user identifier", { status: 401 });
     }
+  } catch (error) {
+    console.error("❗ JWT verification failed");
+    if (isDev) console.error("🔍 Full error details:", error);
+    return new Response("Unauthorized - Invalid session", { status: 401 });
+  }
 
+  // Now do the API call
+  try {
     const customHeaders = {
       "X-BP-User": userEmail,
     };
@@ -81,16 +87,13 @@ export async function onRequest(context) {
 
     const result = await res.json();
 
-    if (isDev) {
-      console.log("📦 API Response:", result);
-    }
+    if (isDev) console.log("📦 API Response:", result);
 
     return Response.json(result);
-  } catch (error) {
-    console.error("❗ JWT verification failed");
-    if (isDev) {
-      console.error("🔍 Full error details:", error);
-    }
-    return new Response("Unauthorized - Invalid session", { status: 401 });
+  } catch (apiError) {
+    console.error("❗ API request failed:", apiError);
+    return new Response("Internal Server Error - Could not fetch data", {
+      status: 500,
+    });
   }
 }
