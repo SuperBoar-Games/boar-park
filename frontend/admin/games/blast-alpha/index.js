@@ -53,9 +53,11 @@ function generateMovieSection(moviesData, heroName) {
           (movie) => `
         <li class="movie-card" data-movie-id="${movie.id}">
           <span class="movie-title">${movie.title || "Untitled Movie"}</span>
-          <span class="movie-status ${(movie.status || "unknown").toLowerCase()}">${movie.status || "unknown"}</span>
+          <span class="movie-status ${(
+            movie.status || "unknown"
+          ).toLowerCase()}">${movie.status || "unknown"}</span>
         </li>
-      `,
+      `
         )
         .join("")}
     </ul>
@@ -65,7 +67,7 @@ function generateMovieSection(moviesData, heroName) {
 async function loadHeroDetails(heroId) {
   try {
     const moviesData = await fetchData(
-      `/admin-proxy/games/blast-alpha/heroes/${heroId}`,
+      `/admin-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}`
     );
     contentSection.innerHTML = generateMovieSection(moviesData, "name");
 
@@ -76,7 +78,7 @@ async function loadHeroDetails(heroId) {
         history.pushState(
           { section: "movie", movieId },
           `Movie ${movieId}`,
-          `/admin/games/blast-alpha/?heroId=${heroId}&movieId=${movieId}`,
+          `/admin/games/blast-alpha/?heroId=${heroId}&movieId=${movieId}`
         );
       });
     });
@@ -86,7 +88,7 @@ async function loadHeroDetails(heroId) {
       history.pushState(
         { section: "game" },
         "Blast Alpha",
-        "/admin/games/blast-alpha",
+        "/admin/games/blast-alpha"
       );
       renderGameSection(); // Re-render the game section
     });
@@ -99,7 +101,7 @@ async function loadHeroDetails(heroId) {
 async function loadMovieDetails(movieId, heroId) {
   try {
     const movieDetails = await fetchData(
-      `/admin-proxy/games/blast-alpha/heroes/${heroId}/movies/${movieId}`,
+      `/admin-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}&movieId=${movieId}`
     );
     contentSection.innerHTML = generateMovieCards(movieDetails);
     contentSection.setAttribute("data-section", "movie");
@@ -108,21 +110,79 @@ async function loadMovieDetails(movieId, heroId) {
       history.pushState(
         { section: "game" },
         "Blast Alpha",
-        `/admin/games/blast-alpha/?heroId=${heroId}`,
+        `/admin/games/blast-alpha/?heroId=${heroId}`
       );
       renderGameSection(); // Re-render the game section
     });
 
     document.querySelectorAll(".edit-movie").forEach((button) => {
-      button.addEventListener("click", () => {
-        console.log("Edit movie functionality");
-        // Implement edit functionality here
+      button.addEventListener("click", (e) => {
+        const card = e.target.closest(".movie-card-details");
+        const name = card.querySelector("h1").textContent.trim();
+        const callSign = card
+          .querySelector(".call-sign-content")
+          .textContent.trim();
+        const ability = card
+          .querySelector(".ability-content")
+          .textContent.trim();
+
+        openEditModal(
+          name,
+          callSign,
+          ability,
+          (newName, newCallSign, newAbility) => {
+            card.querySelector("h1").textContent = newName;
+            card.querySelector(".call-sign-content").textContent =
+              newCallSign || "N/A";
+            card.querySelector(".ability-content").textContent =
+              newAbility || "No ability text available";
+            // send update to backend here
+          }
+        );
       });
     });
   } catch (error) {
     console.error("Error fetching movie details:", error);
     contentSection.innerHTML = `<p>Error loading movie details: ${error.message}</p>`;
   }
+}
+
+function openEditModal(name, callSign, ability, onSave) {
+  const modal = document.createElement("div");
+  modal.className = "modal-overlay";
+  modal.innerHTML = `
+    <div class="modal-content">
+      <h2>Edit Movie</h2>
+      
+      <label for="edit-name">Name:</label>
+      <input type="text" id="edit-name" value="${name}" />
+      
+      <label for="edit-call-sign">Call Sign:</label>
+      <input type="text" id="edit-call-sign" value="${callSign}" />
+      
+      <label for="edit-ability">Ability:</label>
+      <textarea id="edit-ability" rows="4">${ability}</textarea>
+      
+      <div class="modal-actions">
+        <button id="save-edit">Save</button>
+        <button id="cancel-edit">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  modal.querySelector("#save-edit").addEventListener("click", () => {
+    const newName = modal.querySelector("#edit-name").value;
+    const newCallSign = modal.querySelector("#edit-call-sign").value;
+    const newAbility = modal.querySelector("#edit-ability").value;
+    onSave(newName, newCallSign, newAbility);
+    modal.remove();
+  });
+
+  modal.querySelector("#cancel-edit").addEventListener("click", () => {
+    modal.remove();
+  });
 }
 
 function generateMovieCards(movieDetails) {
@@ -139,10 +199,12 @@ function generateMovieCards(movieDetails) {
         <h4>Call Sign:</h4>
         <span class="call-sign-content">${detail.call_sign || "N/A"}</span>
         <h4>Ability:</h4>
-        <span class="ability-content">${detail.ability_text || "No ability text available"}</span>
+        <span class="ability-content">${
+          detail.ability_text || "No ability text available"
+        }</span>
       </div>
     </div>
-  `,
+  `
     )
     .join("");
 
@@ -168,7 +230,9 @@ async function renderGameSection() {
     await loadHeroDetails(heroId);
   } else {
     try {
-      const gameData = await fetchData("/admin-proxy/games/blast-alpha/");
+      const gameData = await fetchData(
+        "/admin-proxy/games/?gameSlug=blast-alpha"
+      );
       const industryListHTML = generateIndustryList(gameData);
       contentSection.innerHTML = `
         <h2>Blast Alpha</h2>
@@ -182,7 +246,7 @@ async function renderGameSection() {
         history.pushState(
           { section: "game" },
           "Blast Alpha",
-          "/admin/games/blast-alpha",
+          "/admin/games/blast-alpha"
         );
         initialLoad = false;
       }
@@ -196,7 +260,7 @@ async function renderGameSection() {
             history.pushState(
               { section: "hero", heroId },
               `Hero ${heroId}`,
-              `/admin/games/blast-alpha/?heroId=${heroId}`,
+              `/admin/games/blast-alpha/?heroId=${heroId}`
             );
           });
         });

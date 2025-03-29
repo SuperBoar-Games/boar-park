@@ -1,3 +1,3 @@
 export function onRequest(context) {
-    return new Response("Hello from funcs");
+    return new Response("Hello from api!");
 }
