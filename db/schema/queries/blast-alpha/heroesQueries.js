@@ -5,7 +5,6 @@ export const getHeroesWithMovieCount = `
     COUNT(CASE WHEN m.status = 'PENDING' THEN 1 END) AS pending_movies
   FROM heroes h
   LEFT JOIN movies m ON m.hero_id = h.id
-  WHERE h.game_slug = ? AND h.id = ?
   GROUP BY h.id
   ORDER BY h.category ASC, h.name ASC;
 `;

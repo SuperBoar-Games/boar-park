@@ -1,5 +1,5 @@
-export const getMoviesByHeroAndMovieId = `
+export const getMoviesByHeroId = `
   SELECT *
   FROM movies
-  WHERE hero_id = ? AND movie_id = ?;
+  WHERE hero_id = ?;
 `;

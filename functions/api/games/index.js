@@ -1,10 +1,10 @@
-import { getAllGames } from '../../../db/schema/queries/gamesQueries';
+import { getAllGames } from "../../../db/schema/queries/gamesQueries";
 
 async function getGameHandler(gameSlug) {
   switch (gameSlug) {
-    case 'blast-alpha':
+    case "blast-alpha":
       try {
-        const module = await import('./blast-alpha/gameHandler');
+        const module = await import("./blast-alpha/gameHandler");
         return module.gameHandler;
       } catch (error) {
         console.error("Error importing game handler:", error);
@@ -18,7 +18,7 @@ async function getGameHandler(gameSlug) {
 function errorResponse(message, status) {
   return new Response(JSON.stringify({ error: message }), {
     status: status,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
   });
 }
 
@@ -27,7 +27,7 @@ export async function onRequest(context) {
   const queryParams = new URLSearchParams(reqUrl.search);
 
   // get game slug
-  const gameSlug = queryParams.get('gameSlug');
+  const gameSlug = queryParams.get("gameSlug");
 
   if (!gameSlug) {
     const ps = context.env.BoarDB.prepare(getAllGames);
@@ -36,21 +36,19 @@ export async function onRequest(context) {
     return Response.json(results);
   }
 
-  console.log(`gameSllug: ${gameSlug}`);
-
   const gameHandler = await getGameHandler(gameSlug);
   if (!gameHandler) {
-    return errorResponse('Game not found', 404);
+    return errorResponse("Game not found", 404);
   }
 
-  // get sub-query
-  queryParams.delete('gameSlug');
+  queryParams.delete("gameSlug");
 
   try {
-    const results = gameHandler(queryParams);
+    const results = await gameHandler(queryParams, context.env.BoarDB);
+    // console.log("Game handler results:", results);
     return Response.json(results);
   } catch (error) {
     console.error("Error executing game query:", error);
-    return errorResponse('Error executing game query', 500);
+    return errorResponse("Error executing game query", 500);
   }
 }
