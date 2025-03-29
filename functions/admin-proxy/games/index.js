@@ -13,20 +13,29 @@ export async function onRequest(context) {
   }
 
   try {
-    const AUD = context.env.ADMIN_POLICY_AUD;
+    const ADMIN_AUD = context.env.ADMIN_POLICY_AUD;
+    const SUBDOMAIN_ADMIN_AUD = context.env.SUBDOMAIN_ADMIN_POLICY_AUD;
+    const DOMAINS = context.env.DOMAINS.split(",");
+
     const TEAM_DOMAIN = `https://${context.env.TEAM_DOMAIN}`;
     const CERTS_URL = `${TEAM_DOMAIN}/cdn-cgi/access/certs`;
 
-    console.log(`jwtAssertion: ${jwtAssertion}`);
-    console.log(`AUD: ${AUD}`); // Log the Audience Tag
-    console.log(`CERTS_URL: ${CERTS_URL}`); // Log the Certs URL
-
-    const payload1 = jose.decodeJwt(jwtAssertion);
-    console.log("Actual iss in token:", payload1.iss);
-    console.log("Actual aud in token:", payload1.aud);
-
     const JWKS = jose.createRemoteJWKSet(new URL(CERTS_URL));
-    console.log(`JWKS: ${JWKS}`); // Log JWKS
+
+    const url = new URL(context.request.url);
+    const hostname = url.hostname;
+
+    let audience = ADMIN_AUD; // Default to ADMIN_AUD
+    let isSubdomain = false;
+
+    for (const mainDomain of DOMAINS) {
+      if (hostname.endsWith(mainDomain) && hostname !== mainDomain) {
+        isSubdomain = true;
+        break;
+      }
+    }
+
+    const AUD = isSubdomain ? SUBDOMAIN_ADMIN_AUD : ADMIN_AUD;
 
     // Verify the JWT using the JWKS
     const { payload, protectedHeader } = await jose.jwtVerify(
@@ -40,7 +49,6 @@ export async function onRequest(context) {
 
     console.log("JWT verification successful!");
     console.log(`JWT Payload: ${JSON.stringify(payload)}`); // Log full payload
-    console.log(`JWT Headers: ${JSON.stringify(protectedHeader)}`);
 
     // If authorized, proceed to fetch the actual page
     const res = await fetchWithAccess(apiURL, context);
