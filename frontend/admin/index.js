@@ -28,7 +28,7 @@ loadGames();
 if (logoutButton) {
   logoutButton.addEventListener("click", () => {
     window.location.href =
-      "http://super-boar.cloudflareaccess.com/cdn-cgi/access/logout/cdn-cgi/access/logout?returnTo=https://superboar.com";
+      "http://super-boar.cloudflareaccess.com/cdn-cgi/access/logout?returnTo=https://superboar.com";
   });
 } else {
   console.error("Logout button not found.  Check the HTML.");
