@@ -33,8 +33,7 @@ async function loadGames() {
 
     // Handle non-OK responses
     if (!res.ok) {
-      let errorMessage = `Error: ${res.status} - ${res.responseBody}`;
-
+      let errorMessage = `Error: ${res.status} - ${responseBody}`;
       // Display the error message in the UI
       gameList.innerHTML = `<li>${errorMessage}</li>`;
       return;
