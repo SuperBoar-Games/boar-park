@@ -13,7 +13,7 @@ export async function onRequest(context) {
   let userEmail;
 
   if (isDev) {
-    // 👇 Skip auth in dev
+    // Skip auth in dev
     userEmail = "dev@example.com";
   } else {
     const jwtAssertion = context.request.headers.get("cf-access-jwt-assertion");

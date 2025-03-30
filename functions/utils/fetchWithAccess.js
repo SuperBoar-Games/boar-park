@@ -12,23 +12,23 @@ export async function fetchWithAccess(url, context, options = {}) {
     headers,
   };
 
-  if (isDev) {
-    console.log("🌐 fetchWithAccess → URL:", url);
-    console.log("🧾 fetchWithAccess → Options:", {
-      method: finalOptions.method || "GET",
-      headers: {
-        ...headers,
-        "CF-Access-Client-Secret": "***REDACTED***", // hide secret in logs
-      },
-    });
-  }
+  // if (isDev) {
+  //   console.log("🌐 fetchWithAccess → URL:", url);
+  //   console.log("🧾 fetchWithAccess → Options:", {
+  //     method: finalOptions.method || "GET",
+  //     headers: {
+  //       ...headers,
+  //       "CF-Access-Client-Secret": "***REDACTED***", // hide secret in logs
+  //     },
+  //   });
+  // }
 
   try {
     const response = await fetch(url, finalOptions);
 
-    if (isDev) {
-      console.log("📥 fetchWithAccess → Response status:", response.status);
-    }
+    // if (isDev) {
+    //   console.log("📥 fetchWithAccess → Response status:", response.status);
+    // }
 
     return response;
   } catch (error) {
