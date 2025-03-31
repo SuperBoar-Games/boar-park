@@ -1,440 +1,334 @@
+/* =====================================
+   Variables (Color Tokens)
+====================================== */
 :root {
-    --clr-dark-a0: #000000;
-    --clr-light-a0: #ffffff;
-    --clr-primary-a0: #38473f;
-    --clr-primary-a10: #4c5952;
-    --clr-primary-a20: #606c65;
-    --clr-primary-a30: #75807a;
-    --clr-primary-a40: #8a948f;
-    --clr-primary-a50: #a1a8a4;
-    --clr-surface-a0: #171717;
-    --clr-surface-a10: #2c2c2c;
-    --clr-surface-a20: #434343;
-    --clr-surface-a30: #5b5b5b;
-    --clr-surface-a40: #747474;
-    --clr-surface-a50: #8e8e8e;
-    --clr-surface-tonal-a0: #1a1b1b;
-    --clr-surface-tonal-a10: #2f3030;
-    --clr-surface-tonal-a20: #454646;
-    --clr-surface-tonal-a30: #5d5e5e;
-    --clr-surface-tonal-a40: #767777;
-    --clr-surface-tonal-a50: #909090;
-    --clr-surface-red: #c1101099;
-    --clr-status-done: #2e7d32;
-    --clr-status-pending: #d84315;
-    --clr-status-in-progress: #f9a825;
+  --clr-dark-a0: #000000;
+  --clr-light-a0: #ffffff;
+
+  /* Primary Palette */
+  --clr-primary-a0: #38473f;
+  --clr-primary-a10: #4c5952;
+  --clr-primary-a20: #606c65;
+  --clr-primary-a30: #75807a;
+  --clr-primary-a40: #8a948f;
+  --clr-primary-a50: #a1a8a4;
+
+  /* Surface Layers */
+  --clr-surface-a0: #171717;
+  --clr-surface-a10: #2c2c2c;
+  --clr-surface-a20: #434343;
+  --clr-surface-a30: #5b5b5b;
+  --clr-surface-a40: #747474;
+  --clr-surface-a50: #8e8e8e;
+
+  /* Tonal Surfaces */
+  --clr-surface-tonal-a0: #1a1b1b;
+  --clr-surface-tonal-a10: #2f3030;
+  --clr-surface-tonal-a20: #454646;
+  --clr-surface-tonal-a30: #5d5e5e;
+  --clr-surface-tonal-a40: #767777;
+  --clr-surface-tonal-a50: #909090;
+
+  /* Status Colors */
+  --clr-status-done: #1e3520;
+  --clr-status-pending: #774232;
+  --clr-status-in-progress: #f9a825;
+  --clr-surface-red: #c1101099;
 }
 
+/* =====================================
+   Base & Typography
+====================================== */
 html,
 body {
-    margin: 0;
-    padding: 0;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    min-height: 100vh;
-    background-color: var(--clr-surface-a0);
-    color: var(--clr-light-a0);
-}
-
-header {
-    background-color: var(--clr-surface-tonal-a10);
-    color: var(--clr-light-a0);
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--clr-surface-a20);
-    backdrop-filter: blur(10px);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-header h1 {
-    color: var(--clr-light-a0);
-    font-size: 1.5em;
-    margin: 0;
-}
-
-header p {
-    color: var(--clr-surface-a40);
-    font-size: 0.85em;
-    margin: 0;
-}
-
-.header-actions {
-    display: flex;
-    gap: 15px;
-}
-
-.header-actions button,
-.header-actions a {
-    background: none;
-    color: var(--clr-surface-a40);
-    border: 1px solid var(--clr-surface-a30);
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    text-decoration: none;
-    font-size: 0.9em;
-    transition:
-        color 0.3s ease,
-        border-color 0.3s ease;
-}
-
-.header-actions button:hover,
-.header-actions a:hover {
-    color: var(--clr-primary-a40);
-    border-color: var(--clr-primary-a40);
-}
-
-main {
-    padding: 20px;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  background-color: var(--clr-surface-a0);
+  color: var(--clr-light-a0);
 }
 
 h2 {
-    font-size: 1.6em;
-    color: var(--clr-primary-a40);
-    position: relative;
-    padding-bottom: 0.5em;
-    margin-top: 25px;
-    margin-bottom: 15px;
+  font-size: 1.6em;
+  color: var(--clr-primary-a40);
+  position: relative;
+  padding-bottom: 0.5em;
+  margin-top: 25px;
+  margin-bottom: 15px;
 }
 
 h2::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 40px;
-    height: 3px;
-    background-color: var(--clr-primary-a40);
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40px;
+  height: 3px;
+  background-color: var(--clr-primary-a40);
 }
 
-h2::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 5px;
-    top: -0.8em;
-    font-size: 0.6em;
-    color: var(--clr-surface-a40);
-    letter-spacing: 1px;
+/* =====================================
+   Header
+====================================== */
+header {
+  background-color: var(--clr-surface-tonal-a10);
+  color: var(--clr-light-a0);
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--clr-surface-a20);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-#industry-list {
-    background-color: var(--clr-surface-a10);
-    border-radius: 8px;
-    padding: 20px;
-    border: 1px solid var(--clr-surface-a20);
-    min-width: 300px;
+header h1 {
+  font-size: 1.5em;
+  margin: 0;
 }
 
-#industry-list h3 {
-    color: var(--clr-light-a0);
-    margin-top: 0;
-    margin-bottom: 10px;
+header p {
+  color: var(--clr-surface-a40);
+  font-size: 0.85em;
+  margin: 0;
 }
 
+/* =====================================
+   Buttons & Actions
+====================================== */
+button,
+.add-hero,
+.header-actions button,
+.header-actions a {
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95em;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.add-hero {
+  background-color: var(--clr-primary-a40);
+  color: var(--clr-surface-tonal-a0);
+  padding: 6px 12px;
+}
+
+.add-hero:hover {
+  background-color: var(--clr-primary-a30);
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.card-actions .edit,
+.card-actions .delete {
+  background: transparent;
+  color: var(--clr-surface-a50);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.card-actions .edit:hover,
+.card-actions .delete:hover {
+  background-color: var(--clr-surface-a0);
+  transform: scale(1.05);
+}
+
+/* =====================================
+   Lists & Cards
+====================================== */
 .hero-sublist {
-    list-style: none;
-    padding: 0;
-    margin-top: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .hero-sublist li {
-    background-color: var(--clr-surface-a20);
-    color: var(--clr-light-a0);
-    border-radius: 20px;
-    padding: 8px 15px;
-    font-size: 0.9em;
-    cursor: pointer;
-    transition:
-        background-color 0.3s ease,
-        transform 0.2s ease-in-out;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.hero-name {
-    flex-grow: 1;
-}
-
-.movie-count {
-    border-radius: 10px;
-    padding: 5px 10px;
-    font-size: 0.8em;
-    margin-left: 10px;
-}
-
-.hero-sublist li.incomplete .movie-count {
-    background-color: var(--clr-surface-red);
-    color: var(--clr-light-a0);
-}
-
-.hero-sublist li.complete .movie-count {
-    background-color: var(--clr-primary-a40);
-    color: var(--clr-surface-tonal-a0);
+  background-color: var(--clr-surface-a20);
+  border-radius: 12px;
+  padding: 12px 15px;
+  font-size: 0.9em;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: background-color 0.3s ease, transform 0.2s ease-in-out;
+  cursor: pointer;
 }
 
 .hero-sublist li:hover {
-    background-color: var(--clr-primary-a40);
-    transform: translateY(-2px);
+  transform: translateY(-4px);
 }
 
-#content-section[data-section="hero"] {
-    margin-top: 20px;
+.hero-sublist li.incomplete .movie-count {
+  background-color: var(--clr-surface-red);
+  color: var(--clr-light-a0);
 }
 
-#content-section[data-section="hero"] img {
-    border-radius: 8px;
-    margin-bottom: 15px;
+.hero-sublist li.complete .movie-count {
+  background-color: var(--clr-primary-a40);
+  color: var(--clr-surface-tonal-a0);
 }
 
-#content-section[data-section="hero"] h3 {
-    color: var(--clr-primary-a40);
-    margin-top: 20px;
-    margin-bottom: 10px;
+.movie-count {
+  font-size: 0.8em;
+  padding: 5px 10px;
+  border-radius: 10px;
+  margin-left: 10px;
+}
+
+.movie-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: var(--clr-surface-a10);
+  border-radius: 12px;
+  padding: 12px;
+  border: 1px solid var(--clr-surface-a20);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.movie-card:hover {
+  transform: translateY(-4px);
+}
+
+.movie-card.done {
+  background-color: var(--clr-status-done);
+  color: var(--clr-light-a0);
+}
+
+.movie-card.pending {
+  background-color: var(--clr-status-pending);
+  color: var(--clr-light-a0);
+}
+
+.movie-title-row {
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--clr-light-a0);
+  margin-bottom: 8px;
+}
+
+.movie-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.movie-card-details {
+  background-color: var(--clr-surface-a10);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--clr-surface-a20);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.movie-card-details:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.movie-card-details .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 1.1em;
+  color: var(--clr-light-a0);
+  font-weight: 600;
+  background-color: var(--clr-primary-a10);
+  padding: 10px 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.card-body {
+  font-size: 1em;
+  color: var(--clr-light-a0);
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-body h1 {
+  font-size: 1.7em;
+  color: var(--clr-primary-a40);
+  margin-bottom: 15px;
+}
+
+.call-sign-content,
+.ability-content {
+  font-size: 1.1em;
+  color: var(--clr-primary-a50);
+}
+
+.movie-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.movie-header h2 {
+  margin: 0;
+  font-size: 1.6em;
+  color: var(--clr-primary-a40);
+}
+
+.movie-header button {
+  background-color: var(--clr-primary-a40);
+  color: var(--clr-surface-tonal-a0);
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 0.95em;
+}
+
+.movie-header button:hover {
+  background-color: var(--clr-primary-a30);
+}
+
+#industry-list {
+  background-color: var(--clr-surface-a10);
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid var(--clr-surface-a20);
+  min-width: 300px;
+}
+
+.industry-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 #content-section[data-section="hero"] #movie-list {
-    list-style: none;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
 }
 
-#content-section[data-section="hero"] .movie-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: var(--clr-surface-a10);
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid var(--clr-surface-a20);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-#content-section[data-section="hero"] .movie-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-    cursor: pointer;
-}
-
-#content-section[data-section="hero"] .movie-title {
-    color: var(--clr-light-a0);
-    font-weight: 600;
-    font-size: 1.1em;
-    margin-bottom: 0;
-}
-
-#content-section[data-section="hero"] .movie-status {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    font-weight: 500;
-    color: #fff;
-    text-transform: capitalize;
-}
-
-/* Stronger visual distinctions */
-#content-section[data-section="hero"] .movie-status.done {
-    background-color: #388e3c; /* Green */
-}
-
-#content-section[data-section="hero"] .movie-status.pending {
-    background-color: #e53935; /* Red */
-}
-
-#content-section[data-section="hero"] .movie-status.in-progress {
-    background-color: #fbc02d; /* Amber */
-    color: #000;
-}
-
-#content-section[data-section="hero"] .movie-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-#content-section[data-section="hero"] .movie-header h2 {
-    margin: 0;
-    font-size: 1.6em;
-    color: var(--clr-primary-a40);
-}
-
-#content-section[data-section="hero"] .movie-header button {
-    background-color: var(--clr-primary-a40);
-    color: var(--clr-surface-tonal-a0);
-    border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.95em;
-    transition: background-color 0.3s ease;
-}
-
-#content-section[data-section="hero"] .movie-header button:hover {
-    background-color: var(--clr-primary-a30);
-}
-
-/* Movie Cards Container */
-#content-section[data-section="movie"] .movie-cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-/* Individual Movie Card */
-#content-section[data-section="movie"] .movie-card-details {
-    background-color: var(--clr-surface-a10);
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid var(--clr-surface-a20);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-/* Hover Effects for Movie Cards */
-#content-section[data-section="movie"] .movie-card-details:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-    cursor: pointer;
-}
-
-/* Movie Card Header */
-#content-section[data-section="movie"] .movie-card-details .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    font-size: 1.1em;
-    color: var(--clr-light-a0); /* Lighter color for better contrast */
-    font-weight: 600; /* Make it bolder for prominence */
-    background-color: var(--clr-primary-a10);
-    padding: 10px 15px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Raised effect */
-    transition: box-shadow 0.3s ease;
-}
-
-/* Edit Button in Card Header */
-#content-section[data-section="movie"] .movie-card-details .edit-movie {
-    background-color: transparent;
-    color: var(--clr-primary-a40);
-    border: 1px solid var(--clr-primary-a40);
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9em;
-    transition:
-        color 0.3s ease,
-        border-color 0.3s ease;
-}
-
-#content-section[data-section="movie"] .movie-card-details .edit-movie:hover {
-    color: var(--clr-light-a0);
-    border-color: var(--clr-light-a0);
-}
-
-/* Movie Card Body */
-#content-section[data-section="movie"] .movie-card-details .card-body {
-    font-size: 1em;
-    color: var(--clr-light-a0); /* Lighter color for body text */
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Movie Card Name */
-#content-section[data-section="movie"] .movie-card-details .card-body h1 {
-    font-size: 1.7em; /* Larger font for movie name */
-    color: var(--clr-primary-a40); /* Strong color for name */
-    margin-bottom: 15px; /* Increased spacing below name */
-}
-
-/* Movie Card Call Sign */
-#content-section[data-section="movie"]
-    .movie-card-details
-    .card-body
-    h4.call-sign {
-    font-size: 1.2em; /* Slightly larger font for Call Sign */
-    color: var(--clr-primary-a30); /* Different color for Call Sign */
-}
-
-/* Call Sign Content */
-#content-section[data-section="movie"]
-    .movie-card-details
-    .card-body
-    .call-sign-content {
-    font-size: 1.1em;
-    color: var(--clr-primary-a50); /* Lighter color for content */
-}
-
-/* Movie Card Ability */
-#content-section[data-section="movie"]
-    .movie-card-details
-    .card-body
-    h4.ability {
-    font-size: 1.2em; /* Slightly larger font for Ability */
-    color: var(--clr-surface-a40); /* Different color for Ability */
-}
-
-/* Ability Content */
-#content-section[data-section="movie"]
-    .movie-card-details
-    .card-body
-    .ability-content {
-    font-size: 1.1em;
-    color: var(--clr-primary-a50); /* Lighter color for ability content */
-}
-
-#content-section[data-section="movie"] .movie-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-#content-section[data-section="movie"] .movie-header h2 {
-    margin: 0;
-    font-size: 1.6em;
-    color: var(--clr-primary-a40);
-}
-
-#content-section[data-section="movie"] .movie-header button {
-    background-color: var(--clr-primary-a40);
-    color: var(--clr-surface-tonal-a0);
-    border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.95em;
-    transition: background-color 0.3s ease;
-}
-
-#content-section[data-section="movie"] .movie-header button:hover {
-    background-color: var(--clr-primary-a30);
-}
-
-#content-section[data-section="movie"] {
-    margin-top: 20px;
-}
-
-#content-section[data-section="movie"] h3 {
-    color: var(--clr-primary-a40);
-    margin-top: 20px;
-    margin-bottom: 10px;
+#content-section {
+  padding: 25px;
 }
