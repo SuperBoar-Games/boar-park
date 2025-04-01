@@ -19,17 +19,22 @@ export async function renderGameSection() {
       .map(([industry, heroes]) => {
         const heroList = heroes
           .map((hero) => {
-            const done = hero.total_movies - hero.pending_movies;
-            const statusClass = done < 10 ? "incomplete" : "complete";
             return `
-          <li class="${statusClass}" data-hero-id="${hero.id}">
+          <li class="hero-card ${
+            hero.done?.toLowerCase() || "unknown"
+          }" data-hero-id="${hero.id}">
             <div class="hero-header">
               <span class="hero-name">${hero.name}</span>
-              <span class="movie-count">${done}</span>
+            </div>
+            <div class="hero-details">
+              <h5># Movies: ${hero.total_movies - hero.pending_movies || 0}</h5>
+              <h5># Cards: ${hero.cards || 0}</h5>
             </div>
             <div class="card-actions">
               <button class="edit" title="Edit Hero">✏️</button>
-              <button class="delete" data-hero-id="${hero.id}" title="Delete Hero">🗑️</button>
+              <button class="delete" data-hero-id="${
+                hero.id
+              }" title="Delete Hero">🗑️</button>
             </div>
           </li>`;
           })
@@ -38,7 +43,6 @@ export async function renderGameSection() {
         return `
         <div class="industry-header" data-industry="${industry}">
           <h3>${industry}</h3>
-          <button class="add-hero" data-industry="${industry}">Add Hero</button>
         </div>
         <ul class="hero-sublist">${heroList}</ul>
       `;
@@ -46,7 +50,10 @@ export async function renderGameSection() {
       .join("");
 
     contentSection.innerHTML = `
-      <h2>Blast Alpha</h2>
+      <div class="title-header">
+        <h2>Blast Alpha</h2>
+        <button class="add-hero">Add Hero</button>
+      </div>
       <section id="game-section">
         <ul id="industry-list">${industryHTML}</ul>
       </section>
@@ -83,8 +90,27 @@ export async function renderGameSection() {
       btn.addEventListener("click", (e) => {
         e.stopPropagation(); // prevent parent click
         const heroId = btn.closest("li").getAttribute("data-hero-id");
-        alert(`TODO: Open Edit Hero modal for hero ID: ${heroId}`);
-        // Here you'd call a modal like: openHeroModal(heroId);
+        const heroName = btn
+          .closest("li")
+          .querySelector(".hero-name")
+          .textContent.trim();
+
+        // Traverse up to the 'ul#industry-list' and then find the preceding 'div.industry-header'
+        const industryHeader = btn
+          .closest("ul#industry-list")
+          .querySelector(`div.industry-header[data-industry]`);
+
+        const industry = industryHeader
+          ? industryHeader.getAttribute("data-industry")
+          : null;
+
+        const heroData = {
+          id: heroId,
+          name: heroName,
+          industry: industry,
+        };
+        // Open modal for editing hero
+        addOrEditHeroModal(true, heroData);
       });
     });
 
@@ -108,12 +134,84 @@ export async function renderGameSection() {
     document.querySelectorAll(".add-hero").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         const industry = e.target.getAttribute("data-industry");
-        alert(`TODO: Open Add Hero modal for industry: ${industry}`);
-        // Here you'd call a modal like: openHeroModal(industry);
+        // Open modal for adding new hero
+        addOrEditHeroModal(industry, false);
       });
     });
   } catch (error) {
     console.error("Failed to render game section", error);
     contentSection.innerHTML = "<p>Error loading game data.</p>";
   }
+}
+
+function addOrEditHeroModal(editFlag, editData = null) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>${editFlag ? "Edit" : "Add"} Hero</h2>
+      <form id="hero-form">
+        <label for="hero-name">Hero Name:</label>
+        <input type="text" id="hero-name" name="hero-name" required value="${
+          editFlag ? editData.name : ""
+        }">
+        <label for="hero-industry">Industry:</label>
+        <input type="text" id="hero-industry" name="hero-industry" required value="${
+          editFlag ? editData.industry : ""
+        }">
+        <button type="submit">${editFlag ? "Update" : "Add"} Hero</button>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  modal.querySelector(".close").onclick = function () {
+    modal.remove();
+  };
+
+  modal.querySelector("#hero-form").onsubmit = function (e) {
+    e.preventDefault();
+    const heroName = e.target["hero-name"].value;
+    const heroIndustry = e.target["hero-industry"].value;
+    if (editFlag) {
+      // Call API to update hero
+      console.log(
+        `Updating hero: ${editData.id}, Name: ${heroName}, Industry: ${heroIndustry}`
+      );
+    } else {
+      // Call API to add new hero
+      console.log(
+        `Adding new hero: Name: ${heroName}, Industry: ${heroIndustry}`
+      );
+    }
+    modal.remove();
+  };
+
+  modal.querySelector(".close").onclick = function () {
+    modal.remove();
+  };
+
+  modal.addEventListener("click", function (event) {
+    if (event.target === modal) {
+      modal.remove();
+    }
+  });
+
+  // Add event listener for Escape key
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      if (document.body.contains(modal)) {
+        modal.remove();
+      }
+    }
+  });
+
+  modal.querySelector("#hero-name").focus();
+  modal.querySelector("#hero-name").select();
+  document.body.style.overflow = "hidden"; // Prevent background scrolling
+  modal.scrollIntoView({ behavior: "smooth" });
+  document.body.style.overflow = ""; // Restore background scrolling
+  return modal;
 }
