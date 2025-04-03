@@ -7,7 +7,7 @@ const contentSection = document.getElementById("content-section");
 export async function loadHeroDetails(heroId, heroName) {
   try {
     const moviesData = await fetchData(
-      `/admin-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}`
+      `/api/games/?gameSlug=blast-alpha&heroId=${heroId}`
     );
 
     contentSection.innerHTML = generateMovieSection(moviesData, heroName);
@@ -41,7 +41,7 @@ export async function loadHeroDetails(heroId, heroName) {
 
         // try {
         //   await deleteData(
-        //     `/admin-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}`
+        //     `/api/games/?gameSlug=blast-alpha&heroId=${heroId}`
         //   );
         //   await renderGameSection(); // reload updated list
         // } catch (err) {

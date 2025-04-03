@@ -1,50 +1,96 @@
-import { getHeroesWithMovieCount } from "../../../../db/schema/queries/blast-alpha/heroesQueries";
-import { getMoviesByHeroId } from "../../../../db/schema/queries/blast-alpha/moviesQueries";
-import { getCardsByHeroAndMovieId } from "../../../../db/schema/queries/blast-alpha/cardsQueries";
+import {
+  getHeroesWithMovieCount,
+  createHero,
+  updateHero,
+  deleteHero,
+} from "../../../../db/queries/blast-alpha/heroesQueries.js";
+import {
+  getMoviesByHeroId,
+  createMovie,
+  updateMovie,
+  deleteMovie,
+} from "../../../../db/queries/blast-alpha/moviesQueries";
+import {
+  getCardsByHeroAndMovieId,
+  createCard,
+  updateCard,
+  deleteCard,
+} from "../../../../db/queries/blast-alpha/cardsQueries";
 
 const queryMap = {
-  default: {
-    query: getHeroesWithMovieCount,
-    params: () => [],
-  },
-  heroId: {
-    query: getMoviesByHeroId,
-    params: (parsedParams) => [parsedParams.get("heroId")],
-  },
-  movieIdAndHeroId: {
-    query: getCardsByHeroAndMovieId,
-    params: (parsedParams) => {
-      const heroId = parsedParams.get("heroId");
-      const movieId = parsedParams.get("movieId");
-
-      if (!heroId || !movieId) {
-        throw new Error("Missing heroId or movieId");
-      }
-
-      return [heroId, movieId];
+  GET: {
+    hero: {
+      query: getHeroesWithMovieCount,
+      params: () => [],
     },
+    movie: {
+      query: getMoviesByHeroId,
+      params: (parsedParams) => [parsedParams.get("heroId")],
+    },
+    card: {
+      query: getCardsByHeroAndMovieId,
+      params: (parsedParams) => {
+        const heroId = parsedParams.get("heroId");
+        const movieId = parsedParams.get("movieId");
+
+        if (!heroId || !movieId) {
+          throw new Error("Missing heroId or movieId");
+        }
+
+        return [heroId, movieId];
+      },
+    },
+  },
+  POST: {
+    hero: createHero,
+    movie: createMovie,
+    card: createCard,
+  },
+  PUT: {
+    hero: updateHero,
+    movie: updateMovie,
+    card: updateCard,
+  },
+  DELETE: {
+    hero: deleteHero,
+    movie: deleteMovie,
+    card: deleteCard,
   },
 };
 
-export const gameHandler = async (queryParams, db) => {
-  const parsedParams = new URLSearchParams(queryParams);
+export const gameHandler = async (context) => {
+  const reqUrl = new URL(context.request.url);
+  const queryParams = new URLSearchParams(reqUrl.search);
+  const method = context.request.method;
 
   try {
-    let queryKey = "default";
+    if (method === "GET") {
+      let queryKey = "hero";
 
-    if (parsedParams.has("heroId") && !parsedParams.has("movieId")) {
-      queryKey = "heroId";
-    } else if (parsedParams.has("movieId") && parsedParams.has("heroId")) {
-      queryKey = "movieIdAndHeroId";
+      if (queryParams.has("heroId") && !queryParams.has("movieId")) {
+        queryKey = "movie";
+      } else if (queryParams.has("movieId") && queryParams.has("heroId")) {
+        queryKey = "card";
+      }
+
+      const { query, params: paramsFn } = queryMap.GET[queryKey];
+      const ps = context.env.BoarDB.prepare(query);
+      const { results } = await ps.bind(...paramsFn(queryParams)).all();
+
+      return new Response(JSON.stringify(results), {
+        headers: { "Content-Type": "application/json" },
+      });
     }
+    if (["POST", "PUT", "DELETE"].includes(method)) {
+      // log request and body
+      const body = await context.request.json();
+      console.log("Request method:", method);
+      console.log("Request body:", body);
 
-    const { query, params: paramsFn } = queryMap[queryKey];
-    const params = paramsFn(parsedParams);
-
-    // Execute the query
-    const ps = db.prepare(query);
-    const { results } = await ps.bind(...params).all();
-    return results;
+      return new Response("ok", {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
   } catch (error) {
     console.error("Error in gameHandler:", error);
 

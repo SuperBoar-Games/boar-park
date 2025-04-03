@@ -4,3 +4,7 @@ export const getCardsByHeroAndMovieId = `
   WHERE c.hero_id = ? AND c.movie_id = ?
   ORDER BY c.id ASC, c.type ASC;
 `;
+
+export const createCard = ``;
+export const updateCard = ``;
+export const deleteCard = ``;

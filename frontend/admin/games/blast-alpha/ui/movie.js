@@ -6,7 +6,7 @@ const contentSection = document.getElementById("content-section");
 export async function loadMovieDetails(movieId, heroId) {
   try {
     const movieDetails = await fetchData(
-      `/admin-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}&movieId=${movieId}`
+      `/api/games/?gameSlug=blast-alpha&heroId=${heroId}&movieId=${movieId}`
     );
 
     contentSection.innerHTML = generateMovieCards(movieDetails);

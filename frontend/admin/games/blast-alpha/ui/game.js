@@ -5,15 +5,15 @@ const contentSection = document.getElementById("content-section");
 
 export async function renderGameSection() {
   try {
-    const gameData = await fetchData(
-      "/admin-proxy/games/?gameSlug=blast-alpha"
-    );
+    const gameData = await fetchData("/api/games/?gameSlug=blast-alpha");
 
     const grouped = gameData.reduce((acc, hero) => {
       acc[hero.category] = acc[hero.category] || [];
       acc[hero.category].push(hero);
       return acc;
     }, {});
+
+    const industryList = Object.keys(grouped);
 
     const industryHTML = Object.entries(grouped)
       .map(([industry, heroes]) => {
@@ -32,7 +32,7 @@ export async function renderGameSection() {
             </div>
             <div class="card-actions">
               <button class="edit" title="Edit Hero">✏️</button>
-              <button class="delete" data-hero-id="${
+              <button class="delete-icon" data-hero-id="${
                 hero.id
               }" title="Delete Hero">🗑️</button>
             </div>
@@ -75,7 +75,7 @@ export async function renderGameSection() {
 
         // try {
         //   await deleteData(
-        //     `/admin-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}`
+        //     `/api/games/?gameSlug=blast-alpha&heroId=${heroId}`
         //   );
         //   await renderGameSection(); // reload updated list
         // } catch (err) {
@@ -108,6 +108,7 @@ export async function renderGameSection() {
           id: heroId,
           name: heroName,
           industry: industry,
+          industryList: industryList,
         };
         // Open modal for editing hero
         addOrEditHeroModal(true, heroData);
@@ -135,7 +136,9 @@ export async function renderGameSection() {
       btn.addEventListener("click", (e) => {
         const industry = e.target.getAttribute("data-industry");
         // Open modal for adding new hero
-        addOrEditHeroModal(industry, false);
+        addOrEditHeroModal(false, {
+          industryList: industryList,
+        });
       });
     });
   } catch (error) {
@@ -147,6 +150,16 @@ export async function renderGameSection() {
 function addOrEditHeroModal(editFlag, editData = null) {
   const modal = document.createElement("div");
   modal.className = "modal";
+
+  const industryOptions = editData?.industryList
+    .map(
+      (industry) =>
+        `<option value="${industry}" ${
+          editFlag && editData.industry === industry ? "selected" : ""
+        }>${industry}</option>`
+    )
+    .join("");
+
   modal.innerHTML = `
     <div class="modal-content">
       <span class="close">&times;</span>
@@ -157,9 +170,18 @@ function addOrEditHeroModal(editFlag, editData = null) {
           editFlag ? editData.name : ""
         }">
         <label for="hero-industry">Industry:</label>
-        <input type="text" id="hero-industry" name="hero-industry" required value="${
-          editFlag ? editData.industry : ""
-        }">
+        <select id="hero-industry" name="hero-industry" required>
+          ${industryOptions}
+          ${!editFlag ? '<option value="new">Add New Industry</option>' : ""}
+        </select>
+        ${
+          !editFlag
+            ? `<div id="new-industry-input" style="display: none;">
+              <label for="new-industry-name">New Industry Name:</label>
+              <input type="text" id="new-industry-name" name="new-industry-name">
+            </div>`
+            : ""
+        }
         <button type="submit">${editFlag ? "Update" : "Add"} Hero</button>
       </form>
     </div>
@@ -167,29 +189,57 @@ function addOrEditHeroModal(editFlag, editData = null) {
 
   document.body.appendChild(modal);
 
+  const newIndustryInput = modal.querySelector("#new-industry-input");
+  const industrySelect = modal.querySelector("#hero-industry");
+
+  if (industrySelect) {
+    industrySelect.addEventListener("change", function () {
+      if (this.value === "new") {
+        newIndustryInput.style.display = "block";
+      } else {
+        newIndustryInput.style.display = "none";
+      }
+    });
+  }
+
   modal.querySelector(".close").onclick = function () {
     modal.remove();
   };
 
-  modal.querySelector("#hero-form").onsubmit = function (e) {
+  modal.querySelector("#hero-form").onsubmit = async function (e) {
     e.preventDefault();
     const heroName = e.target["hero-name"].value;
-    const heroIndustry = e.target["hero-industry"].value;
+    let heroIndustry = e.target["hero-industry"].value;
+
+    if (heroIndustry === "new") {
+      heroIndustry = e.target["new-industry-name"].value;
+    }
+
     if (editFlag) {
       // Call API to update hero
       console.log(
         `Updating hero: ${editData.id}, Name: ${heroName}, Industry: ${heroIndustry}`
       );
     } else {
-      // Call API to add new hero
       console.log(
         `Adding new hero: Name: ${heroName}, Industry: ${heroIndustry}`
       );
-    }
-    modal.remove();
-  };
 
-  modal.querySelector(".close").onclick = function () {
+      // Call API to add new hero
+      const response = await fetch(`/api/games/?gameSlug=blast-alpha`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: heroName,
+          industry: heroIndustry,
+        }),
+      });
+
+      const data = await response;
+      console.log("New hero added:", data);
+    }
     modal.remove();
   };
 
