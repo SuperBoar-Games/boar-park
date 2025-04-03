@@ -1,20 +1,13 @@
 import * as jose from "jose";
-import { fetchWithAccess } from "../utils/fetchWithAccess";
 
 export async function onRequest(context) {
   const isDev = context.env.NODE_ENV?.trim() === "development";
 
-  const reqUrl = new URL(context.request.url);
-  const originUrl = reqUrl.origin;
-  const endpoint = context.params.apiPath;
-  const query = reqUrl.search;
-  const apiURL = `${originUrl}/api/${endpoint}/${query}`;
-
   let userEmail;
 
   if (isDev) {
-    // Skip auth in dev
-    userEmail = "dev@example.com";
+    // skip auth in dev
+    userEmail = "dev@superboar.com";
   } else {
     const jwtAssertion = context.request.headers.get("cf-access-jwt-assertion");
 
@@ -56,28 +49,24 @@ export async function onRequest(context) {
         });
       }
     } catch (error) {
-      console.error("❗ JWT verification failed");
-      if (isDev) console.error("🔍 Full error details:", error);
-      return new Response("Unauthorized - Invalid session", { status: 401 });
+      console.error("❗ JWT verification failed", error);
+      return new Response("Unauthorized - Invalid JWT", { status: 401 });
     }
   }
 
   try {
-    const customHeaders = {
-      "X-BP-User": userEmail,
-    };
+    const customHeaders = new Headers(context.request.headers);
+    customHeaders.set("x-bp-User", userEmail);
 
-    const res = await fetchWithAccess(apiURL, context, {
+    const newRequest = new Request(context.request.url, {
+      method: context.request.method,
       headers: customHeaders,
+      body: context.request.body,
+      redirect: context.request.redirect,
     });
 
-    const result = await res.json();
-
-    return Response.json(result);
-  } catch (apiError) {
-    console.error("❗ API request failed:", apiError);
-    return new Response("Internal Server Error - Could not fetch data", {
-      status: 500,
-    });
+    return await context.next(newRequest);
+  } catch (err) {
+    return new Response(`${err.message}\n${err.stack}`, { status: 500 });
   }
 }

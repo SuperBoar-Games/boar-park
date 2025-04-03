@@ -8,3 +8,7 @@ export const getHeroesWithMovieCount = `
   GROUP BY h.id
   ORDER BY h.category ASC, h.name ASC;
 `;
+
+export const createHero = ``;
+export const updateHero = ``;
+export const deleteHero = ``;

@@ -1,18 +1,21 @@
-import { getAllGames } from "../../../db/schema/queries/gamesQueries";
+import { getAllGames } from "../../../db/queries/gamesQueries";
+
+const gameHandlers = {
+  "blast-alpha": () =>
+    import("./blast-alpha/gameHandler").then((module) => module.gameHandler),
+};
 
 async function getGameHandler(gameSlug) {
-  switch (gameSlug) {
-    case "blast-alpha":
-      try {
-        const module = await import("./blast-alpha/gameHandler");
-        return module.gameHandler;
-      } catch (error) {
-        console.error("Error importing game handler:", error);
-        return null;
-      }
-    default:
+  const handlerLoader = gameHandlers[gameSlug];
+  if (handlerLoader) {
+    try {
+      return await handlerLoader();
+    } catch (error) {
+      console.error("Error importing game handler:", error);
       return null;
+    }
   }
+  return null;
 }
 
 function errorResponse(message, status) {
@@ -30,10 +33,14 @@ export async function onRequest(context) {
   const gameSlug = queryParams.get("gameSlug");
 
   if (!gameSlug) {
-    const ps = context.env.BoarDB.prepare(getAllGames);
-    const { results } = await ps.all();
-
-    return Response.json(results);
+    try {
+      const ps = context.env.BoarDB.prepare(getAllGames);
+      const { results } = await ps.all();
+      return Response.json(results);
+    } catch (error) {
+      console.error("Error fetching all games:", error);
+      return errorResponse("Error fetching games", 500); // More specific error
+    }
   }
 
   const gameHandler = await getGameHandler(gameSlug);
@@ -41,12 +48,11 @@ export async function onRequest(context) {
     return errorResponse("Game not found", 404);
   }
 
-  queryParams.delete("gameSlug");
-
   try {
-    const results = await gameHandler(queryParams, context.env.BoarDB);
-    // console.log("Game handler results:", results);
-    return Response.json(results);
+    const response = await gameHandler(context);
+    // const results = await response.json();
+    // console.log("Game handler results:", JSON.stringify(results, null, 2));
+    return response;
   } catch (error) {
     console.error("Error executing game query:", error);
     return errorResponse("Error executing game query", 500);

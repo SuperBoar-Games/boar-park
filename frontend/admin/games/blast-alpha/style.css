@@ -126,7 +126,7 @@ button,
   align-items: center;
 }
 
-.card-actions .delete,
+.card-actions .delete-icon,
 .card-actions .review-flag,
 .card-actions .edit {
   background: transparent;
@@ -141,7 +141,7 @@ button,
   transition: background-color 0.3s ease, transform 0.1s ease;
 }
 
-.card-actions .delete:hover,
+.card-actions .delete-icon:hover,
 .card-actions .edit:hover {
   background-color: var(--clr-surface-a0);
   transform: scale(1.05);
