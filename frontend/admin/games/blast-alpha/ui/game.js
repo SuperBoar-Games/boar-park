@@ -1,11 +1,23 @@
-import { fetchData } from "../api.js";
 import { loadHeroDetails } from "./hero.js";
 
 const contentSection = document.getElementById("content-section");
 
 export async function renderGameSection() {
   try {
-    const gameData = await fetchData("/api/games/?gameSlug=blast-alpha");
+    const res = await fetch("/api/games/?gameSlug=blast-alpha");
+
+    if (!res.ok) {
+      const message = `Error: ${res.status} - ${res.statusText}`;
+      contentSection.innerHTML = `<li>${message}</li>`;
+      return;
+    }
+
+    const { data: gameData } = await res.json();
+
+    if (!gameData?.length) {
+      contentSection.innerHTML = "<p>No heroes available.</p>";
+      return;
+    }
 
     const grouped = gameData.reduce((acc, hero) => {
       acc[hero.category] = acc[hero.category] || [];
@@ -23,12 +35,15 @@ export async function renderGameSection() {
           <li class="hero-card ${
             hero.done?.toLowerCase() || "unknown"
           }" data-hero-id="${hero.id}">
-            <div class="hero-header">
-              <span class="hero-name">${hero.name}</span>
-            </div>
-            <div class="hero-details">
-              <h5># Movies: ${hero.total_movies - hero.pending_movies || 0}</h5>
-              <h5># Cards: ${hero.cards || 0}</h5>
+            <div class="hero-clickable">
+              <div class="hero-header">
+                <span class="hero-name">${hero.name}</span>
+              </div>
+              <div class="hero-details">
+                <h5># Total Movies: ${hero.total_movies || 0}</h5>
+                <h5># Pending Movies: ${hero.pending_movies || 0}</h5>
+                <h5># Cards: ${hero.total_cards || 0}</h5>
+              </div>
             </div>
             <div class="card-actions">
               <button class="edit" title="Edit Hero">✏️</button>
@@ -41,10 +56,12 @@ export async function renderGameSection() {
           .join("");
 
         return `
-        <div class="industry-header" data-industry="${industry}">
-          <h3>${industry}</h3>
-        </div>
-        <ul class="hero-sublist">${heroList}</ul>
+        <li class="industry-block">
+          <div class="industry-header" data-industry="${industry}">
+            <h3>${industry}</h3>
+          </div>
+          <ul class="hero-sublist">${heroList}</ul>
+        </li>
       `;
       })
       .join("");
@@ -60,7 +77,7 @@ export async function renderGameSection() {
     `;
     contentSection.setAttribute("data-section", "game");
 
-    document.querySelectorAll(".delete").forEach((btn) => {
+    document.querySelectorAll(".delete-icon").forEach((btn) => {
       btn.addEventListener("click", async (e) => {
         e.stopPropagation(); // prevent parent click
         const heroId = btn.getAttribute("data-hero-id");
@@ -73,15 +90,25 @@ export async function renderGameSection() {
         );
         if (!confirmed) return;
 
-        // try {
-        //   await deleteData(
-        //     `/api/games/?gameSlug=blast-alpha&heroId=${heroId}`
-        //   );
-        //   await renderGameSection(); // reload updated list
-        // } catch (err) {
-        //   console.error("Hero deletion failed:", err);
-        //   alert("Failed to delete hero.");
-        // }
+        // Call API to delete hero
+        const response = await fetch(
+          `/api/games/?gameSlug=blast-alpha&queryKey=hero`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: heroId }),
+          }
+        );
+        const data = await response;
+        if (!response.ok) {
+          console.error("Failed to delete hero:", data);
+          alert("Failed to delete hero.");
+          return;
+        }
+        // Reload the game section to reflect the deleted hero
+        await renderGameSection();
       });
     });
 
@@ -116,20 +143,20 @@ export async function renderGameSection() {
     });
 
     // Hero click handler
-    document
-      .querySelectorAll("#industry-list li[data-hero-id]")
-      .forEach((li) => {
-        li.addEventListener("click", async () => {
-          const heroId = li.getAttribute("data-hero-id");
-          const heroName = li.querySelector(".hero-name").textContent.trim();
-          await loadHeroDetails(heroId, heroName);
-          history.pushState(
-            { section: "hero", heroId },
-            `Hero ${heroId}`,
-            `/admin/games/blast-alpha/?heroId=${heroId}`
-          );
-        });
+    document.querySelectorAll(".hero-clickable").forEach((li) => {
+      li.addEventListener("click", async () => {
+        // get heroId from the parent li
+        const heroId = li.closest("li").getAttribute("data-hero-id");
+        const heroName = li.querySelector(".hero-name").textContent.trim();
+
+        await loadHeroDetails(heroId, heroName);
+        history.pushState(
+          { section: "hero", heroId },
+          `Hero ${heroId}`,
+          `/admin/games/blast-alpha/?heroId=${heroId}`
+        );
       });
+    });
 
     // Add Hero buttons (one per industry)
     document.querySelectorAll(".add-hero").forEach((btn) => {
@@ -217,28 +244,52 @@ function addOrEditHeroModal(editFlag, editData = null) {
 
     if (editFlag) {
       // Call API to update hero
-      console.log(
-        `Updating hero: ${editData.id}, Name: ${heroName}, Industry: ${heroIndustry}`
+      const response = await fetch(
+        `/api/games/?gameSlug=blast-alpha&queryKey=hero`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: editData.id,
+            name: heroName,
+            industry: heroIndustry,
+          }),
+        }
       );
+      const data = await response;
+      if (!response.ok) {
+        console.error("Failed to update hero:", data);
+        alert("Failed to update hero.");
+        return;
+      }
+      // Reload the game section to reflect the updated hero
+      await renderGameSection();
     } else {
-      console.log(
-        `Adding new hero: Name: ${heroName}, Industry: ${heroIndustry}`
-      );
-
       // Call API to add new hero
-      const response = await fetch(`/api/games/?gameSlug=blast-alpha`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: heroName,
-          industry: heroIndustry,
-        }),
-      });
+      const response = await fetch(
+        `/api/games/?gameSlug=blast-alpha&queryKey=hero`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: heroName,
+            industry: heroIndustry,
+          }),
+        }
+      );
 
       const data = await response;
-      console.log("New hero added:", data);
+      if (!response.ok) {
+        console.error("Failed to add new hero:", data.error);
+        alert("Failed to add new hero.");
+        return;
+      }
+      // Reload the game section to reflect the new hero
+      await renderGameSection();
     }
     modal.remove();
   };

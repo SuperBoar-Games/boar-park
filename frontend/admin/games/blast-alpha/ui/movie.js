@@ -1,16 +1,94 @@
-import { fetchData } from "../api.js";
 import { loadHeroDetails } from "./hero.js";
 
 const contentSection = document.getElementById("content-section");
 
 export async function loadMovieDetails(movieId, heroId) {
   try {
-    const movieDetails = await fetchData(
+    const res = await fetch(
       `/api/games/?gameSlug=blast-alpha&heroId=${heroId}&movieId=${movieId}`
     );
 
+    if (!res.ok) {
+      const message = `Error: ${res.status} - ${res.statusText}`;
+      contentSection.innerHTML = `<li>${message}</li>`;
+      return;
+    }
+
+    const { data: movieDetails } = await res.json();
+
     contentSection.innerHTML = generateMovieCards(movieDetails);
     contentSection.setAttribute("data-section", "movie");
+
+    // Dropdown button logic
+    document.querySelectorAll(".dropdown-button").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const dropdown = btn.closest(".dropdown");
+
+        document.querySelectorAll(".dropdown.open").forEach((el) => {
+          if (el !== dropdown) el.classList.remove("open");
+        });
+
+        dropdown.classList.toggle("open");
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      document.querySelectorAll(".dropdown.open").forEach((dropdown) => {
+        if (!dropdown.contains(e.target)) {
+          dropdown.classList.remove("open");
+        }
+      });
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        document.querySelectorAll(".dropdown.open").forEach((dropdown) => {
+          dropdown.classList.remove("open");
+        });
+      }
+    });
+
+    // Review flag toggle logic
+    document.querySelectorAll(".review-action").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const cardId = btn.getAttribute("data-card-id");
+        const needReview = btn.getAttribute("data-need-review") === "true";
+
+        const response = await fetch(
+          `/api/games/?gameSlug=blast-alpha&queryKey=card`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              cardId,
+              need_review: !needReview ? "TRUE" : "FALSE",
+            }),
+          }
+        );
+        const data = await response.json();
+        if (!response.ok) {
+          console.error("Failed to update review status:", data.error);
+          alert("Failed to update review status.");
+          return;
+        }
+
+        btn.setAttribute("data-need-review", !needReview);
+        btn.textContent = !needReview ? "Mark Resolved" : "🚩 Mark for Review";
+
+        const flag = btn
+          .closest(".movie-card-details")
+          .querySelector(".review-flag");
+        flag.style.display = !needReview ? "inline" : "none";
+
+        const dropdown = btn.closest(".dropdown");
+        if (dropdown) dropdown.classList.remove("open");
+      });
+    });
 
     document.getElementById("back-to-movies")?.addEventListener("click", () => {
       history.pushState(
@@ -34,16 +112,19 @@ export async function loadMovieDetails(movieId, heroId) {
         const callSign = card
           .querySelector(".call-sign-content")
           .textContent.trim();
-        const ability1 = card
-          .querySelector(".ability-content")
-          .textContent.split("<br>")[0]
-          .replace("1. ", "")
-          .trim();
-        const ability2 = card
-          .querySelector(".ability-content")
-          .textContent.split("<br>")[1]
-          ?.replace("2. ", "")
-          .trim();
+        const abilityContent = card.querySelector(".ability-content");
+
+        let ability1 = "";
+        let ability2 = "";
+
+        if (abilityContent) {
+          const spans = abilityContent.querySelectorAll("span");
+          ability1 =
+            spans[0]?.textContent.replace(/^\d+\.\s*/, "").trim() || "";
+          ability2 =
+            spans[1]?.textContent.replace(/^\d+\.\s*/, "").trim() || "";
+        }
+
         const type = card.querySelector(".card-type").textContent.trim();
 
         addOrEditCardModal(
@@ -63,13 +144,38 @@ export async function loadMovieDetails(movieId, heroId) {
     });
 
     document.querySelectorAll(".delete").forEach((button) => {
-      button.addEventListener("click", (e) => {
+      button.addEventListener("click", async (e) => {
         const card = e.target.closest(".movie-card-details");
         const cardId = card.getAttribute("data-movie-card-id");
         const name = card.querySelector("h1").textContent.trim();
 
-        alert(`TODO: Confirm & delete card "${name}"`);
-        // confirmDeleteCard(heroId, movieId, cardId)
+        const confirmed = confirm(
+          `Are you sure you want to delete the card "${name}"? This action cannot be undone.`
+        );
+
+        if (!confirmed) {
+          return;
+        }
+
+        const response = await fetch(
+          `/api/games/?gameSlug=blast-alpha&queryKey=card`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              cardId,
+            }),
+          }
+        );
+        const message = await response.json();
+        if (!response.ok) {
+          console.error("Failed to delete card:", message.error);
+          alert("Failed to delete card.");
+          return;
+        }
+        await loadMovieDetails(movieId, heroId);
       });
     });
   } catch (error) {
@@ -93,12 +199,14 @@ function generateMovieCards(movieDetails = []) {
           <div class="dropdown">
             <button class="dropdown-button">⋮</button>
             <div class="dropdown-content">
-              <a href="#" class="review-action" data-card-id="${
+              <button class="review-action" data-card-id="${
                 detail.id
-              }" data-needs-review="${detail.needsReview}">${
-        detail.needsReview ? "Mark Resolved" : "🚩 Mark for Review"
-      }</a>
-              <a href="#" class="delete" title="Delete Card">🗑️ Delete</a>
+              }" data-need-review="${detail.need_review === "TRUE"}">${
+        detail.need_review === "TRUE" ? "Mark Resolved" : "🚩 Mark for Review"
+      }</button>
+              <button class="delete" data-movie-id="${
+                detail.id
+              }" title="Delete Card">🗑️ Delete</button>
             </div>
           </div>
         </div>
@@ -108,10 +216,14 @@ function generateMovieCards(movieDetails = []) {
         <h4>Call Sign:</h4>
         <span class="call-sign-content">${detail.call_sign || ""}</span>
         <h4>Ability:</h4>
-        <span class="ability-content">
-          1. ${detail.ability_text ?? "No ability text available"}
-          ${detail.ability_text2 ? `<br>2. ${detail.ability_text2}` : ""}
-        </span>
+        <div class="ability-content">
+          <span>1. ${detail.ability_text ?? "No ability text available"}</span>
+          ${
+            detail.ability_text2
+              ? `<br /><span>2. ${detail.ability_text2}</span>`
+              : ""
+          }
+        </div>
       </div>
     </div>
   `
@@ -186,7 +298,7 @@ function addOrEditCardModal(editFlag, editData = null, movieId, heroId) {
     modal.remove();
   };
 
-  modal.querySelector("#movie-card-form").onsubmit = function (e) {
+  modal.querySelector("#movie-card-form").onsubmit = async function (e) {
     e.preventDefault();
     const cardType = e.target["card-type"].value;
     const cardName = e.target["card-name"].value;
@@ -202,14 +314,59 @@ function addOrEditCardModal(editFlag, editData = null, movieId, heroId) {
 
     if (editFlag) {
       // Call API to update card
-      console.log(
-        `Updating card: ${editData.id}, Type: ${cardType}, Name: ${cardName}, Call Sign: ${callSign}, Ability 1: ${ability1}, Ability 2: ${ability2}`
+      const response = await fetch(
+        `/api/games/?gameSlug=blast-alpha&queryKey=card`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            cardId: editData.id,
+            movieId,
+            heroId,
+            type: cardType,
+            name: cardName,
+            call_sign: callSign,
+            ability_text: ability1,
+            ability_text2: ability2,
+          }),
+        }
       );
+      const message = await response.json();
+      if (!response.ok) {
+        console.error("Failed to update card:", message.error);
+        alert("Failed to update card.");
+        return;
+      }
+      await loadMovieDetails(movieId, heroId);
     } else {
       // Call API to add new card
-      console.log(
-        `Adding new card: Type: ${cardType}, Name: ${cardName}, Call Sign: ${callSign}, Ability 1: ${ability1}, Ability 2: ${ability2}, Movie ID: ${movieId}, Hero ID: ${heroId}`
+      const response = await fetch(
+        `/api/games/?gameSlug=blast-alpha&queryKey=card`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            movieId,
+            heroId,
+            type: cardType,
+            name: cardName,
+            call_sign: callSign,
+            ability_text: ability1,
+            ability_text2: ability2,
+          }),
+        }
       );
+      const message = await response.json();
+      if (!response.ok) {
+        console.error("Failed to add card:", message.error);
+        alert("Failed to add card.");
+        return;
+      }
+      await loadMovieDetails(movieId, heroId);
     }
     modal.remove();
   };

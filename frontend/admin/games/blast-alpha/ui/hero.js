@@ -1,4 +1,3 @@
-import { fetchData } from "../api.js";
 import { loadMovieDetails } from "./movie.js";
 import { renderGameSection } from "./game.js";
 
@@ -6,18 +5,30 @@ const contentSection = document.getElementById("content-section");
 
 export async function loadHeroDetails(heroId, heroName) {
   try {
-    const moviesData = await fetchData(
+    const res = await fetch(
       `/api/games/?gameSlug=blast-alpha&heroId=${heroId}`
     );
+
+    if (!res.ok) {
+      const message = `Error: ${res.status} - ${res.statusText}`;
+      contentSection.innerHTML = `<li>${message}</li>`;
+      return;
+    }
+
+    const { data: moviesData } = await res.json();
 
     contentSection.innerHTML = generateMovieSection(moviesData, heroName);
     contentSection.setAttribute("data-section", "hero");
 
     // Attach click handler to each movie
-    document.querySelectorAll("#movie-list li[data-movie-id]").forEach((li) => {
-      li.addEventListener("click", async () => {
-        const movieId = li.getAttribute("data-movie-id");
-        const movieTitle = li.querySelector(".movie-title-row").textContent;
+    document.querySelectorAll(".movie-clickable").forEach((li) => {
+      li.addEventListener("click", async (e) => {
+        // get movieId from the parent li
+        const movieId = li.closest("li").getAttribute("data-movie-id");
+        const movieTitle = li
+          .querySelector(".movie-title-row")
+          .textContent.trim();
+
         await loadMovieDetails(movieId, heroId);
         history.pushState(
           { section: "movie", movieId },
@@ -27,6 +38,41 @@ export async function loadHeroDetails(heroId, heroName) {
       });
     });
 
+    // dropdown button
+    document.querySelectorAll(".dropdown-button").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const dropdown = btn.closest(".dropdown");
+
+        // Close all other dropdowns
+        document.querySelectorAll(".dropdown.open").forEach((el) => {
+          if (el !== dropdown) el.classList.remove("open");
+        });
+
+        // Toggle current one
+        dropdown.classList.toggle("open");
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      document.querySelectorAll(".dropdown.open").forEach((dropdown) => {
+        if (!dropdown.contains(e.target)) {
+          dropdown.classList.remove("open");
+        }
+      });
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        document.querySelectorAll(".dropdown.open").forEach((dropdown) => {
+          dropdown.classList.remove("open");
+        });
+      }
+    });
+
+    // Delete Movie button
     document.querySelectorAll(".delete").forEach((btn) => {
       btn.addEventListener("click", async (e) => {
         e.stopPropagation(); // prevent parent click
@@ -39,15 +85,66 @@ export async function loadHeroDetails(heroId, heroName) {
         );
         if (!confirmed) return;
 
-        // try {
-        //   await deleteData(
-        //     `/api/games/?gameSlug=blast-alpha&heroId=${heroId}`
-        //   );
-        //   await renderGameSection(); // reload updated list
-        // } catch (err) {
-        //   console.error("Hero deletion failed:", err);
-        //   alert("Failed to delete hero.");
-        // }
+        // Call API to delete movie
+        const response = await fetch(
+          `/api/games/?gameSlug=blast-alpha&queryKey=movie`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: movieId }),
+          }
+        );
+        const data = await response.json();
+        if (!response.ok) {
+          console.error("Failed to delete movie:", data.error);
+          alert("Failed to delete movie.");
+          return;
+        }
+        // Reload hero details after deletion
+        await loadHeroDetails(heroId, heroName);
+      });
+    });
+
+    // Review flag button
+    document.querySelectorAll(".review-action").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation(); // prevent parent click
+        const movieId = btn.closest("li").getAttribute("data-movie-id");
+        const needReview = btn.getAttribute("data-need-review") === "true";
+
+        // Call API to update review status
+        const response = await fetch(
+          `/api/games/?gameSlug=blast-alpha&queryKey=movie`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              id: movieId,
+              title: undefined,
+              need_review: !needReview ? "TRUE" : "FALSE",
+              heroId: heroId,
+            }),
+          }
+        );
+        const data = await response.json();
+        if (!response.ok) {
+          console.error("Failed to update review status:", data.error);
+          alert("Failed to update review status.");
+          return;
+        }
+        // Update the review flag and review-action button text
+        btn.setAttribute("data-need-review", !needReview);
+        btn.textContent = !needReview ? "Mark Resolved" : "🚩 Mark for Review";
+        const reviewFlag = btn.closest("li").querySelector(".review-flag");
+        reviewFlag.style.display = !needReview ? "inline" : "none";
+
+        // close the dropdown content
+        const dropdown = btn.closest(".dropdown");
+        if (dropdown) dropdown.classList.remove("open");
       });
     });
 
@@ -104,13 +201,15 @@ function generateMovieSection(moviesData, heroName) {
       <li class="movie-card ${
         movie.status?.toLowerCase() || "unknown"
       }" data-movie-id="${movie.id}">
-        <h3 class="movie-title-row">${movie.title || "Untitled Movie"}</h3>
-        <div class="movie-details">
-          <h5># Cards: ${movie.cards || 0}</h5>
+        <div class="movie-clickable">
+          <h3 class="movie-title-row">${movie.title || "Untitled Movie"}</h3>
+          <div class="movie-details">
+            <h5># Cards: ${movie.cards || 0}</h5>
+          </div>
         </div>
         <div class="card-actions">
           <button class="review-flag" style="display: ${
-            movie.needsReview ? "inline" : "none"
+            movie.need_review === "TRUE" ? "inline" : "none"
           };" title="Needs Review">🚩</button>
           <button class="edit" data-movie-id="${
             movie.id
@@ -118,14 +217,14 @@ function generateMovieSection(moviesData, heroName) {
           <div class="dropdown">
             <button class="dropdown-button">⋮</button>
             <div class="dropdown-content">
-              <a href="#" class="review-action" data-card-id="${
+              <button class="review-action" data-card-id="${
                 movie.id
-              }" data-needs-review="${movie.needsReview}">${
-        movie.needsReview ? "Mark Resolved" : "🚩 Mark for Review"
-      }</a>
-              <a href="#" class="delete" data-movie-id="${
+              }" data-need-review="${movie.need_review === "TRUE"}">${
+        movie.need_review === "TRUE" ? "Mark Resolved" : "🚩 Mark for Review"
+      }</button>
+              <button class="delete" data-movie-id="${
                 movie.id
-              }" title="Delete Card">🗑️ Delete</a>
+              }" title="Delete Card">🗑️ Delete</button>
             </div>
           </div>
         </div>
@@ -166,16 +265,56 @@ function addOrEditMovieModal(editFlag, editData = null, heroId) {
     modal.remove();
   };
 
-  modal.querySelector("#movie-form").onsubmit = function (e) {
+  modal.querySelector("#movie-form").onsubmit = async function (e) {
     e.preventDefault();
     const movieTitle = e.target["movie-title"].value;
 
     if (editFlag) {
       // Call API to update movie
-      console.log(`Updating movie: ${editData.id}, Title: ${movieTitle}`);
+      const response = await fetch(
+        `/api/games/?gameSlug=blast-alpha&queryKey=movie`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: editData.id,
+            title: movieTitle,
+            need_review: undefined,
+            heroId: heroId,
+          }),
+        }
+      );
+      const message = await response.json();
+      if (!response.ok) {
+        console.error("Failed to update movie:", message.error);
+        alert("Failed to update movie.");
+        return;
+      }
+      await loadHeroDetails(heroId, null);
     } else {
       // Call API to add new movie
-      console.log(`Adding new movie: Title: ${movieTitle}, Hero ID: ${heroId}`);
+      const response = await fetch(
+        `/api/games/?gameSlug=blast-alpha&queryKey=movie`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: movieTitle,
+            heroId: heroId,
+          }),
+        }
+      );
+      const message = await response.json();
+      if (!response.ok) {
+        console.error("Failed to add movie:", message.error);
+        alert("Failed to add movie.");
+        return;
+      }
+      await loadHeroDetails(heroId, null);
     }
     modal.remove();
   };

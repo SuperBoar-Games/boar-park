@@ -1,5 +1,5 @@
 import {
-  getHeroesWithMovieCount,
+  getHeroes,
   createHero,
   updateHero,
   deleteHero,
@@ -17,29 +17,13 @@ import {
   deleteCard,
 } from "../../../../db/queries/blast-alpha/cardsQueries";
 
+import { errorResponse, successResponse } from "../../utils.js";
+
 const queryMap = {
   GET: {
-    hero: {
-      query: getHeroesWithMovieCount,
-      params: () => [],
-    },
-    movie: {
-      query: getMoviesByHeroId,
-      params: (parsedParams) => [parsedParams.get("heroId")],
-    },
-    card: {
-      query: getCardsByHeroAndMovieId,
-      params: (parsedParams) => {
-        const heroId = parsedParams.get("heroId");
-        const movieId = parsedParams.get("movieId");
-
-        if (!heroId || !movieId) {
-          throw new Error("Missing heroId or movieId");
-        }
-
-        return [heroId, movieId];
-      },
-    },
+    hero: getHeroes,
+    movie: getMoviesByHeroId,
+    card: getCardsByHeroAndMovieId,
   },
   POST: {
     hero: createHero,
@@ -73,38 +57,56 @@ export const gameHandler = async (context) => {
         queryKey = "card";
       }
 
-      const { query, params: paramsFn } = queryMap.GET[queryKey];
-      const ps = context.env.BoarDB.prepare(query);
-      const { results } = await ps.bind(...paramsFn(queryParams)).all();
+      const query = queryMap.GET[queryKey];
+      if (!query) {
+        return errorResponse("Invalid query key", 400);
+      }
 
-      return new Response(JSON.stringify(results), {
-        headers: { "Content-Type": "application/json" },
-      });
+      const queryParamsObj = {};
+      if (queryKey === "movie") {
+        queryParamsObj.heroId = queryParams.get("heroId");
+      } else if (queryKey === "card") {
+        queryParamsObj.heroId = queryParams.get("heroId");
+        queryParamsObj.movieId = queryParams.get("movieId");
+      }
+      const resp = await query(context.env.BoarDB, queryParamsObj);
+      if (!resp.success) {
+        return errorResponse("No results found", 404);
+      }
+
+      return successResponse(resp);
     }
     if (["POST", "PUT", "DELETE"].includes(method)) {
       // log request and body
       const body = await context.request.json();
-      console.log("Request method:", method);
-      console.log("Request body:", body);
 
-      return new Response("ok", {
-        headers: { "Content-Type": "application/json" },
-      });
+      // extend body with user
+      body.gameSlug = queryParams.get("gameSlug");
+      body.user = context.request.headers.get("x-bp-user");
+
+      // process the request
+      const queryKey = queryParams.get("queryKey");
+      const query = queryMap[method][queryKey];
+
+      if (!query) {
+        console.error("Invalid query key:", queryKey);
+        return errorResponse("Invalid query key", 400);
+      }
+
+      try {
+        const resp = await query(context.env.BoarDB, body);
+        if (!resp.success) {
+          console.error("Query failed:", resp.message);
+          return errorResponse(resp.message, 404);
+        }
+        return successResponse(resp);
+      } catch (dbError) {
+        console.error("Database error:", dbError);
+        return errorResponse("Database error", 500);
+      }
     }
   } catch (error) {
     console.error("Error in gameHandler:", error);
-
-    let status = 500;
-    let message = "Internal Server Error";
-
-    if (error.message === "Missing heroId or movieId") {
-      status = 400;
-      message = "Missing heroId or movieId";
-    }
-
-    return new Response(JSON.stringify({ error: message }), {
-      status,
-      headers: { "Content-Type": "application/json" },
-    });
+    return errorResponse("Internal server error", 500);
   }
 };

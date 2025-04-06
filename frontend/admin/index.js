@@ -5,39 +5,19 @@ async function loadGames() {
   try {
     const res = await fetch("/api/games");
 
-    // Attempt to read the response body
-    let responseBody;
-    try {
-      responseBody = await res.text(); // Read as text
-    } catch (err) {
-      console.error("Failed to read response body:", err);
-    }
-
-    // Handle non-OK responses
     if (!res.ok) {
-      let errorMessage = `Error: ${res.status} - ${responseBody}`;
-      // Display the error message in the UI
-      gameList.innerHTML = `<li>${errorMessage}</li>`;
+      const message = `Error: ${res.status} - ${res.statusText}`;
+      gameList.innerHTML = `<li>${message}</li>`;
       return;
     }
 
-    // Parse the response body as JSON for successful responses
-    let games;
-    try {
-      games = JSON.parse(responseBody); // Parse the text as JSON
-    } catch (jsonErr) {
-      console.error("Failed to parse response as JSON:", jsonErr);
-      gameList.innerHTML = `<li>Error parsing game data</li>`;
-      return;
-    }
+    const { data: games } = await res.json();
 
-    // Handle empty game list
-    if (!games.length) {
+    if (!games?.length) {
       gameList.innerHTML = "<li>No games available.</li>";
       return;
     }
 
-    // Render the game list
     gameList.innerHTML = games
       .map(
         (game) => `
@@ -49,7 +29,6 @@ async function loadGames() {
       )
       .join("");
   } catch (err) {
-    // Handle unexpected errors
     console.error("Failed to load games:", err);
     gameList.innerHTML = `<li>${err.message || "Error loading data"}</li>`;
   }
