@@ -61,6 +61,8 @@ export const getCardsByHeroAndMovieId = async (db, { heroId, movieId }) => {
     return APIResponse(false, null, "Failed to fetch cards.");
   }
 
+  console.log("Cards fetched successfully:", cards.results);
+
   return APIResponse(true, cards.results, "Cards fetched successfully.");
 };
 

@@ -1,7 +1,7 @@
 const gameList = document.getElementById("games-list");
 const logoutButton = document.getElementById("logout-button");
 
-async function loadGames() {
+export async function loadGames() {
   try {
     const res = await fetch("/api/games");
 

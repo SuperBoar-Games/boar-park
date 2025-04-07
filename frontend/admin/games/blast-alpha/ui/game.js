@@ -47,9 +47,14 @@ export async function renderGameSection() {
             </div>
             <div class="card-actions">
               <button class="edit" title="Edit Hero">✏️</button>
-              <button class="delete-icon" data-hero-id="${
-                hero.id
-              }" title="Delete Hero">🗑️</button>
+              <div class="dropdown">
+                <button class="dropdown-button">⋮</button>
+                <div class="dropdown-content">
+                  <button class="delete" data-hero-id="${
+                    hero.id
+                  }" title="Delete Card">🗑️ Delete</button>
+                </div>
+              </div>
             </div>
           </li>`;
           })
@@ -69,6 +74,7 @@ export async function renderGameSection() {
     contentSection.innerHTML = `
       <div class="title-header">
         <h2>Blast Alpha</h2>
+        <button id="back-to-admin">Back to Admin</button>
         <button class="add-hero">Add Hero</button>
       </div>
       <section id="game-section">
@@ -77,7 +83,41 @@ export async function renderGameSection() {
     `;
     contentSection.setAttribute("data-section", "game");
 
-    document.querySelectorAll(".delete-icon").forEach((btn) => {
+    // dropdown button
+    document.querySelectorAll(".dropdown-button").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        const dropdown = btn.closest(".dropdown");
+
+        // Close all other dropdowns
+        document.querySelectorAll(".dropdown.open").forEach((el) => {
+          if (el !== dropdown) el.classList.remove("open");
+        });
+
+        // Toggle current one
+        dropdown.classList.toggle("open");
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      document.querySelectorAll(".dropdown.open").forEach((dropdown) => {
+        if (!dropdown.contains(e.target)) {
+          dropdown.classList.remove("open");
+        }
+      });
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        document.querySelectorAll(".dropdown.open").forEach((dropdown) => {
+          dropdown.classList.remove("open");
+        });
+      }
+    });
+
+    document.querySelectorAll(".delete").forEach((btn) => {
       btn.addEventListener("click", async (e) => {
         e.stopPropagation(); // prevent parent click
         const heroId = btn.getAttribute("data-hero-id");
@@ -156,6 +196,13 @@ export async function renderGameSection() {
           `/admin/games/blast-alpha/?heroId=${heroId}`
         );
       });
+    });
+
+    // Back button
+    document.getElementById("back-to-admin")?.addEventListener("click", () => {
+      history.pushState({ section: "game" }, "Blast Alpha", "/admin");
+      // Reload
+      window.location.href = "/admin";
     });
 
     // Add Hero buttons (one per industry)

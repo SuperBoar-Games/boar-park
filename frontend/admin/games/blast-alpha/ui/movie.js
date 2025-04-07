@@ -66,7 +66,7 @@ export async function loadMovieDetails(movieId, heroId) {
             },
             body: JSON.stringify({
               cardId,
-              need_review: !needReview ? "TRUE" : "FALSE",
+              need_review: !needReview ? "T" : "F",
             }),
           }
         );
@@ -193,7 +193,7 @@ function generateMovieCards(movieDetails = []) {
         <span class="card-type">${detail.type}</span>
         <div class="card-actions">
           <button class="review-flag" style="display: ${
-            detail.needsReview ? "inline" : "none"
+            detail.need_review === "T" ? "inline" : "none"
           };" title="Needs Review">🚩</button>
           <button class="edit" title="Edit Card">✏️</button>
           <div class="dropdown">
@@ -201,8 +201,8 @@ function generateMovieCards(movieDetails = []) {
             <div class="dropdown-content">
               <button class="review-action" data-card-id="${
                 detail.id
-              }" data-need-review="${detail.need_review === "TRUE"}">${
-        detail.need_review === "TRUE" ? "Mark Resolved" : "🚩 Mark for Review"
+              }" data-need-review="${detail.need_review === "T"}">${
+        detail.need_review === "T" ? "Mark Resolved" : "🚩 Mark for Review"
       }</button>
               <button class="delete" data-movie-id="${
                 detail.id

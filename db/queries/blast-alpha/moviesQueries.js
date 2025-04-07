@@ -5,6 +5,25 @@ export const GET_MOVIES_BY_HERO_ID_QUERY = `
   WHERE hero_id = ?;
 `;
 
+export const GET_MOVIE_CARD_STATS_BY_HERO_ID_QUERY = `
+  SELECT
+    m.id,
+    m.title,
+    m.need_review,
+    m.last_update_user,
+    COUNT(c.id) AS total_cards,
+    COUNT(CASE WHEN c.need_review = 'T' THEN 1 END) AS total_cards_need_review,
+    CASE
+      WHEN COUNT(c.id) < 5 OR COUNT(CASE WHEN c.need_review = 'T' THEN 1 END) > 0 THEN 'F'
+      ELSE 'T'
+    END AS done
+  FROM movies m
+  LEFT JOIN cards c ON c.movie_id = m.id
+  WHERE m.hero_id = ?
+  GROUP BY m.id
+  ORDER BY m.id ASC;
+`;
+
 export const CHECK_MOVIE_EXISTS_QUERY = `
   SELECT * FROM movies WHERE title = ? AND hero_id = ?;
 `;
@@ -55,7 +74,17 @@ export const getMoviesByHeroId = async (db, { heroId }) => {
     return APIResponse(false, null, "Failed to fetch movies.");
   }
 
-  return APIResponse(true, movies.results, "Movies fetched successfully.");
+  const movieStats = await db
+    .prepare(GET_MOVIE_CARD_STATS_BY_HERO_ID_QUERY)
+    .bind(heroId)
+    .all();
+  if (!movieStats.success) {
+    return APIResponse(false, null, "Failed to fetch movie stats.");
+  }
+
+  console.log("Movie stats:", movieStats.results);
+
+  return APIResponse(true, movieStats.results, "Movies fetched successfully.");
 };
 
 /**

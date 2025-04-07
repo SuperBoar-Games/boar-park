@@ -125,7 +125,7 @@ export async function loadHeroDetails(heroId, heroName) {
             body: JSON.stringify({
               id: movieId,
               title: undefined,
-              need_review: !needReview ? "TRUE" : "FALSE",
+              need_review: !needReview ? "T" : "F",
               heroId: heroId,
             }),
           }
@@ -195,21 +195,26 @@ function generateMovieSection(moviesData, heroName) {
       <p>No movies available for this hero.</p>`;
   }
 
+  console.log("Movies Data:", moviesData);
+
   const movieList = moviesData
     .map(
       (movie) => `
       <li class="movie-card ${
-        movie.status?.toLowerCase() || "unknown"
+        movie.done === "T" ? "done" : "pending"
       }" data-movie-id="${movie.id}">
         <div class="movie-clickable">
           <h3 class="movie-title-row">${movie.title || "Untitled Movie"}</h3>
           <div class="movie-details">
-            <h5># Cards: ${movie.cards || 0}</h5>
+            <h5># Total cards: ${movie.total_cards || 0}</h5>
+            <h5># Cards needing review: ${
+              movie.total_cards_need_review || 0
+            }</h5>
           </div>
         </div>
         <div class="card-actions">
           <button class="review-flag" style="display: ${
-            movie.need_review === "TRUE" ? "inline" : "none"
+            movie.need_review === "T" ? "inline" : "none"
           };" title="Needs Review">🚩</button>
           <button class="edit" data-movie-id="${
             movie.id
@@ -219,8 +224,8 @@ function generateMovieSection(moviesData, heroName) {
             <div class="dropdown-content">
               <button class="review-action" data-card-id="${
                 movie.id
-              }" data-need-review="${movie.need_review === "TRUE"}">${
-        movie.need_review === "TRUE" ? "Mark Resolved" : "🚩 Mark for Review"
+              }" data-need-review="${movie.need_review === "T"}">${
+        movie.need_review === "T" ? "Mark Resolved" : "🚩 Mark for Review"
       }</button>
               <button class="delete" data-movie-id="${
                 movie.id
