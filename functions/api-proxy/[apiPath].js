@@ -32,16 +32,6 @@ export async function onRequest(context) {
       const url = new URL(context.request.url);
       const hostname = url.hostname;
 
-      // log all
-      console.log("JWT Assertion:", jwtAssertion);
-      console.log("Hostname:", hostname);
-      console.log("Admin Aud:", ADMIN_AUD);
-      console.log("Subdomain Admin Aud:", SUBDOMAIN_ADMIN_AUD);
-      console.log("Domains:", DOMAINS);
-      console.log("Team Domain:", TEAM_DOMAIN);
-      console.log("Certs URL:", CERTS_URL);
-      console.log("JWKS URL:", JWKS);
-
       let isSubdomain = false;
       for (const mainDomain of DOMAINS) {
         if (hostname.endsWith(mainDomain) && hostname !== mainDomain) {
