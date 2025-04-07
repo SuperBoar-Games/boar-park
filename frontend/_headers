@@ -1,0 +1,4 @@
+/api/*
+  Access-Control-Allow-Origin: https://dev.boar-park.pages.dev
+  Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+  Access-Control-Allow-Headers: Content-Type, Authorization
