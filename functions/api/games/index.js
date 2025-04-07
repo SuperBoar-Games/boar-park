@@ -1,4 +1,5 @@
 import { getAllGames } from "../../../db/queries/gamesQueries";
+import { errorResponse, successResponse } from "../utils.js";
 
 const gameHandlers = {
   "blast-alpha": () =>
@@ -18,13 +19,6 @@ async function getGameHandler(gameSlug) {
   return null;
 }
 
-function errorResponse(message, status) {
-  return new Response(JSON.stringify({ error: message }), {
-    status: status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
-
 export async function onRequest(context) {
   const reqUrl = new URL(context.request.url);
   const queryParams = new URLSearchParams(reqUrl.search);
@@ -34,9 +28,12 @@ export async function onRequest(context) {
 
   if (!gameSlug) {
     try {
-      const ps = context.env.BoarDB.prepare(getAllGames);
-      const { results } = await ps.all();
-      return Response.json(results);
+      const resp = await getAllGames(context.env.BoarDB);
+      if (!resp.success) {
+        return errorResponse("No games found", 404);
+      }
+
+      return successResponse(resp);
     } catch (error) {
       console.error("Error fetching all games:", error);
       return errorResponse("Error fetching games", 500); // More specific error
@@ -49,10 +46,7 @@ export async function onRequest(context) {
   }
 
   try {
-    const response = await gameHandler(context);
-    // const results = await response.json();
-    // console.log("Game handler results:", JSON.stringify(results, null, 2));
-    return response;
+    return await gameHandler(context);
   } catch (error) {
     console.error("Error executing game query:", error);
     return errorResponse("Error executing game query", 500);
