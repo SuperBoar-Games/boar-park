@@ -4,7 +4,7 @@ const contentSection = document.getElementById("content-section");
 
 export async function renderGameSection() {
   try {
-    const res = await fetch("/api/games/?gameSlug=blast-alpha");
+    const res = await fetch("/api-proxy/games/?gameSlug=blast-alpha");
 
     if (!res.ok) {
       const message = `Error: ${res.status} - ${res.statusText}`;
@@ -132,7 +132,7 @@ export async function renderGameSection() {
 
         // Call API to delete hero
         const response = await fetch(
-          `/api/games/?gameSlug=blast-alpha&queryKey=hero`,
+          `/api-proxy/games/?gameSlug=blast-alpha&queryKey=hero`,
           {
             method: "DELETE",
             headers: {
@@ -292,7 +292,7 @@ function addOrEditHeroModal(editFlag, editData = null) {
     if (editFlag) {
       // Call API to update hero
       const response = await fetch(
-        `/api/games/?gameSlug=blast-alpha&queryKey=hero`,
+        `/api-proxy/games/?gameSlug=blast-alpha&queryKey=hero`,
         {
           method: "PUT",
           headers: {
@@ -316,7 +316,7 @@ function addOrEditHeroModal(editFlag, editData = null) {
     } else {
       // Call API to add new hero
       const response = await fetch(
-        `/api/games/?gameSlug=blast-alpha&queryKey=hero`,
+        `/api-proxy/games/?gameSlug=blast-alpha&queryKey=hero`,
         {
           method: "POST",
           headers: {

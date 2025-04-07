@@ -6,7 +6,7 @@ const contentSection = document.getElementById("content-section");
 export async function loadHeroDetails(heroId, heroName) {
   try {
     const res = await fetch(
-      `/api/games/?gameSlug=blast-alpha&heroId=${heroId}`
+      `/api-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}`
     );
 
     if (!res.ok) {
@@ -87,7 +87,7 @@ export async function loadHeroDetails(heroId, heroName) {
 
         // Call API to delete movie
         const response = await fetch(
-          `/api/games/?gameSlug=blast-alpha&queryKey=movie`,
+          `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`,
           {
             method: "DELETE",
             headers: {
@@ -116,7 +116,7 @@ export async function loadHeroDetails(heroId, heroName) {
 
         // Call API to update review status
         const response = await fetch(
-          `/api/games/?gameSlug=blast-alpha&queryKey=movie`,
+          `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`,
           {
             method: "PUT",
             headers: {
@@ -194,8 +194,6 @@ function generateMovieSection(moviesData, heroName) {
       </div>
       <p>No movies available for this hero.</p>`;
   }
-
-  console.log("Movies Data:", moviesData);
 
   const movieList = moviesData
     .map(
@@ -277,7 +275,7 @@ function addOrEditMovieModal(editFlag, editData = null, heroId) {
     if (editFlag) {
       // Call API to update movie
       const response = await fetch(
-        `/api/games/?gameSlug=blast-alpha&queryKey=movie`,
+        `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`,
         {
           method: "PUT",
           headers: {
@@ -301,7 +299,7 @@ function addOrEditMovieModal(editFlag, editData = null, heroId) {
     } else {
       // Call API to add new movie
       const response = await fetch(
-        `/api/games/?gameSlug=blast-alpha&queryKey=movie`,
+        `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`,
         {
           method: "POST",
           headers: {

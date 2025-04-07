@@ -155,7 +155,5 @@ export const getHeroes = async (db, {}) => {
     return APIResponse(false, null, "Failed to fetch heroes.");
   }
 
-  console.log("Heroes fetched successfully:", heroes.results);
-
   return APIResponse(true, heroes.results, "Heroes fetched successfully.");
 };

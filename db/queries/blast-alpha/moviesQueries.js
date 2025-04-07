@@ -82,8 +82,6 @@ export const getMoviesByHeroId = async (db, { heroId }) => {
     return APIResponse(false, null, "Failed to fetch movie stats.");
   }
 
-  console.log("Movie stats:", movieStats.results);
-
   return APIResponse(true, movieStats.results, "Movies fetched successfully.");
 };
 

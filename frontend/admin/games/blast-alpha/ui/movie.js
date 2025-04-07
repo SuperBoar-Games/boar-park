@@ -5,7 +5,7 @@ const contentSection = document.getElementById("content-section");
 export async function loadMovieDetails(movieId, heroId) {
   try {
     const res = await fetch(
-      `/api/games/?gameSlug=blast-alpha&heroId=${heroId}&movieId=${movieId}`
+      `/api-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}&movieId=${movieId}`
     );
 
     if (!res.ok) {
@@ -58,7 +58,7 @@ export async function loadMovieDetails(movieId, heroId) {
         const needReview = btn.getAttribute("data-need-review") === "true";
 
         const response = await fetch(
-          `/api/games/?gameSlug=blast-alpha&queryKey=card`,
+          `/api-proxy/games/?gameSlug=blast-alpha&queryKey=card`,
           {
             method: "PUT",
             headers: {
@@ -158,7 +158,7 @@ export async function loadMovieDetails(movieId, heroId) {
         }
 
         const response = await fetch(
-          `/api/games/?gameSlug=blast-alpha&queryKey=card`,
+          `/api-proxy/games/?gameSlug=blast-alpha&queryKey=card`,
           {
             method: "DELETE",
             headers: {
@@ -315,7 +315,7 @@ function addOrEditCardModal(editFlag, editData = null, movieId, heroId) {
     if (editFlag) {
       // Call API to update card
       const response = await fetch(
-        `/api/games/?gameSlug=blast-alpha&queryKey=card`,
+        `/api-proxy/games/?gameSlug=blast-alpha&queryKey=card`,
         {
           method: "PUT",
           headers: {
@@ -343,7 +343,7 @@ function addOrEditCardModal(editFlag, editData = null, movieId, heroId) {
     } else {
       // Call API to add new card
       const response = await fetch(
-        `/api/games/?gameSlug=blast-alpha&queryKey=card`,
+        `/api-proxy/games/?gameSlug=blast-alpha&queryKey=card`,
         {
           method: "POST",
           headers: {
