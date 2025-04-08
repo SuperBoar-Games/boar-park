@@ -1,3 +1,4 @@
 export function onRequest(context) {
-    return new Response("Hello from api!");
+  // return not available
+  return new Response("Not available", { status: 503 });
 }

@@ -1,64 +1,112 @@
-import { getHeroesWithMovieCount } from "../../../../db/schema/queries/blast-alpha/heroesQueries";
-import { getMoviesByHeroId } from "../../../../db/schema/queries/blast-alpha/moviesQueries";
-import { getCardsByHeroAndMovieId } from "../../../../db/schema/queries/blast-alpha/cardsQueries";
+import {
+  getHeroes,
+  createHero,
+  updateHero,
+  deleteHero,
+} from "../../../../db/queries/blast-alpha/heroesQueries.js";
+import {
+  getMoviesByHeroId,
+  createMovie,
+  updateMovie,
+  deleteMovie,
+} from "../../../../db/queries/blast-alpha/moviesQueries";
+import {
+  getCardsByHeroAndMovieId,
+  createCard,
+  updateCard,
+  deleteCard,
+} from "../../../../db/queries/blast-alpha/cardsQueries";
+
+import { errorResponse, successResponse } from "../../utils.js";
 
 const queryMap = {
-  default: {
-    query: getHeroesWithMovieCount,
-    params: () => [],
+  GET: {
+    hero: getHeroes,
+    movie: getMoviesByHeroId,
+    card: getCardsByHeroAndMovieId,
   },
-  heroId: {
-    query: getMoviesByHeroId,
-    params: (parsedParams) => [parsedParams.get("heroId")],
+  POST: {
+    hero: createHero,
+    movie: createMovie,
+    card: createCard,
   },
-  movieIdAndHeroId: {
-    query: getCardsByHeroAndMovieId,
-    params: (parsedParams) => {
-      const heroId = parsedParams.get("heroId");
-      const movieId = parsedParams.get("movieId");
-
-      if (!heroId || !movieId) {
-        throw new Error("Missing heroId or movieId");
-      }
-
-      return [heroId, movieId];
-    },
+  PUT: {
+    hero: updateHero,
+    movie: updateMovie,
+    card: updateCard,
+  },
+  DELETE: {
+    hero: deleteHero,
+    movie: deleteMovie,
+    card: deleteCard,
   },
 };
 
-export const gameHandler = async (queryParams, db) => {
-  const parsedParams = new URLSearchParams(queryParams);
+export const gameHandler = async (context) => {
+  const reqUrl = new URL(context.request.url);
+  const queryParams = new URLSearchParams(reqUrl.search);
+  const method = context.request.method;
 
   try {
-    let queryKey = "default";
+    if (method === "GET") {
+      let queryKey = "hero";
 
-    if (parsedParams.has("heroId") && !parsedParams.has("movieId")) {
-      queryKey = "heroId";
-    } else if (parsedParams.has("movieId") && parsedParams.has("heroId")) {
-      queryKey = "movieIdAndHeroId";
+      if (queryParams.has("heroId") && !queryParams.has("movieId")) {
+        queryKey = "movie";
+      } else if (queryParams.has("movieId") && queryParams.has("heroId")) {
+        queryKey = "card";
+      }
+
+      const query = queryMap.GET[queryKey];
+      if (!query) {
+        return errorResponse("Invalid query key", 400);
+      }
+
+      const queryParamsObj = {};
+      if (queryKey === "movie") {
+        queryParamsObj.heroId = queryParams.get("heroId");
+      } else if (queryKey === "card") {
+        queryParamsObj.heroId = queryParams.get("heroId");
+        queryParamsObj.movieId = queryParams.get("movieId");
+      }
+      const resp = await query(context.env.BoarDB, queryParamsObj);
+      if (!resp.success) {
+        return errorResponse("No results found", 404);
+      }
+
+      return successResponse(resp);
     }
+    if (["POST", "PUT", "DELETE"].includes(method)) {
+      // log request and body
+      const body = await context.request.json();
 
-    const { query, params: paramsFn } = queryMap[queryKey];
-    const params = paramsFn(parsedParams);
+      // extend body with user
+      body.gameSlug = queryParams.get("gameSlug");
+      body.user = context.request.headers.get("x-bp-user");
 
-    // Execute the query
-    const ps = db.prepare(query);
-    const { results } = await ps.bind(...params).all();
-    return results;
+      // process the request
+      const queryKey = queryParams.get("queryKey");
+      const query = queryMap[method][queryKey];
+
+      if (!query) {
+        console.error("Invalid query key:", queryKey);
+        return errorResponse("Invalid query key", 400);
+      }
+
+      try {
+        const resp = await query(context.env.BoarDB, body);
+        if (!resp.success) {
+          console.error("Query failed:", resp.message);
+          return errorResponse(resp.message, 404);
+        }
+        return successResponse(resp);
+      } catch (dbError) {
+        console.error("Database error:", dbError);
+        return errorResponse("Database error", 500);
+      }
+    }
   } catch (error) {
     console.error("Error in gameHandler:", error);
-
-    let status = 500;
-    let message = "Internal Server Error";
-
-    if (error.message === "Missing heroId or movieId") {
-      status = 400;
-      message = "Missing heroId or movieId";
-    }
-
-    return new Response(JSON.stringify({ error: message }), {
-      status,
-      headers: { "Content-Type": "application/json" },
-    });
+    return errorResponse("Internal server error", 500);
   }
 };

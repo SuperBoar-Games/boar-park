@@ -1,25 +1,22 @@
-import { getAllGames } from "../../../db/schema/queries/gamesQueries";
+import { getAllGames } from "../../../db/queries/gamesQueries";
+import { errorResponse, successResponse } from "../utils.js";
+
+const gameHandlers = {
+  "blast-alpha": () =>
+    import("./blast-alpha/gameHandler").then((module) => module.gameHandler),
+};
 
 async function getGameHandler(gameSlug) {
-  switch (gameSlug) {
-    case "blast-alpha":
-      try {
-        const module = await import("./blast-alpha/gameHandler");
-        return module.gameHandler;
-      } catch (error) {
-        console.error("Error importing game handler:", error);
-        return null;
-      }
-    default:
+  const handlerLoader = gameHandlers[gameSlug];
+  if (handlerLoader) {
+    try {
+      return await handlerLoader();
+    } catch (error) {
+      console.error("Error importing game handler:", error);
       return null;
+    }
   }
-}
-
-function errorResponse(message, status) {
-  return new Response(JSON.stringify({ error: message }), {
-    status: status,
-    headers: { "Content-Type": "application/json" },
-  });
+  return null;
 }
 
 export async function onRequest(context) {
@@ -30,10 +27,17 @@ export async function onRequest(context) {
   const gameSlug = queryParams.get("gameSlug");
 
   if (!gameSlug) {
-    const ps = context.env.BoarDB.prepare(getAllGames);
-    const { results } = await ps.all();
+    try {
+      const resp = await getAllGames(context.env.BoarDB);
+      if (!resp.success) {
+        return errorResponse("No games found", 404);
+      }
 
-    return Response.json(results);
+      return successResponse(resp);
+    } catch (error) {
+      console.error("Error fetching all games:", error);
+      return errorResponse("Error fetching games", 500); // More specific error
+    }
   }
 
   const gameHandler = await getGameHandler(gameSlug);
@@ -41,12 +45,8 @@ export async function onRequest(context) {
     return errorResponse("Game not found", 404);
   }
 
-  queryParams.delete("gameSlug");
-
   try {
-    const results = await gameHandler(queryParams, context.env.BoarDB);
-    // console.log("Game handler results:", results);
-    return Response.json(results);
+    return await gameHandler(context);
   } catch (error) {
     console.error("Error executing game query:", error);
     return errorResponse("Error executing game query", 500);

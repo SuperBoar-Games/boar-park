@@ -1,5 +1,4 @@
 import * as jose from "jose";
-import { fetchWithAccess } from "../utils/fetchWithAccess";
 
 export async function onRequest(context) {
   const isDev = context.env.NODE_ENV?.trim() === "development";
@@ -14,7 +13,7 @@ export async function onRequest(context) {
 
   if (isDev) {
     // Skip auth in dev
-    userEmail = "dev@example.com";
+    userEmail = "dev@superboar.com";
   } else {
     const jwtAssertion = context.request.headers.get("cf-access-jwt-assertion");
 
@@ -56,7 +55,7 @@ export async function onRequest(context) {
         });
       }
     } catch (error) {
-      console.error("❗ JWT verification failed");
+      console.error("❗ JWT verification failed: ", error);
       if (isDev) console.error("🔍 Full error details:", error);
       return new Response("Unauthorized - Invalid session", { status: 401 });
     }
@@ -64,20 +63,59 @@ export async function onRequest(context) {
 
   try {
     const customHeaders = {
-      "X-BP-User": userEmail,
+      "x-bp-user": userEmail,
     };
 
+    let requestBody;
+    if (
+      context.request.method === "POST" ||
+      context.request.method === "PUT" ||
+      context.request.method === "PATCH" ||
+      context.request.method === "DELETE"
+    ) {
+      try {
+        requestBody = await context.request.json();
+      } catch (e) {
+        return new Response("Bad Request - Invalid JSON", { status: 400 });
+      }
+    }
+
     const res = await fetchWithAccess(apiURL, context, {
-      headers: customHeaders,
+      method: context.request.method,
+      headers: {
+        ...context.request.headers,
+        ...customHeaders,
+      },
+      body: requestBody ? JSON.stringify(requestBody) : null,
     });
 
     const result = await res.json();
 
-    return Response.json(result);
+    return new Response(JSON.stringify(result));
   } catch (apiError) {
     console.error("❗ API request failed:", apiError);
-    return new Response("Internal Server Error - Could not fetch data", {
-      status: 500,
-    });
+    return new Response(`${err.message}\n${err.stack}`, { status: 500 });
+  }
+}
+
+async function fetchWithAccess(url, context, options = {}) {
+  const headers = {
+    ...options.headers,
+    "CF-Access-Client-Id": context.env.API_CLIENT_ID,
+    "CF-Access-Client-Secret": context.env.API_CLIENT_SECRET,
+    "Content-Type": "application/json",
+  };
+
+  const finalOptions = {
+    ...options,
+    headers,
+  };
+
+  try {
+    const response = await fetch(url, finalOptions);
+    return response;
+  } catch (error) {
+    console.error("❗ fetchWithAccess → Fetch failed:", error);
+    throw error;
   }
 }
