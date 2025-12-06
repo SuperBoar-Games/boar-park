@@ -88,13 +88,22 @@ export async function onRequest(context) {
       },
       body: requestBody ? JSON.stringify(requestBody) : null,
     });
+    
+    let result;
+    const contentType = res.headers.get("Content-Type") || "";
+    if (contentType.includes("application/json")) {
+      result = await res.json();
+    } else {
+      const text = await res.text();
+      console.error("❗ Unexpected content type:", contentType);
+      console.error("Response text:", text);
+      throw new Error(`Unexpected content type: ${contentType}\nResponse text: ${text}`);
+    }
 
-    const result = await res.json();
-
-    return new Response(JSON.stringify(result));
+    return new Response(JSON.stringify(result), { status: res.status });
   } catch (apiError) {
     console.error("❗ API request failed:", apiError);
-    return new Response(`${err.message}\n${err.stack}`, { status: 500 });
+    return new Response(`${apiError.message}\n${apiError.stack}`, { status: 500 });
   }
 }
 
