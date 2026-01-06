@@ -225,8 +225,10 @@ button,
   font: inherit;
 }
 .dropdown-content button:hover {
-  background-color: var(--clr-surface-a20);
+  background-color: var(--clr-surface-a50);
+  color: var(--clr-dark-a0);
 }
+
 
 .dropdown.open .dropdown-content {
   display: block;
@@ -315,7 +317,7 @@ button,
 }
 
 .hero-card .card-actions button:hover {
-  background-color: var(--clr-surface-a40);
+  background-color: var(--clr-surface-a90);
 }
 
 /* Movie Grid */
@@ -387,7 +389,7 @@ button,
 }
 
 .movie-card .card-actions button:hover {
-  background-color: var(--clr-primary-a30);
+  background-color: var(--clr-surface-a90);
 }
 
 .movie-cards-container {
@@ -423,6 +425,7 @@ button,
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   color: var(--clr-light-a0);
 }
+
 
 .card-body {
   display: flex;
