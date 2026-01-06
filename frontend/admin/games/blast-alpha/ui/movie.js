@@ -1,4 +1,5 @@
 import { loadHeroDetails } from "./hero.js";
+import { Icons } from "../../../../components/icons.js";
 
 const contentSection = document.getElementById("content-section");
 
@@ -78,7 +79,7 @@ export async function loadMovieDetails(movieId, heroId) {
         }
 
         btn.setAttribute("data-need-review", !needReview);
-        btn.textContent = !needReview ? "Mark Resolved" : "🚩 Mark for Review";
+        btn.innerHTML = !needReview ? "Mark Resolved" : `${Icons.review} Mark for Review`;
 
         const flag = btn
           .closest(".movie-card-details")
@@ -194,19 +195,19 @@ function generateMovieCards(movieDetails = []) {
         <div class="card-actions">
           <button class="review-flag" style="display: ${
             detail.need_review === "T" ? "inline" : "none"
-          };" title="Needs Review">🚩</button>
-          <button class="edit" title="Edit Card">✏️</button>
+          };" title="Needs Review">${Icons.review}</button>
+          <button class="edit" title="Edit Card">${Icons.edit}</button>
           <div class="dropdown">
             <button class="dropdown-button">⋮</button>
             <div class="dropdown-content">
               <button class="review-action" data-card-id="${
                 detail.id
               }" data-need-review="${detail.need_review === "T"}">${
-        detail.need_review === "T" ? "Mark Resolved" : "🚩 Mark for Review"
+        detail.need_review === "T" ? "Mark Resolved" : `${Icons.review} Mark for Review`
       }</button>
               <button class="delete" data-movie-id="${
                 detail.id
-              }" title="Delete Card">🗑️ Delete</button>
+              }" title="Delete Card">${Icons.delete} Delete</button>
             </div>
           </div>
         </div>

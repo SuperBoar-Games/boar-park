@@ -1,4 +1,5 @@
 import { loadHeroDetails } from "./hero.js";
+import { Icons } from "../../../../components/icons.js";
 
 const contentSection = document.getElementById("content-section");
 
@@ -46,13 +47,15 @@ export async function renderGameSection() {
               </div>
             </div>
             <div class="card-actions">
-              <button class="edit" title="Edit Hero">✏️</button>
+              <button class="edit" title="Editt Hero">
+                ${Icons.edit}
+              </button>
               <div class="dropdown">
                 <button class="dropdown-button">⋮</button>
                 <div class="dropdown-content">
                   <button class="delete" data-hero-id="${
                     hero.id
-                  }" title="Delete Card">🗑️ Delete</button>
+                  }" title="Delete Card">${Icons.delete} Delete</button>
                 </div>
               </div>
             </div>

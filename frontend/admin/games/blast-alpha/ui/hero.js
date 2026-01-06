@@ -1,5 +1,7 @@
 import { loadMovieDetails } from "./movie.js";
 import { renderGameSection } from "./game.js";
+import { Icons } from "../../../../components/icons.js";
+
 
 const contentSection = document.getElementById("content-section");
 
@@ -138,7 +140,9 @@ export async function loadHeroDetails(heroId, heroName) {
         }
         // Update the review flag and review-action button text
         btn.setAttribute("data-need-review", !needReview);
-        btn.textContent = !needReview ? "Mark Resolved" : "🚩 Mark for Review";
+        btn.innerHTML = !needReview
+                          ? "Mark Resolved"
+                          : `${Icons.review} Mark for Review`;
         const reviewFlag = btn.closest("li").querySelector(".review-flag");
         reviewFlag.style.display = !needReview ? "inline" : "none";
 
@@ -213,21 +217,29 @@ function generateMovieSection(moviesData, heroName) {
         <div class="card-actions">
           <button class="review-flag" style="display: ${
             movie.need_review === "T" ? "inline" : "none"
-          };" title="Needs Review">🚩</button>
+          };" title="Needs Review">
+            ${Icons.review}
+          </button>
           <button class="edit" data-movie-id="${
             movie.id
-          }" title="Edit Movie">✏️</button>
+          }" title="Edit Movie">
+            ${Icons.edit}
+          </button>
           <div class="dropdown">
             <button class="dropdown-button">⋮</button>
             <div class="dropdown-content">
               <button class="review-action" data-card-id="${
                 movie.id
-              }" data-need-review="${movie.need_review === "T"}">${
-        movie.need_review === "T" ? "Mark Resolved" : "🚩 Mark for Review"
-      }</button>
+              }" data-need-review="${movie.need_review === "T"}">
+                ${
+                  movie.need_review === "T" ? "Mark Resolved" : `${Icons.review} Mark for Review`
+                }
+              </button>
               <button class="delete" data-movie-id="${
                 movie.id
-              }" title="Delete Card">🗑️ Delete</button>
+              }" title="Delete Card">
+                ${Icons.delete} Delete
+              </button>
             </div>
           </div>
         </div>
