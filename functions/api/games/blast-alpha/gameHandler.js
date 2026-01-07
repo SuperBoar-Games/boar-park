@@ -12,6 +12,7 @@ import {
 } from "../../../../db/queries/blast-alpha/moviesQueries";
 import {
   getCardsByHeroAndMovieId,
+  getAllCardsByHeroId,
   createCard,
   updateCard,
   deleteCard,
@@ -24,6 +25,7 @@ const queryMap = {
     hero: getHeroes,
     movie: getMoviesByHeroId,
     card: getCardsByHeroAndMovieId,
+    cardsByHero: getAllCardsByHeroId,
   },
   POST: {
     hero: createHero,
@@ -51,7 +53,9 @@ export const gameHandler = async (context) => {
     if (method === "GET") {
       let queryKey = "hero";
 
-      if (queryParams.has("heroId") && !queryParams.has("movieId")) {
+      if (queryParams.has("heroId") && queryParams.get("getAllCards") === "true") {
+        queryKey = "cardsByHero";
+      } else if (queryParams.has("heroId") && !queryParams.has("movieId")) {
         queryKey = "movie";
       } else if (queryParams.has("movieId") && queryParams.has("heroId")) {
         queryKey = "card";
@@ -68,6 +72,8 @@ export const gameHandler = async (context) => {
       } else if (queryKey === "card") {
         queryParamsObj.heroId = queryParams.get("heroId");
         queryParamsObj.movieId = queryParams.get("movieId");
+      } else if (queryKey === "cardsByHero") {
+        queryParamsObj.heroId = queryParams.get("heroId");
       }
       const resp = await query(context.env.BoarDB, queryParamsObj);
       if (!resp.success) {

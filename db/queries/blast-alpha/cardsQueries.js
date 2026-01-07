@@ -6,6 +6,16 @@ export const GET_CARDS_BY_HERO_AND_MOVIE_ID_QUERY = `
   ORDER BY c.id ASC, c.type ASC;
 `;
 
+export const GET_ALL_CARDS_BY_HERO_ID_QUERY = `
+  SELECT 
+    c.*,
+    m.title AS movie_title
+  FROM cards c
+  LEFT JOIN movies m ON c.movie_id = m.id
+  WHERE c.hero_id = ?
+  ORDER BY c.id ASC, c.type ASC;
+`;
+
 export const CHECK_CARD_EXISTS_QUERY = `
   SELECT * FROM cards
   WHERE name = ? AND hero_id = ? AND movie_id = ?;
@@ -55,6 +65,31 @@ export const getCardsByHeroAndMovieId = async (db, { heroId, movieId }) => {
   const cards = await db
     .prepare(GET_CARDS_BY_HERO_AND_MOVIE_ID_QUERY)
     .bind(heroId, movieId)
+    .all();
+
+  if (!cards.success) {
+    return APIResponse(false, null, "Failed to fetch cards.");
+  }
+
+  return APIResponse(true, cards.results, "Cards fetched successfully.");
+};
+
+/**
+ * Retrieves all cards for a given hero.
+ *
+ * @param {any} db - The database connection.
+ * @param {object} params - Parameters including heroId.
+ * @param {number} params.heroId - Hero ID.
+ * @returns {Promise<object>} API response with list of cards or error.
+ */
+export const getAllCardsByHeroId = async (db, { heroId }) => {
+  if (!heroId) {
+    throw new Error("Missing heroId");
+  }
+
+  const cards = await db
+    .prepare(GET_ALL_CARDS_BY_HERO_ID_QUERY)
+    .bind(heroId)
     .all();
 
   if (!cards.success) {

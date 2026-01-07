@@ -625,12 +625,14 @@ button,
 
 .table-wrapper {
   width: 100%;
+  margin-top: 30px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .movie-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 14px;
 }
@@ -640,6 +642,10 @@ button,
   padding: 8px 10px;
   border-bottom: 1px solid var(--clr-surface-a20);
   text-align: center;
+  vertical-align: middle;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 /* ===== HEADER ===== */
@@ -665,6 +671,11 @@ button,
   opacity: 0.6;
 }
 
+.movie-table tr.row-done {
+  background-color: var(--clr-status-done);
+  color: var(--clr-light-a0);
+}
+
 .movie-table tr.row-pending {
   background-color: var(--clr-status-pending);
   color: var(--clr-light-a0);
@@ -675,6 +686,7 @@ button,
 .movie-table thead .filters input,
 .movie-table thead .filters select {
   width: 100%;
+  box-sizing: border-box;
   padding: 4px 6px;
   font-size: 13px;
   border: 1px solid var(--clr-surface-a30);
@@ -715,6 +727,12 @@ button,
 .movie-table td.movie-title-row {
   text-align: left;
   color: var(--clr-surface-a90);
+}
+
+.movie-table td .card-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* ===== MOBILE TUNING ===== */
