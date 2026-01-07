@@ -129,7 +129,15 @@ export const createCard = async (
   }
 ) => {
   if (!name || !type || !heroId || !movieId || !ability_text || !user) {
-    return APIResponse(false, null, "Missing required fields.");
+    var errorMsg = "Missing required fields:";
+    if (!name) errorMsg += " name";
+    if (!type) errorMsg += " type";
+    if (!heroId) errorMsg += " heroId";
+    if (!movieId) errorMsg += " movieId";
+    if (!ability_text) errorMsg += " ability_text";
+    if (!user) errorMsg += " user";
+    console.error(errorMsg);
+    return APIResponse(false, null, errorMsg);
   }
 
   const exists = await db

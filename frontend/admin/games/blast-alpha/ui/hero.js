@@ -470,6 +470,11 @@ function initDelegatedHandlers() {
 
     if (viewMode === "movies") {
       if (e.target.closest(".movie-clickable") && movieId) {
+        history.pushState(
+          {},
+          "",
+          `/admin/games/blast-alpha/?heroId=${activeHeroId}&movieId=${movieId}`
+        );
         await loadMovieDetails(movieId, activeHeroId);
         return;
       }
@@ -679,21 +684,39 @@ async function addOrEditCardModal(editFlag, editData, heroId) {
               .join("")}
           </select>
         </label>
-        <label>Name<input name="name" required value="${d.name ?? ""}"></label>
+
+        <label>
+          Name
+          <input name="name" required value="${d.name ?? ""}">
+        </label>
+
         <label>
           Type
           <select name="type" required>
-            <option value="">All</option>
+            <option value="">Select type</option>
             <option value="HERO" ${d.type === "HERO" ? "selected" : ""}>HERO</option>
-            <option value="VILLAIN" ${d.type === "VIlLAIN" ? "selected" : ""}>VILLAIN</option>
+            <option value="VILLAIN" ${d.type === "VILLAIN" ? "selected" : ""}>VILLAIN</option>
             <option value="SR1" ${d.type === "SR1" ? "selected" : ""}>SR1</option>
             <option value="SR2" ${d.type === "SR2" ? "selected" : ""}>SR2</option>
             <option value="WC" ${d.type === "WC" ? "selected" : ""}>WC</option>
           </select>
         </label>
-        <label>Call Sign<input name="call_sign" value="${d.call_sign ?? ""}"></label>
-        <label>Ability<input name="ability_text" value="${d.ability_text ?? ""}"></label>
-        <label>Ability 2<input name="ability_text2" value="${d.ability_text2 ?? ""}"></label>
+
+        <label>
+          Call Sign
+          <input name="call_sign" value="${d.call_sign ?? ""}">
+        </label>
+
+        <label>
+          Ability
+          <textarea name="ability_text" class="autogrow" required>${d.ability_text ?? ""}</textarea>
+        </label>
+
+        <label>
+          Ability 2
+          <textarea name="ability_text2" class="autogrow">${d.ability_text2 ?? ""}</textarea>
+        </label>
+
         <label>
           Needs Review
           <select name="need_review">
@@ -701,6 +724,7 @@ async function addOrEditCardModal(editFlag, editData, heroId) {
             <option value="T" ${(d.need_review ?? "F") === "T" ? "selected" : ""}>Yes</option>
           </select>
         </label>
+
         <button type="submit">${editFlag ? "Update" : "Add"}</button>
       </form>
     </div>
@@ -708,6 +732,11 @@ async function addOrEditCardModal(editFlag, editData, heroId) {
 
   document.body.appendChild(modal);
   modal.querySelector(".close").onclick = () => modal.remove();
+
+  modal.querySelectorAll("textarea.autogrow").forEach((ta) => {
+    autoGrowTextarea(ta);
+    ta.addEventListener("input", () => autoGrowTextarea(ta));
+  });
 
   modal.querySelector("form").onsubmit = async (e) => {
     e.preventDefault();
@@ -734,5 +763,10 @@ async function addOrEditCardModal(editFlag, editData, heroId) {
     modal.remove();
     loadHeroDetails(heroId, activeHeroName);
   };
+}
+
+function autoGrowTextarea(el) {
+  el.style.height = "auto";
+  el.style.height = el.scrollHeight + "px";
 }
 
