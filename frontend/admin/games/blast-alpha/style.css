@@ -820,3 +820,18 @@ button,
     padding: 4px 6px;
   }
 }
+
+.hero-row .card-actions {
+  gap: 30px;
+}
+
+.hero-row .card-actions button {
+  all: unset;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.hero-row .card-actions button:hover {
+  background-color: var(--clr-surface-a50);
+  border-radius: 10px;
+}
