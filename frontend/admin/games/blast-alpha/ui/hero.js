@@ -2,357 +2,420 @@ import { loadMovieDetails } from "./movie.js";
 import { renderGameSection } from "./game.js";
 import { Icons } from "../../../../components/icons.js";
 
-
 const contentSection = document.getElementById("content-section");
 
-export async function loadHeroDetails(heroId, heroName) {
-  try {
-    const res = await fetch(
-      `/api-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}`
-    );
+/* ================= STATE ================= */
 
-    if (!res.ok) {
-      const message = `Error: ${res.status} - ${res.statusText}`;
-      contentSection.innerHTML = `<li>${message}</li>`;
+let activeHeroId = null;
+let activeHeroName = null;
+
+let allMovies = [];
+
+let sortState = { key: null, dir: "asc" };
+
+let filters = {
+  title: "",
+  totalMin: "",
+  reviewMin: "",
+  status: "all",
+  needReview: "all",
+};
+
+// focus preservation
+let focusedFilterKey = null;
+let focusedCursorPos = null;
+
+initDelegatedHandlers();
+
+/* ================= LOAD ================= */
+
+export async function loadHeroDetails(heroId, heroName) {
+  activeHeroId = heroId;
+  activeHeroName = heroName;
+
+  const res = await fetch(
+    `/api-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}`
+  );
+
+  if (!res.ok) {
+    contentSection.innerHTML = `<p>Error loading movies</p>`;
+    return;
+  }
+
+  const { data } = await res.json();
+  allMovies = data || [];
+
+  render();
+}
+
+/* ================= RENDER ================= */
+
+function render() {
+  preserveFilterFocus();
+
+  const processed = applyFiltersAndSort(allMovies);
+
+  contentSection.innerHTML = generateTableLayout(processed);
+
+  restoreFilterFocus();
+}
+
+/* ================= FILTER + SORT ================= */
+
+function applyFiltersAndSort(data) {
+  let result = [...data];
+
+  if (filters.title) {
+    result = result.filter((m) =>
+      m.title?.toLowerCase().includes(filters.title.toLowerCase())
+    );
+  }
+
+  if (filters.totalMin !== "") {
+    result = result.filter(
+      (m) => (m.total_cards || 0) >= Number(filters.totalMin)
+    );
+  }
+
+  if (filters.reviewMin !== "") {
+    result = result.filter(
+      (m) =>
+        (m.total_cards_need_review || 0) >= Number(filters.reviewMin)
+    );
+  }
+
+  if (filters.status !== "all") {
+    result = result.filter((m) =>
+      filters.status === "done" ? m.done === "T" : m.done !== "T"
+    );
+  }
+
+  if (filters.needReview !== "all") {
+    result = result.filter((m) =>
+      filters.needReview === "yes"
+        ? m.need_review === "T"
+        : m.need_review !== "T"
+    );
+  }
+
+  if (sortState.key) {
+    result.sort((a, b) => {
+      const A = a[sortState.key] ?? "";
+      const B = b[sortState.key] ?? "";
+
+      if (A < B) return sortState.dir === "asc" ? -1 : 1;
+      if (A > B) return sortState.dir === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
+
+  return result;
+}
+
+/* ================= UI ================= */
+
+function header() {
+  return `
+    <div class="title-header">
+      <h2>${activeHeroName || "Movies"}</h2>
+      <div class="header-actions">
+        <button id="back-to-hero" type="button">Back</button>
+        <button id="add-movie" type="button">Add Movie</button>
+        <button id="clear-filters" type="button">Clear Filters</button>
+      </div>
+    </div>
+  `;
+}
+
+function th(label, key) {
+  let icon = Icons.sort;
+  
+  if (sortState.key === key) {
+    icon =
+      sortState.dir === "asc" ? Icons.sortUp : Icons.sortDown;
+  }
+
+  return `
+    <th data-sort="${key}" class="sortable">
+      <span class="th-label">${label}</span>
+      <span class="sort-icon">${icon}</span>
+    </th>
+  `;
+}
+
+function generateTableLayout(movies) {
+  return `
+    ${header()}
+    <div class="table-wrapper">
+    <table class="movie-table">
+      <thead>
+        <tr>
+          ${th("Title", "title")}
+          ${th("Total Cards", "total_cards")}
+          ${th("Needs Review", "total_cards_need_review")}
+          ${th("Status", "done")}
+          ${th("Review Flag", "need_review")}
+          <th>Actions</th>
+        </tr>
+        <tr class="filters">
+          <th>
+            <input
+              data-filter="title"
+              placeholder="Filter title"
+              value="${filters.title}"
+            >
+          </th>
+          <th>
+            <input
+              type="number"
+              min="0"
+              data-filter="totalMin"
+              value="${filters.totalMin}"
+            >
+          </th>
+          <th>
+            <input
+              type="number"
+              min="0"
+              data-filter="reviewMin"
+              value="${filters.reviewMin}"
+            >
+          </th>
+          <th>
+            <select data-filter="status">
+              <option value="all" ${filters.status === "all" ? "selected" : ""}>All</option>
+              <option value="done" ${filters.status === "done" ? "selected" : ""}>Done</option>
+              <option value="pending" ${filters.status === "pending" ? "selected" : ""}>Pending</option>
+            </select>
+          </th>
+          <th>
+            <select data-filter="needReview">
+              <option value="all" ${filters.needReview === "all" ? "selected" : ""}>All</option>
+              <option value="yes" ${filters.needReview === "yes" ? "selected" : ""}>Needs Review</option>
+              <option value="no" ${filters.needReview === "no" ? "selected" : ""}>Clean</option>
+            </select>
+          </th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${movies.map(tableRow).join("")}
+      </tbody>
+    </table>
+    </div>
+  `;
+}
+
+function tableRow(m) {
+  const statusClass = m.done === "T" ? "row-done" : "row-pending";
+
+  return `
+    <tr data-movie-id="${m.id}" class="${statusClass}">
+      <td class="movie-clickable movie-title-row">${m.title || "Untitled"}</td>
+      <td class="movie-clickable">${m.total_cards || 0}</td>
+      <td class="movie-clickable">${m.total_cards_need_review || 0}</td>
+      <td class="movie-clickable">${m.done === "T" ? "Done" : "Pending"}</td>
+      <td class="movie-clickable">
+        ${m.need_review === "T" ? Icons.review : ""}
+      </td>
+      <td>${actions(m)}</td>
+    </tr>
+  `;
+}
+
+/* ================= ACTIONS ================= */
+
+function actions(movie) {
+  return `
+    <div class="card-actions">
+      <button class="edit" type="button" title="Edit">
+        ${Icons.edit}
+      </button>
+      <div class="dropdown">
+        <button class="dropdown-button" type="button">⋮</button>
+        <div class="dropdown-content">
+          <button class="review-action" type="button" data-need-review="${
+            movie.need_review === "T"
+          }">
+            ${movie.need_review === "T" ? "Mark Resolved" : "Mark for Review"}
+          </button>
+          <button class="delete" type="button">Delete</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ================= EVENTS ================= */
+
+function initDelegatedHandlers() {
+  contentSection.addEventListener("click", async (e) => {
+    const row = e.target.closest("[data-movie-id]");
+    const movieId = row?.dataset.movieId;
+
+    if (e.target.closest("#clear-filters")) {
+      filters = {
+        title: "",
+        totalMin: "",
+        reviewMin: "",
+        status: "all",
+        needReview: "all",
+      };
+      sortState = { key: null, dir: "asc" };
+      render();
       return;
     }
 
-    const { data: moviesData } = await res.json();
-
-    contentSection.innerHTML = generateMovieSection(moviesData, heroName);
-    contentSection.setAttribute("data-section", "hero");
-
-    // Attach click handler to each movie
-    document.querySelectorAll(".movie-clickable").forEach((li) => {
-      li.addEventListener("click", async (e) => {
-        // get movieId from the parent li
-        const movieId = li.closest("li").getAttribute("data-movie-id");
-        const movieTitle = li
-          .querySelector(".movie-title-row")
-          .textContent.trim();
-
-        await loadMovieDetails(movieId, heroId);
-        history.pushState(
-          { section: "movie", movieId },
-          `Movie ${movieId}`,
-          `/admin/games/blast-alpha/?heroId=${heroId}&movieId=${movieId}`
-        );
-      });
-    });
-
-    // dropdown button
-    document.querySelectorAll(".dropdown-button").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-
-        const dropdown = btn.closest(".dropdown");
-
-        // Close all other dropdowns
-        document.querySelectorAll(".dropdown.open").forEach((el) => {
-          if (el !== dropdown) el.classList.remove("open");
-        });
-
-        // Toggle current one
-        dropdown.classList.toggle("open");
-      });
-    });
-
-    document.addEventListener("click", (e) => {
-      document.querySelectorAll(".dropdown.open").forEach((dropdown) => {
-        if (!dropdown.contains(e.target)) {
-          dropdown.classList.remove("open");
-        }
-      });
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        document.querySelectorAll(".dropdown.open").forEach((dropdown) => {
-          dropdown.classList.remove("open");
-        });
-      }
-    });
-
-    // Delete Movie button
-    document.querySelectorAll(".delete").forEach((btn) => {
-      btn.addEventListener("click", async (e) => {
-        e.stopPropagation(); // prevent parent click
-        const movieId = btn.getAttribute("data-movie-id");
-        const movieTitle = btn
-          .closest("li")
-          .querySelector(".movie-title-row").textContent;
-        const confirmed = confirm(
-          "Are you sure you want to delete the movie: " + movieTitle + "?"
-        );
-        if (!confirmed) return;
-
-        // Call API to delete movie
-        const response = await fetch(
-          `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ id: movieId }),
-          }
-        );
-        const data = await response.json();
-        if (!response.ok) {
-          console.error("Failed to delete movie:", data.error);
-          alert("Failed to delete movie.");
-          return;
-        }
-        // Reload hero details after deletion
-        await loadHeroDetails(heroId, heroName);
-      });
-    });
-
-    // Review flag button
-    document.querySelectorAll(".review-action").forEach((btn) => {
-      btn.addEventListener("click", async (e) => {
-        e.stopPropagation(); // prevent parent click
-        const movieId = btn.closest("li").getAttribute("data-movie-id");
-        const needReview = btn.getAttribute("data-need-review") === "true";
-
-        // Call API to update review status
-        const response = await fetch(
-          `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              id: movieId,
-              title: undefined,
-              need_review: !needReview ? "T" : "F",
-              heroId: heroId,
-            }),
-          }
-        );
-        const data = await response.json();
-        if (!response.ok) {
-          console.error("Failed to update review status:", data.error);
-          alert("Failed to update review status.");
-          return;
-        }
-        // Update the review flag and review-action button text
-        btn.setAttribute("data-need-review", !needReview);
-        btn.innerHTML = !needReview
-                          ? "Mark Resolved"
-                          : `${Icons.review} Mark for Review`;
-        const reviewFlag = btn.closest("li").querySelector(".review-flag");
-        reviewFlag.style.display = !needReview ? "inline" : "none";
-
-        // close the dropdown content
-        const dropdown = btn.closest(".dropdown");
-        if (dropdown) dropdown.classList.remove("open");
-      });
-    });
-
-    // Edit Movie button (not implemented)
-    document.querySelectorAll(".edit").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        e.stopPropagation(); // prevent parent click
-        const movieId = btn.getAttribute("data-movie-id");
-        const movieTitle = btn
-          .closest("li")
-          .querySelector(".movie-title-row")
-          .textContent.trim();
-
-        addOrEditMovieModal(true, { id: movieId, title: movieTitle }, heroId);
-      });
-    });
-
-    // Back button
-    document.getElementById("back-to-hero")?.addEventListener("click", () => {
-      history.pushState(
-        { section: "game" },
-        "Blast Alpha",
-        "/admin/games/blast-alpha"
-      );
+    if (e.target.closest("#back-to-hero")) {
+      history.pushState({}, "", "/admin/games/blast-alpha");
       renderGameSection();
-    });
+      return;
+    }
 
-    // Add Movie button
-    document.getElementById("add-movie")?.addEventListener("click", () => {
-      addOrEditMovieModal(false, null, heroId);
-    });
-  } catch (error) {
-    console.error("Error loading hero details:", error);
-    contentSection.innerHTML = `<p>Error loading hero details: ${error.message}</p>`;
+    if (e.target.closest("#add-movie")) {
+      addOrEditMovieModal(false, null, activeHeroId);
+      return;
+    }
+
+    const sortTh = e.target.closest("th[data-sort]");
+    if (sortTh) {
+      const key = sortTh.dataset.sort;
+      sortState.dir =
+        sortState.key === key && sortState.dir === "asc" ? "desc" : "asc";
+      sortState.key = key;
+      render();
+      return;
+    }
+
+    if (e.target.closest(".movie-clickable") && movieId) {
+      await loadMovieDetails(movieId, activeHeroId);
+      return;
+    }
+
+    const editBtn = e.target.closest(".edit");
+    if (editBtn && movieId) {
+      const title =
+        row.querySelector(".movie-title-row")?.textContent || "";
+      addOrEditMovieModal(true, { id: movieId, title }, activeHeroId);
+      return;
+    }
+
+    const deleteBtn = e.target.closest(".delete");
+    if (deleteBtn && movieId) {
+      if (!confirm("Delete this movie?")) return;
+
+      await fetch(
+        `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: movieId }),
+        }
+      );
+
+      loadHeroDetails(activeHeroId, activeHeroName);
+      return;
+    }
+
+    const reviewBtn = e.target.closest(".review-action");
+    if (reviewBtn && movieId) {
+      const needReview = reviewBtn.dataset.needReview === "true";
+
+      await fetch(
+        `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: movieId,
+            need_review: needReview ? "F" : "T",
+            heroId: activeHeroId,
+          }),
+        }
+      );
+
+      loadHeroDetails(activeHeroId, activeHeroName);
+    }
+  });
+
+  contentSection.addEventListener("input", (e) => {
+    const key = e.target.dataset.filter;
+    if (!key) return;
+    filters[key] = e.target.value;
+    render();
+  });
+
+  contentSection.addEventListener("change", (e) => {
+    const key = e.target.dataset.filter;
+    if (!key) return;
+    filters[key] = e.target.value;
+    render();
+  });
+}
+
+/* ================= FOCUS PRESERVATION ================= */
+
+function preserveFilterFocus() {
+  const el = document.activeElement;
+  if (!el?.dataset?.filter) return;
+
+  focusedFilterKey = el.dataset.filter;
+  focusedCursorPos = el.selectionStart;
+}
+
+function restoreFilterFocus() {
+  if (!focusedFilterKey) return;
+
+  const el = contentSection.querySelector(
+    `[data-filter="${focusedFilterKey}"]`
+  );
+  if (!el) return;
+
+  el.focus();
+  if (typeof focusedCursorPos === "number") {
+    el.setSelectionRange(focusedCursorPos, focusedCursorPos);
   }
 }
 
-function generateMovieSection(moviesData, heroName) {
-  const sectionTitle = heroName ? `${heroName} Movies` : "Movies";
+/* ================= MODAL ================= */
 
-  if (!moviesData || !moviesData.length) {
-    return `
-      <div class="title-header">
-        <h2>${sectionTitle}</h2>
-        <button id="back-to-hero">Back to Heroes</button>
-        <button id="add-movie">Add Movie</button>
-      </div>
-      <p>No movies available for this hero.</p>`;
-  }
-
-  const movieList = moviesData
-    .map(
-      (movie) => `
-      <li class="movie-card ${
-        movie.done === "T" ? "done" : "pending"
-      }" data-movie-id="${movie.id}">
-        <div class="movie-clickable">
-          <h3 class="movie-title-row">${movie.title || "Untitled Movie"}</h3>
-          <div class="movie-details">
-            <h5># Total cards: ${movie.total_cards || 0}</h5>
-            <h5># Cards needing review: ${
-              movie.total_cards_need_review || 0
-            }</h5>
-          </div>
-        </div>
-        <div class="card-actions">
-          <button class="review-flag" style="display: ${
-            movie.need_review === "T" ? "inline" : "none"
-          };" title="Needs Review">
-            ${Icons.review}
-          </button>
-          <button class="edit" data-movie-id="${
-            movie.id
-          }" title="Edit Movie">
-            ${Icons.edit}
-          </button>
-          <div class="dropdown">
-            <button class="dropdown-button">⋮</button>
-            <div class="dropdown-content">
-              <button class="review-action" data-card-id="${
-                movie.id
-              }" data-need-review="${movie.need_review === "T"}">
-                ${
-                  movie.need_review === "T" ? "Mark Resolved" : `${Icons.review} Mark for Review`
-                }
-              </button>
-              <button class="delete" data-movie-id="${
-                movie.id
-              }" title="Delete Card">
-                ${Icons.delete} Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      </li>
-    `
-    )
-    .join("");
-
-  return `
-    <div class="title-header">
-      <h2>${sectionTitle}</h2>
-      <button id="back-to-hero">Back to Heroes</button>
-      <button id="add-movie">Add Movie</button>
-    </div>
-    <ul id="movie-list">${movieList}</ul>`;
-}
-
-function addOrEditMovieModal(editFlag, editData = null, heroId) {
+function addOrEditMovieModal(editFlag, editData, heroId) {
   const modal = document.createElement("div");
   modal.className = "modal";
   modal.innerHTML = `
     <div class="modal-content">
-      <span class="close">&times;</span>
+      <span class="close" role="button">&times;</span>
       <h2>${editFlag ? "Edit" : "Add"} Movie</h2>
-      <form id="movie-form">
-        <label for="movie-title">Movie Title:</label>
-        <input type="text" id="movie-title" name="movie-title" required value="${
-          editFlag ? editData.title : ""
-        }">
-        <button type="submit">${editFlag ? "Update" : "Add"} Movie</button>
+      <form>
+        <input name="title" required value="${editFlag ? editData.title : ""}">
+        <button type="submit">${editFlag ? "Update" : "Add"}</button>
       </form>
     </div>
   `;
 
   document.body.appendChild(modal);
 
-  modal.querySelector(".close").onclick = function () {
-    modal.remove();
-  };
+  modal.querySelector(".close").onclick = () => modal.remove();
 
-  modal.querySelector("#movie-form").onsubmit = async function (e) {
+  modal.querySelector("form").onsubmit = async (e) => {
     e.preventDefault();
-    const movieTitle = e.target["movie-title"].value;
+    const title = e.target.title.value;
 
-    if (editFlag) {
-      // Call API to update movie
-      const response = await fetch(
-        `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            id: editData.id,
-            title: movieTitle,
-            need_review: undefined,
-            heroId: heroId,
-          }),
-        }
-      );
-      const message = await response.json();
-      if (!response.ok) {
-        console.error("Failed to update movie:", message.error);
-        alert("Failed to update movie.");
-        return;
+    await fetch(
+      `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`,
+      {
+        method: editFlag ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editFlag ? editData.id : undefined,
+          title,
+          heroId,
+        }),
       }
-      await loadHeroDetails(heroId, null);
-    } else {
-      // Call API to add new movie
-      const response = await fetch(
-        `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            title: movieTitle,
-            heroId: heroId,
-          }),
-        }
-      );
-      const message = await response.json();
-      if (!response.ok) {
-        console.error("Failed to add movie:", message.error);
-        alert("Failed to add movie.");
-        return;
-      }
-      await loadHeroDetails(heroId, null);
-    }
+    );
+
     modal.remove();
+    loadHeroDetails(heroId, activeHeroName);
   };
-
-  modal.addEventListener("click", function (event) {
-    if (event.target === modal) {
-      modal.remove();
-    }
-  });
-
-  // Add event listener for Escape key
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") {
-      if (document.body.contains(modal)) {
-        modal.remove();
-      }
-    }
-  });
-
-  modal.querySelector("#movie-title").focus();
-  modal.querySelector("#movie-title").select();
-  document.body.style.overflow = "hidden"; // Prevent background scrolling
-  modal.scrollIntoView({ behavior: "smooth" });
-  document.body.style.overflow = ""; // Restore background scrolling
-  return modal;
 }
+
