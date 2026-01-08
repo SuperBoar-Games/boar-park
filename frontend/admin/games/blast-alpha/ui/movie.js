@@ -105,6 +105,8 @@ export async function loadMovieDetails(movieId, heroId) {
 
         const cardEl = editBtn.closest(".movie-card-details");
 
+        const spans = cardEl.querySelectorAll(".ability-content span");
+
         const cardData = {
           id: cardEl.dataset.movieCardId,
           name: cardEl.querySelector("h1")?.textContent.trim() || "",
@@ -112,14 +114,8 @@ export async function loadMovieDetails(movieId, heroId) {
             cardEl.querySelector(".call-sign-content")?.textContent.trim() ||
             "",
           type: cardEl.querySelector(".card-type")?.textContent.trim() || "",
-          ability_text:
-            cardEl.querySelector(".ability-content span:nth-child(1)")
-              ?.textContent.replace(/^\d+\.\s*/, "")
-              .trim() || "",
-          ability_text2:
-            cardEl.querySelector(".ability-content span:nth-child(2)")
-              ?.textContent.replace(/^\d+\.\s*/, "")
-              .trim() || "",
+          ability_text: spans[0]?.textContent.replace(/^\d+\.\s*/, "").trim() || "",
+          ability_text2: spans[1]?.textContent.replace(/^\d+\.\s*/, "").trim() || "",
         };
 
         addOrEditCardModal(true, cardData, movieId, heroId);
