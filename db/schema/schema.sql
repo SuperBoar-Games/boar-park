@@ -46,3 +46,4 @@ CREATE INDEX idx_movies_hero_id ON movies(hero_id);
 CREATE INDEX idx_cards_hero_id ON cards(hero_id);
 CREATE INDEX idx_cards_movie_id ON cards(movie_id);
 CREATE INDEX idx_cards_type ON cards(type);
+
