@@ -11,7 +11,7 @@ const movieCardStore = new Map();
 export async function loadMovieDetails(movieId, heroId) {
   try {
     const res = await fetch(
-      `/api-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}&movieId=${movieId}`
+      `/api-proxy/games/?gameSlug=blast-alpha&queryKey=card&heroId=${heroId}&movieId=${movieId}`
     );
 
     if (!res.ok) {
@@ -235,6 +235,8 @@ function generateMovieCards(movieDetails = []) {
 /* ================= MODAL ================= */
 
 async function addOrEditCardModal(editFlag, editData = {}, movieId, heroId) {
+  editData = editData || {};
+
   const modal = document.createElement("div");
   modal.className = "modal";
 
