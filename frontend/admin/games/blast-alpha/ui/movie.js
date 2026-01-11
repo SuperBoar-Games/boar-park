@@ -3,6 +3,11 @@ import { Icons } from "../../../../components/icons.js";
 
 const contentSection = document.getElementById("content-section");
 
+/* ================= STATE ================= */
+const movieCardStore = new Map();
+
+/* ================= LOAD MOVIE DETAILS ================= */
+
 export async function loadMovieDetails(movieId, heroId) {
   try {
     const res = await fetch(
@@ -16,7 +21,12 @@ export async function loadMovieDetails(movieId, heroId) {
 
     const { data: movieDetails } = await res.json();
 
-    // Hard replace DOM (kills stale refs)
+    // cache cards
+    movieCardStore.clear();
+    movieDetails.forEach((card) =>
+      movieCardStore.set(String(card.id), card)
+    );
+
     contentSection.replaceChildren();
     contentSection.innerHTML = generateMovieCards(movieDetails);
     contentSection.setAttribute("data-section", "movie");
@@ -48,7 +58,7 @@ export async function loadMovieDetails(movieId, heroId) {
         return;
       }
 
-      /* ---------- Dropdown toggle ---------- */
+      /* ---------- Dropdown ---------- */
       if (dropdownBtn) {
         e.stopPropagation();
         const dropdown = dropdownBtn.closest(".dropdown");
@@ -61,13 +71,14 @@ export async function loadMovieDetails(movieId, heroId) {
         return;
       }
 
-      /* ---------- Review toggle ---------- */
+      /* ---------- Review Toggle ---------- */
       if (reviewBtn) {
         e.stopPropagation();
 
         const cardEl = reviewBtn.closest(".movie-card-details");
         const cardId = cardEl.dataset.movieCardId;
-        const needReview = reviewBtn.dataset.needReview === "true";
+        const card = movieCardStore.get(cardId);
+        const needReview = card.need_review === "T";
 
         const response = await fetch(
           `/api-proxy/games/?gameSlug=blast-alpha&queryKey=card`,
@@ -75,7 +86,7 @@ export async function loadMovieDetails(movieId, heroId) {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              cardId: cardId,
+              cardId,
               need_review: needReview ? "F" : "T",
             }),
           }
@@ -86,7 +97,10 @@ export async function loadMovieDetails(movieId, heroId) {
           return;
         }
 
-        // Update UI locally
+        // update store
+        card.need_review = needReview ? "F" : "T";
+
+        // update UI
         reviewBtn.dataset.needReview = String(!needReview);
         reviewBtn.textContent = !needReview
           ? "Mark Resolved"
@@ -104,19 +118,13 @@ export async function loadMovieDetails(movieId, heroId) {
         e.stopPropagation();
 
         const cardEl = editBtn.closest(".movie-card-details");
+        const cardId = cardEl.dataset.movieCardId;
+        const cardData = movieCardStore.get(cardId);
 
-        const spans = cardEl.querySelectorAll(".ability-content span");
-
-        const cardData = {
-          id: cardEl.dataset.movieCardId,
-          name: cardEl.querySelector("h1")?.textContent.trim() || "",
-          call_sign:
-            cardEl.querySelector(".call-sign-content")?.textContent.trim() ||
-            "",
-          type: cardEl.querySelector(".card-type")?.textContent.trim() || "",
-          ability_text: spans[0]?.textContent.replace(/^\d+\.\s*/, "").trim() || "",
-          ability_text2: spans[1]?.textContent.replace(/^\d+\.\s*/, "").trim() || "",
-        };
+        if (!cardData) {
+          alert("Card data not found");
+          return;
+        }
 
         addOrEditCardModal(true, cardData, movieId, heroId);
         return;
@@ -128,11 +136,11 @@ export async function loadMovieDetails(movieId, heroId) {
 
         const cardEl = deleteBtn.closest(".movie-card-details");
         const cardId = cardEl.dataset.movieCardId;
-        const name = cardEl.querySelector("h1")?.textContent.trim();
+        const card = movieCardStore.get(cardId);
 
         if (
           !confirm(
-            `Are you sure you want to delete "${name}"? This cannot be undone.`
+            `Are you sure you want to delete "${card?.name}"? This cannot be undone.`
           )
         ) {
           return;
@@ -152,9 +160,7 @@ export async function loadMovieDetails(movieId, heroId) {
           return;
         }
 
-        // Clean refresh
         await loadMovieDetails(movieId, heroId);
-        return;
       }
     };
   } catch (err) {
@@ -162,6 +168,8 @@ export async function loadMovieDetails(movieId, heroId) {
     contentSection.innerHTML = `<p>Failed to load movie details</p>`;
   }
 }
+
+/* ================= UI ================= */
 
 function generateMovieCards(movieDetails = []) {
   const cards = movieDetails
@@ -171,32 +179,35 @@ function generateMovieCards(movieDetails = []) {
       <div class="card-header">
         <span class="card-type">${detail.type}</span>
         <div class="card-actions">
-          <button class="review-flag" style="display: ${
+          <button class="review-flag" style="display:${
             detail.need_review === "T" ? "inline" : "none"
-          };" title="Needs Review">${Icons.review}</button>
-          <button class="edit" title="Edit Card">${Icons.edit}</button>
+          }" title="Needs Review">${Icons.review}</button>
+          <button class="edit">${Icons.edit}</button>
           <div class="dropdown">
             <button class="dropdown-button">⋮</button>
             <div class="dropdown-content">
-              <button class="review-action" data-card-id="${
-                detail.id
-              }" data-need-review="${detail.need_review === "T"}">${
-        detail.need_review === "T" ? "Mark Resolved" : `${Icons.review} Mark for Review`
-      }</button>
-              <button class="delete" data-movie-id="${
-                detail.id
-              }" title="Delete Card">${Icons.delete} Delete</button>
+              <button class="review-action" data-need-review="${
+                detail.need_review === "T"
+              }">
+                ${
+                  detail.need_review === "T"
+                    ? "Mark Resolved"
+                    : `${Icons.review} Mark for Review`
+                }
+              </button>
+              <button class="delete">${Icons.delete} Delete</button>
             </div>
           </div>
         </div>
       </div>
+
       <div class="card-body">
         <h1>${detail.name}</h1>
         <h4>Call Sign:</h4>
         <span class="call-sign-content">${detail.call_sign || ""}</span>
         <h4>Ability:</h4>
         <div class="ability-content">
-          <span>1. ${detail.ability_text ?? "No ability text available"}</span>
+          <span>1. ${detail.ability_text || "No ability text available"}</span>
           ${
             detail.ability_text2
               ? `<br /><span>2. ${detail.ability_text2}</span>`
@@ -221,11 +232,9 @@ function generateMovieCards(movieDetails = []) {
   `;
 }
 
-const cardTypes = ["NONE", "HERO", "VILLAIN", "SR1", "SR2", "WC"];
+/* ================= MODAL ================= */
 
 async function addOrEditCardModal(editFlag, editData = {}, movieId, heroId) {
-  editData = editData || {};
-
   const modal = document.createElement("div");
   modal.className = "modal";
 
@@ -239,36 +248,23 @@ async function addOrEditCardModal(editFlag, editData = {}, movieId, heroId) {
           Type
           <select name="type" required>
             <option value="">Select type</option>
-            <option value="HERO" ${editData.type === "HERO" ? "selected" : ""}>HERO</option>
-            <option value="VILLAIN" ${editData.type === "VILLAIN" ? "selected" : ""}>VILLAIN</option>
-            <option value="SR1" ${editData.type === "SR1" ? "selected" : ""}>SR1</option>
-            <option value="SR2" ${editData.type === "SR2" ? "selected" : ""}>SR2</option>
-            <option value="WC" ${editData.type === "WC" ? "selected" : ""}>WC</option>
+            ${["HERO","VILLAIN","SR1","SR2","WC"]
+              .map(
+                (t) =>
+                  `<option value="${t}" ${
+                    editData.type === t ? "selected" : ""
+                  }>${t}</option>`
+              )
+              .join("")}
           </select>
         </label>
 
-        <label>
-          Name
-          <input name="name" required value="${editData.name ?? ""}">
-        </label>
-
-        <label>
-          Call Sign
-          <input name="call_sign" value="${editData.call_sign ?? ""}">
-        </label>
-
-        <label>
-          Ability
-          <textarea name="ability_text" class="autogrow" required>${editData.ability_text ?? ""}</textarea>
-        </label>
-
-        <label>
-          Ability 2
-          <textarea name="ability_text2" class="autogrow">${editData.ability_text2 ?? ""}</textarea>
-        </label>
+        <label>Name <input name="name" required value="${editData.name || ""}"></label>
+        <label>Call Sign <input name="call_sign" value="${editData.call_sign || ""}"></label>
+        <label>Ability <textarea name="ability_text" required>${editData.ability_text || ""}</textarea></label>
+        <label>Ability 2 <textarea name="ability_text2">${editData.ability_text2 || ""}</textarea></label>
 
         <span class="error-text"></span>
-
         <button type="submit">${editFlag ? "Update" : "Add"} Card</button>
       </form>
     </div>
@@ -276,47 +272,26 @@ async function addOrEditCardModal(editFlag, editData = {}, movieId, heroId) {
 
   document.body.appendChild(modal);
 
-  const form = modal.querySelector("#card-form");
-  const errorEl = modal.querySelector(".error-text");
-
-  // auto-grow textareas
-  modal.querySelectorAll("textarea.autogrow").forEach((ta) => {
-    autoGrowTextarea(ta);
-    ta.addEventListener("input", () => autoGrowTextarea(ta));
-  });
-
   modal.querySelector(".close").onclick = () => modal.remove();
+  modal.addEventListener("click", (e) => e.target === modal && modal.remove());
 
-  form.onsubmit = async (e) => {
+  modal.querySelector("#card-form").onsubmit = async (e) => {
     e.preventDefault();
 
-    const fd = new FormData(form);
-    const type = fd.get("type");
-    const name = fd.get("name");
-
-    if (!type || type === "NONE") {
-      errorEl.textContent = "Card Type cannot be NONE.";
-      return;
-    }
-
-    if (!name) {
-      errorEl.textContent = "Name is required.";
-      return;
-    }
+    const fd = new FormData(e.target);
 
     const payload = {
       cardId: editFlag ? editData.id : undefined,
-      movieId: movieId,
+      movieId,
       heroId,
-
-      type,
-      name,
+      type: fd.get("type"),
+      name: fd.get("name"),
       call_sign: fd.get("call_sign") || "",
       ability_text: fd.get("ability_text") || "",
       ability_text2: fd.get("ability_text2") || "",
     };
 
-    const response = await fetch(
+    const res = await fetch(
       `/api-proxy/games/?gameSlug=blast-alpha&queryKey=card`,
       {
         method: editFlag ? "PUT" : "POST",
@@ -325,40 +300,14 @@ async function addOrEditCardModal(editFlag, editData = {}, movieId, heroId) {
       }
     );
 
-    if (!response.ok) {
-      const msg = await response.json();
-      console.error("Card save failed:", msg);
-      errorEl.textContent = "Failed to save card.";
+    if (!res.ok) {
+      modal.querySelector(".error-text").textContent =
+        "Failed to save card.";
       return;
     }
 
     await loadMovieDetails(movieId, heroId);
     modal.remove();
   };
-
-  // click outside
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) modal.remove();
-  });
-
-  // escape key (scoped + cleaned)
-  const escHandler = (e) => {
-    if (e.key === "Escape") {
-      modal.remove();
-      document.removeEventListener("keydown", escHandler);
-    }
-  };
-  document.addEventListener("keydown", escHandler);
-
-  // focus first field
-  modal.querySelector("select[name='type']").focus();
-
-  return modal;
-}
-
-
-function autoGrowTextarea(el) {
-  el.style.height = "auto";
-  el.style.height = el.scrollHeight + "px";
 }
 
