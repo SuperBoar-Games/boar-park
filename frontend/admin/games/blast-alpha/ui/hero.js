@@ -1,5 +1,6 @@
 import { loadMovieDetails } from "./movie.js";
 import { renderGameSection } from "./game.js";
+import { renderTagsSection } from "./tags.js";
 import { Icons } from "../../../../components/icons.js";
 
 const contentSection = document.getElementById("content-section");
@@ -47,8 +48,8 @@ export async function loadHeroDetails(heroId, heroName) {
 
   const url =
     viewMode === "movies"
-      ? `/api-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}`
-      : `/api-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}&getAllCards=true`;
+      ? `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie&heroId=${heroId}`
+      : `/api-proxy/games/?gameSlug=blast-alpha&queryKey=cardsByHero&heroId=${heroId}`;
 
   const res = await fetch(url);
 
@@ -200,6 +201,7 @@ function header() {
         <button id="add-item" type="button">
           ${viewMode === "movies" ? "Add Movie" : "Add Card"}
         </button>
+        <button id="view-tags" type="button">View Tags</button>
         <button id="clear-filters" type="button">Clear Filters</button>
       </div>
     </div>
@@ -458,6 +460,11 @@ function initDelegatedHandlers() {
       return;
     }
 
+    if (e.target.closest("#view-tags")) {
+      await renderTagsSection();
+      return;
+    }
+
     const sortTh = e.target.closest("th[data-sort]");
     if (sortTh) {
       const key = sortTh.dataset.sort;
@@ -649,7 +656,7 @@ async function addOrEditCardModal(editFlag, editData, heroId) {
   
   if (!allMovies.length) {
     const res = await fetch(
-      `/api-proxy/games/?gameSlug=blast-alpha&heroId=${heroId}`
+      `/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie&heroId=${heroId}`
     );
     const { data } = await res.json();
     allMovies = data || [];

@@ -19,7 +19,7 @@ let gameState = {
 
 export async function renderGameSection() {
   try {
-    const res = await fetch("/api-proxy/games/?gameSlug=blast-alpha");
+    const res = await fetch("/api-proxy/games/?queryKey=hero&gameSlug=blast-alpha");
     if (!res.ok) {
       contentSection.innerHTML = `<li>Error: ${res.status}</li>`;
       return;
@@ -192,6 +192,12 @@ function attachEventListeners() {
     if (!heroId) return;
 
     const heroName = row.querySelector(".movie-title-row").textContent.trim();
+    
+    history.pushState(
+      { section: "hero", heroId },
+      "",
+      `/admin/games/blast-alpha/?heroId=${heroId}`
+    );
     await loadHeroDetails(heroId, heroName);
   });
 
