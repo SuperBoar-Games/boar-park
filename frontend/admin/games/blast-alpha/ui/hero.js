@@ -4,16 +4,22 @@ import { renderTagsSection } from "./tags.js";
 import { Icons } from "../../../../components/icons.js";
 
 const contentSection = document.getElementById("content-section");
+let tableContainer = null;
+let tagsContainer = null;
 
 /* ================= STATE ================= */
 
 let activeHeroId = null;
 let activeHeroName = null;
+let tableScrollLeft = 0;
+let tableScrollTop = 0;
+let pageScrollTop = 0;
 
 let viewMode = localStorage.getItem("blastAlpha.hero.viewMode") || "movies";
 
 let allMovies = [];
 let allCards = [];
+let allTags = [];
 
 let sortState = { key: null, dir: "asc" };
 
@@ -32,6 +38,7 @@ let filtersCards = {
   callSign: "",
   ability1: "",
   ability2: "",
+  tag: "",
   needReview: "all",
 };
 
@@ -43,6 +50,20 @@ initDelegatedHandlers();
 /* ================= LOAD ================= */
 
 export async function loadHeroDetails(heroId, heroName) {
+  tableContainer = document.createElement("div");
+  tableContainer.className = "hero-table-container";
+  contentSection.innerHTML = "";
+  contentSection.appendChild(tableContainer);
+
+  const separator = document.createElement("div");
+  separator.className = "section-separator";
+  separator.innerHTML = `<hr/>`;
+  contentSection.appendChild(separator);
+
+  tagsContainer = document.createElement("div");
+  tagsContainer.className = "tags-section";
+  contentSection.appendChild(tagsContainer);
+
   activeHeroId = heroId;
   activeHeroName = heroName;
 
@@ -54,7 +75,7 @@ export async function loadHeroDetails(heroId, heroName) {
   const res = await fetch(url);
 
   if (!res.ok) {
-    contentSection.innerHTML = `<p>Error loading data</p>`;
+    tableContainer.innerHTML = `<p>Error loading data</p>`;
     return;
   }
 
@@ -63,23 +84,66 @@ export async function loadHeroDetails(heroId, heroName) {
   if (viewMode === "movies") allMovies = data || [];
   else allCards = data || [];
 
+  const tagsRes = await fetch(
+    `/api-proxy/games/?gameSlug=blast-alpha&queryKey=tags`
+  );
+  
+  if (!tagsRes.ok) {
+    tagsContainer.innerHTML = `<p>Error loading tags</p>`;
+    return;
+  }
+  const { data: rawTags } = await tagsRes.json();
+
+  allTags = rawTags.map(t => t.name);
+
   render();
+
+  await renderTagsSection(tagsContainer, heroId);
 }
 
 /* ================= RENDER ================= */
 
 function render() {
+  preserveTableScroll();
   preserveFilterFocus();
 
   if (viewMode === "movies") {
     const processed = applyMovieFiltersAndSort(allMovies);
-    contentSection.innerHTML = generateMoviesTable(processed);
+    tableContainer.innerHTML = generateMoviesTable(processed);
   } else {
     const processed = applyCardFiltersAndSort(allCards);
-    contentSection.innerHTML = generateCardsTable(processed);
+    tableContainer.innerHTML = generateCardsTable(processed);
   }
 
+  restoreTableScroll();
   restoreFilterFocus();
+}
+
+function getPageScrollTop() {
+  return window.pageYOffset
+    || document.documentElement.scrollTop
+    || document.body.scrollTop
+    || 0;
+}
+
+function preserveTableScroll() {
+  if (!tableContainer) return;
+  const wrapper = tableContainer.querySelector(".table-wrapper");
+  if (!wrapper) return;
+  tableScrollLeft = wrapper.scrollLeft;
+  tableScrollTop = wrapper.scrollTop;
+ 
+  pageScrollTop = getPageScrollTop();
+}
+
+function restoreTableScroll() {
+  if (!tableContainer) return;
+  const wrapper = tableContainer.querySelector(".table-wrapper");
+  if (!wrapper) return;
+  wrapper.scrollLeft = tableScrollLeft;
+  wrapper.scrollTop = tableScrollTop;
+
+  window.scrollTo(0, pageScrollTop);
 }
 
 /* ================= FILTER + SORT ================= */
@@ -167,6 +231,12 @@ function applyCardFiltersAndSort(data) {
       (c.ability_text2 || "").toLowerCase().includes(f.ability2.toLowerCase())
     );
   }
+  if (f.tag) {
+    result = result.filter((c) => {
+      const tags = (c.tags || "").split(",").map((t) => t.trim().toLowerCase());
+      return tags.includes(f.tag.toLowerCase());
+    });
+  }
 
   if (f.needReview !== "all") {
     result = result.filter((c) =>
@@ -201,7 +271,6 @@ function header() {
         <button id="add-item" type="button">
           ${viewMode === "movies" ? "Add Movie" : "Add Card"}
         </button>
-        <button id="view-tags" type="button">View Tags</button>
         <button id="clear-filters" type="button">Clear Filters</button>
       </div>
     </div>
@@ -297,8 +366,8 @@ function movieRow(m) {
       <td class="movie-clickable">${m.total_cards || 0}</td>
       <td class="movie-clickable">${m.total_cards_need_review || 0}</td>
       <td class="movie-clickable">${m.done === "T" ? "Done" : "Pending"}</td>
-      <td class="movie-clickable">
-        ${m.need_review === "T" ? Icons.review : ""}
+      <td class="movie-clickable need-review-cell">
+        ${m.need_review === "T" ? Icons.flagSolid : ""}
       </td>
       <td>${actions("movie", m)}</td>
     </tr>
@@ -313,14 +382,15 @@ function generateCardsTable(cards) {
     <div class="table-wrapper">
     <table class="movie-table">
       <colgroup>
-        <col style="width: 18%; min-width: 160px">  <!-- Movie -->
-        <col style="width: 14%; min-width: 140px">  <!-- Name -->
-        <col style="width: 10%; min-width: 100px">  <!-- Type -->
-        <col style="width: 14%; min-width: 140px">  <!-- Call Sign -->
-        <col style="width: 18%; min-width: 180px">  <!-- Ability -->
-        <col style="width: 18%; min-width: 180px">  <!-- Ability 2 -->
-        <col style="width: 8%;  min-width: 90px">   <!-- Review -->
-        <col style="width: 10%; min-width: 120px">  <!-- Actions -->
+        <col style="min-width: 160px"> <!-- Movie -->
+        <col style="min-width: 140px"> <!-- Name -->
+        <col style="min-width: 100px"> <!-- Type -->
+        <col style="min-width: 140px"> <!-- Call Sign -->
+        <col style="min-width: 180px"> <!-- Ability -->
+        <col style="min-width: 180px"> <!-- Ability 2 -->
+        <col style="min-width: 120px"> <!-- Tags -->
+        <col style="min-width: 90px">  <!-- Review -->
+        <col style="min-width: 120px"> <!-- Actions -->
       </colgroup>
       <thead>
         <tr>
@@ -330,6 +400,7 @@ function generateCardsTable(cards) {
           ${th("Call Sign", "call_sign")}
           ${th("Ability", "ability_text")}
           ${th("Ability 2", "ability_text2")}
+          ${th("Tags", "tags")}
           ${th("Review", "need_review")}
           <th>Actions</th>
         </tr>
@@ -349,6 +420,21 @@ function generateCardsTable(cards) {
           <th><input data-filter="cards.callSign" placeholder="Filter call sign" value="${filtersCards.callSign}"></th>
           <th><input data-filter="cards.ability1" placeholder="Filter ability" value="${filtersCards.ability1}"></th>
           <th><input data-filter="cards.ability2" placeholder="Filter ability 2" value="${filtersCards.ability2}"></th>
+          <th>
+            <select data-filter="cards.tag">
+              <option value="" ${filtersCards.tag === "" ? "selected" : ""}>All</option>
+              ${allTags
+                .map(
+                  (tag) => `
+                <option value="${tag}"
+                  ${filtersCards.tag === tag ? "selected" : ""}>
+                  ${tag}
+                </option>
+              `
+                )
+                .join("")}
+            </select>
+          </th>
           <th>
             <select data-filter="cards.needReview">
               <option value="all" ${filtersCards.needReview === "all" ? "selected" : ""}>All</option>
@@ -376,7 +462,8 @@ function cardRow(c) {
       <td>${c.call_sign || ""}</td>
       <td>${c.ability_text || ""}</td>
       <td>${c.ability_text2 || ""}</td>
-      <td>${c.need_review === "T" ? Icons.review : ""}</td>
+      <td>${c.tags || ""}</td>
+      <td class="need-review">${c.need_review === "T" ? Icons.flagSolid : ""}</td>
       <td>${actions("card", c)}</td>
     </tr>
   `;
@@ -387,18 +474,17 @@ function cardRow(c) {
 function actions(kind, row) {
   return `
     <div class="card-actions">
+       <button
+        class="review-action"
+        data-need-review="${row.need_review === "T"}"
+        title="${row.need_review === "T" ? "Mark as Resolved" : "Mark for Review"}"
+      >
+        ${row.need_review === "T" ? Icons.flagSolid : Icons.flagRegular}
+      </button>
+      
       <button class="edit" type="button" title="Edit">${Icons.edit}</button>
-      <div class="dropdown">
-        <button class="dropdown-button" type="button">⋮</button>
-        <div class="dropdown-content">
-          <button class="review-action" type="button" data-kind="${kind}" data-need-review="${
-    row.need_review === "T"
-  }">
-            ${row.need_review === "T" ? "Mark Resolved" : "Mark for Review"}
-          </button>
-          <button class="delete" type="button" data-kind="${kind}">Delete</button>
-        </div>
-      </div>
+      
+      <button class="delete" type="button" title="Delete">${Icons.delete}</button>
     </div>
   `;
 }
@@ -427,6 +513,7 @@ function initDelegatedHandlers() {
         callSign: "",
         ability1: "",
         ability2: "",
+        tag: "",
         needReview: "all",
       };
       sortState = { key: null, dir: "asc" };
@@ -457,11 +544,6 @@ function initDelegatedHandlers() {
       } else {
         addOrEditCardModal(false, null, activeHeroId);
       }
-      return;
-    }
-
-    if (e.target.closest("#view-tags")) {
-      await renderTagsSection();
       return;
     }
 
@@ -498,6 +580,8 @@ function initDelegatedHandlers() {
       if (deleteBtn && movieId) {
         if (!confirm("Delete this movie?")) return;
 
+        preserveTableScroll();
+
         await fetch(`/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
@@ -510,19 +594,25 @@ function initDelegatedHandlers() {
 
       const reviewBtn = e.target.closest(".review-action");
       if (reviewBtn && movieId) {
-        const needReview = reviewBtn.dataset.needReview === "true";
+        const isReviewed = reviewBtn.dataset.needReview === "true";
 
+        reviewBtn.dataset.needReview = String(!isReviewed);
+        reviewBtn.innerHTML = isReviewed ? Icons.flagRegular : Icons.flagSolid;
+
+        const row = reviewBtn.closest("tr");
+        const reviewCell = row.querySelector(".need-review-cell");
+        reviewCell.innerHTML = isReviewed ? "" : Icons.flagSolid;
+          
         await fetch(`/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id: movieId,
-            need_review: needReview ? "F" : "T",
+            need_review: isReviewed ? "F" : "T",
             heroId: activeHeroId,
           }),
         });
 
-        loadHeroDetails(activeHeroId, activeHeroName);
         return;
       }
     }
@@ -539,6 +629,8 @@ function initDelegatedHandlers() {
       if (deleteBtn && cardId) {
         if (!confirm("Delete this card?")) return;
 
+        preserveTableScroll();
+
         await fetch(`/api-proxy/games/?gameSlug=blast-alpha&queryKey=card`, {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
@@ -551,18 +643,25 @@ function initDelegatedHandlers() {
 
       const reviewBtn = e.target.closest(".review-action");
       if (reviewBtn && cardId) {
-        const needReview = reviewBtn.dataset.needReview === "true";
+
+        const isReviewed = reviewBtn.dataset.needReview === "true";
+
+        reviewBtn.dataset.needReview = String(!isReviewed);
+        reviewBtn.innerHTML = isReviewed ? Icons.flagRegular : Icons.flagSolid;
+
+        const row = reviewBtn.closest("tr");
+        const reviewCell = row.querySelector(".need-review");
+        reviewCell.innerHTML = isReviewed ? "" : Icons.flagSolid;
 
         await fetch(`/api-proxy/games/?gameSlug=blast-alpha&queryKey=card`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             cardId: cardId,
-            need_review: needReview ? "F" : "T",
+            need_review: isReviewed ? "F" : "T",
           }),
         });
 
-        loadHeroDetails(activeHeroId, activeHeroName);
         return;
       }
     }
@@ -635,6 +734,9 @@ function addOrEditMovieModal(editFlag, editData, heroId) {
 
   modal.querySelector("form").onsubmit = async (e) => {
     e.preventDefault();
+
+    preserveTableScroll();
+
     const title = e.target.title.value;
 
     await fetch(`/api-proxy/games/?gameSlug=blast-alpha&queryKey=movie`, {
@@ -747,6 +849,9 @@ async function addOrEditCardModal(editFlag, editData, heroId) {
 
   modal.querySelector("form").onsubmit = async (e) => {
     e.preventDefault();
+
+    preserveTableScroll();
+
     const fd = new FormData(e.target);
 
     const payload = {

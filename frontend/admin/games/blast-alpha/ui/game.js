@@ -1,6 +1,5 @@
 import { loadHeroDetails } from "./hero.js";
 import { Icons } from "../../../../components/icons.js";
-
 const contentSection = document.getElementById("content-section");
 
 let gameState = {
