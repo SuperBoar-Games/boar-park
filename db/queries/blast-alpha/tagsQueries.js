@@ -52,6 +52,21 @@ export const GET_CARDS_BY_HERO_AND_MOVIE_ID_QUERY = `
   ORDER BY c.id ASC, c.type ASC;
 `;
 
+export const GET_TAG_COUNTS_BY_HERO_ID_QUERY = `
+  SELECT
+    t.id   AS tag_id,
+    t.name AS tag_name,
+    COALESCE(COUNT(DISTINCT c.id), 0) AS card_count
+  FROM tags t
+  LEFT JOIN card_tags ct
+    ON ct.tag_id = t.id
+  LEFT JOIN cards c
+    ON c.id = ct.card_id
+  AND c.hero_id = ?
+  GROUP BY t.id, t.name
+  ORDER BY t.name ASC;
+`;
+
 export const GET_ALL_CARDS_BY_HERO_ID_QUERY = `
   SELECT
     c.*,
@@ -64,17 +79,6 @@ export const GET_ALL_CARDS_BY_HERO_ID_QUERY = `
   WHERE c.hero_id = ?
   GROUP BY c.id
   ORDER BY c.id ASC, c.type ASC;
-`;
-
-export const GET_CARD_COUNTS_BY_TAG_ID_QUERY = `
-  SELECT
-    t.id AS tag_id,
-    t.name AS tag_name,
-    COUNT(ct.card_id) AS card_count
-  FROM tags t
-  LEFT JOIN card_tags ct ON ct.tag_id = t.id
-  GROUP BY t.id
-  ORDER BY t.name ASC;
 `;
 
 
@@ -290,18 +294,27 @@ export const getAllCardsByHeroId = async (db, { heroId }) => {
 };
 
 /**
- * Retrieves counts of cards associated with each tag.
+ * Retrieves counts of cards associated with each tag for a specific hero.
  *
  * @param {any} db - The database connection.
- * @returns {Promise<object>} API response with list of tags and their card counts or error.
+ * @param {object} params - Parameters including heroId.
+ * @param {number} params.heroId - Hero ID.
+ * @returns {Promise<object>} API response with list of tags and card counts or error.
  */
-export const getCardCountsByTagId = async (db) => {
-  const counts = await db.prepare(GET_CARD_COUNTS_BY_TAG_ID_QUERY).all();
-
-  if (!counts.success) {
-    return APIResponse(false, null, "Failed to fetch card counts.");
+export const getTagCountsByHeroId = async (db, { heroId }) => {
+  if (!heroId) {
+    return APIResponse(false, null, "Missing heroId.");
   }
 
-  return APIResponse(true, counts.results, "Card counts fetched successfully.");
+  const tagCounts = await db
+    .prepare(GET_TAG_COUNTS_BY_HERO_ID_QUERY)
+    .bind(heroId)
+    .all();
+
+  if (!tagCounts.success) {
+    return APIResponse(false, null, "Failed to fetch tag counts.");
+  }
+
+  return APIResponse(true, tagCounts.results, "Tag counts fetched successfully.");
 };
 

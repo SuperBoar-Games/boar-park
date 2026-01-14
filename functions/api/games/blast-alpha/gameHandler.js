@@ -26,6 +26,7 @@ import {
   getAllCardsByHeroId,
   getTagsByCardId,
   setTagsForCard,
+  getTagCountsByHeroId,
 } from "../../../../db/queries/blast-alpha/tagsQueries.js";
 
 import { errorResponse, successResponse } from "../../utils.js";
@@ -38,19 +39,20 @@ const queryMap = {
     cardsByHero: getAllCardsByHeroId,
     tags: getAllTags,
     tagsByCard: getTagsByCardId,
+    tagsCountByHero: getTagCountsByHeroId,
   },
   POST: {
     hero: createHero,
     movie: createMovie,
     card: createCard,
     tags: createTag,
-    setTagsForCard: setTagsForCard,
   },
   PUT: {
     hero: updateHero,
     movie: updateMovie,
     card: updateCard,
     tags: updateTag,
+    setTagsForCard: setTagsForCard,
   },
   DELETE: {
     hero: deleteHero,

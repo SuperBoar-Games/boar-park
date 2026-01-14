@@ -151,8 +151,8 @@ button,
   align-items: center;
 }
 
-.card-actions .delete-icon,
-.card-actions .review-flag,
+.card-actions .delete,
+.card-actions .review-action,
 .card-actions .edit {
   background: transparent;
   color: var(--clr-surface-a0);
@@ -166,7 +166,8 @@ button,
   justify-content: center;
   transition: background-color 0.3s ease, transform 0.1s ease;
 }
-.card-actions .delete-icon:hover,
+.card-actions .review-action:hover,
+.card-actions .delete:hover,
 .card-actions .edit:hover {
   background-color: var(--clr-surface-a50);
   transform: scale(1.05);
@@ -426,6 +427,15 @@ button,
   color: var(--clr-light-a0);
 }
 
+.movie-card-details .card-footer {
+  margin-top: 20px;
+  text-align: right;
+
+  color: var(--clr-surface-a40);
+
+  border-top: 1px solid var(--clr-surface-a20);
+  padding-top: 10px;
+}
 
 .card-body {
   display: flex;
@@ -553,6 +563,8 @@ button,
   font-size: 1.5em;
   cursor: pointer;
   color: var(--clr-surface-a40);
+
+  z-index: 10;
 }
 
 .modal .close:hover {
@@ -834,4 +846,121 @@ button,
 .hero-row .card-actions button:hover {
   background-color: var(--clr-surface-a50);
   border-radius: 10px;
+}
+
+/* ---------- Tag Container ---------- */
+
+.movie-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+/* ---------- Tags ---------- */
+
+.tags-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 16px;
+  border-radius: 12px;
+  background: #555;
+  color: #fff;
+}
+
+.tag.muted {
+  opacity: 0.6;
+}
+
+/* ---------- Remove Button ---------- */
+
+.remove-tag {
+  border: none;
+  background: none;
+  color: #aaa;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.remove-tag:hover {
+  color: #ff5c5c;
+}
+
+/* ---------- Add Button ---------- */
+
+.add-tag-button {
+  border: 1px dashed #555;
+  background: transparent;
+  color: #ccc;
+  padding: 2px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.add-tag-button:hover {
+  border-color: #888;
+  color: #fff;
+}
+
+/* ---------- Input ---------- */
+
+.tag-input {
+  font-size: 12px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid #555;
+  background: #1e1e1e;
+  color: #fff;
+  width: 120px;
+}
+
+/* ---------- Autocomplete ---------- */
+
+.tag-input-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.tag-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  background: #1f1f1f;
+  border: 1px solid #444;
+  border-radius: 6px;
+  z-index: 50;
+  
+  display: block;
+}
+
+.tag-suggestions div {
+  padding: 6px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.tag-suggestions div:hover,
+.tag-suggestions .active {
+  background: #007bff;
+  color: #fff;
+}
+
+.section-separator {
+  margin: 30px 0;
 }
