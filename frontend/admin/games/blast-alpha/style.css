@@ -850,7 +850,7 @@ button,
 
 /* ---------- Tag Container ---------- */
 
-.movie-tags {
+.card-tags {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -964,3 +964,56 @@ button,
 .section-separator {
   margin: 30px 0;
 }
+
+/* ---------- TAGS TABLE ---------- */
+
+.tags-table-wrapper {
+  overflow: auto;
+}
+
+.tags-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tags-table th,
+.tags-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--clr-surface-a20);
+}
+
+.tags-table thead th {
+  background: var(--clr-surface-tonal-a20);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tags-table .filters input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Sort icons */
+.tags-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.tags-table th.sortable span {
+  margin-left: 6px;
+}
+
+/* Header */
+.tags-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+/* Empty state */
+.tags-table td.empty {
+  text-align: center;
+  opacity: 0.6;
+}
+

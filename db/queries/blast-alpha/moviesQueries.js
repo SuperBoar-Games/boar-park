@@ -1,4 +1,5 @@
-// SQL Queries
+// ---------- SELECT ----------
+
 export const GET_MOVIES_BY_HERO_ID_QUERY = `
   SELECT *
   FROM movies
@@ -14,7 +15,9 @@ export const GET_MOVIE_CARD_STATS_BY_HERO_ID_QUERY = `
     COUNT(c.id) AS total_cards,
     COUNT(CASE WHEN c.need_review = 'T' THEN 1 END) AS total_cards_need_review,
     CASE
-      WHEN COUNT(c.id) < 5 OR COUNT(CASE WHEN c.need_review = 'T' THEN 1 END) > 0 THEN 'F'
+      WHEN COUNT(c.id) < 5
+        OR COUNT(CASE WHEN c.need_review = 'T' THEN 1 END) > 0
+      THEN 'F'
       ELSE 'T'
     END AS done
   FROM movies m
@@ -25,30 +28,40 @@ export const GET_MOVIE_CARD_STATS_BY_HERO_ID_QUERY = `
 `;
 
 export const CHECK_MOVIE_EXISTS_QUERY = `
-  SELECT * FROM movies WHERE title = ? AND hero_id = ?;
+  SELECT 1
+  FROM movies
+  WHERE title = ? AND hero_id = ?
+  LIMIT 1;
 `;
+
+// ---------- MUTATIONS (RETURNING MUST BE LAST, NO ;) ----------
 
 export const INSERT_MOVIE_QUERY = `
   INSERT INTO movies (title, hero_id, last_update_user)
-  VALUES (?, ?, ?);
+  VALUES (?, ?, ?)
+  RETURNING *;
 `;
 
 export const UPDATE_MOVIE_TITLE_QUERY = `
   UPDATE movies
   SET title = ?, last_update_user = ?
-  WHERE id = ?;
+  WHERE id = ?
+  RETURNING *;
 `;
 
 export const UPDATE_MOVIE_NEED_REVIEW_QUERY = `
   UPDATE movies
   SET need_review = ?, last_update_user = ?
-  WHERE id = ?;
+  WHERE id = ?
+  RETURNING *;
 `;
 
 export const DELETE_MOVIE_QUERY = `
   DELETE FROM movies
-  WHERE id = ?;
+  WHERE id = ?
+  RETURNING *;
 `;
+
 
 import { APIResponse } from "../utils.js";
 
@@ -61,29 +74,16 @@ import { APIResponse } from "../utils.js";
  * @returns {Promise<object>} API response with list of movies or error.
  */
 export const getMoviesByHeroId = async (db, { heroId }) => {
-  if (!heroId) {
-    throw new Error("Missing heroId");
-  }
-
-  const movies = await db
-    .prepare(GET_MOVIES_BY_HERO_ID_QUERY)
-    .bind(heroId)
-    .all();
-
-  if (!movies.success) {
-    return APIResponse(false, null, "Failed to fetch movies.");
-  }
+  if (!heroId) throw new Error("Missing heroId");
 
   const movieStats = await db
     .prepare(GET_MOVIE_CARD_STATS_BY_HERO_ID_QUERY)
     .bind(heroId)
     .all();
-  if (!movieStats.success) {
-    return APIResponse(false, null, "Failed to fetch movie stats.");
-  }
 
-  return APIResponse(true, movieStats.results, "Movies fetched successfully.");
+  return APIResponse(true, movieStats.results ?? [], "Movies fetched");
 };
+
 
 /**
  * Creates a new movie for a hero.
@@ -97,35 +97,30 @@ export const getMoviesByHeroId = async (db, { heroId }) => {
  */
 export const createMovie = async (db, { title, heroId, user }) => {
   if (!title || !heroId || !user) {
-    return APIResponse(
-      false,
-      null,
-      "Missing required fields: title, heroId, or user."
-    );
+    return APIResponse(false, null, "Missing required fields");
   }
 
-  const existingMovie = await db
+  const exists = await db
     .prepare(CHECK_MOVIE_EXISTS_QUERY)
     .bind(title, heroId)
     .first();
 
-  if (existingMovie) {
-    console.error("Movie already exists:", existingMovie);
-    return APIResponse(false, null, "Movie already exists.");
+  if (exists) {
+    return APIResponse(false, null, "Movie already exists");
   }
 
-  const resp = await db
+  const movie = await db
     .prepare(INSERT_MOVIE_QUERY)
     .bind(title, heroId, user)
-    .run();
+    .first();
 
-  if (!resp.success) {
-    console.error("Failed to create movie:", resp.error);
-    return APIResponse(false, null, "Failed to create movie.");
+  if (!movie) {
+    return APIResponse(false, null, "Failed to create movie");
   }
 
-  return APIResponse(true, null, "Movie created successfully.");
+  return APIResponse(true, movie, "Movie created");
 };
+
 
 /**
  * Updates an existing movie.
@@ -137,48 +132,41 @@ export const createMovie = async (db, { title, heroId, user }) => {
  * @param {string} body.user - The user performing the operation.
  * @returns {Promise<object>} API response with success or error.
  */
-export const updateMovie = async (db, { id, title, need_review, user }) => {
-  // id and user are required, title or need_review should be provided
+export const updateMovie = async (
+  db,
+  { id, title, need_review, user }
+) => {
   if (!id || !user) {
-    return APIResponse(false, null, "Missing required fields: id or user.");
+    return APIResponse(false, null, "Missing id or user");
   }
 
-  if (title === undefined && need_review === undefined) {
-    return APIResponse(
-      false,
-      null,
-      "Missing required fields: title or need_review."
-    );
-  }
+  let movie = null;
 
-  // If need_review is provided, update it
   if (need_review !== undefined) {
-    const resp = await db
+    movie = await db
       .prepare(UPDATE_MOVIE_NEED_REVIEW_QUERY)
       .bind(need_review, user, id)
-      .run();
+      .first();
 
-    if (!resp.success) {
-      console.error("Failed to update movie need_review:", resp.error);
-      return APIResponse(false, null, "Failed to update movie need_review.");
+    if (!movie) {
+      return APIResponse(false, null, "Failed to update need_review");
     }
   }
 
-  // If title is provided, update it
   if (title !== undefined) {
-    const resp = await db
+    movie = await db
       .prepare(UPDATE_MOVIE_TITLE_QUERY)
       .bind(title, user, id)
-      .run();
+      .first();
 
-    if (!resp.success) {
-      console.error("Failed to update movie title:", resp.error);
-      return APIResponse(false, null, "Failed to update movie title.");
+    if (!movie) {
+      return APIResponse(false, null, "Failed to update title");
     }
   }
 
-  return APIResponse(true, null, "Movie updated successfully.");
+  return APIResponse(true, movie, "Movie updated");
 };
+
 
 /**
  * Deletes a movie by ID.
@@ -190,15 +178,18 @@ export const updateMovie = async (db, { id, title, need_review, user }) => {
  */
 export const deleteMovie = async (db, { id }) => {
   if (!id) {
-    return APIResponse(false, null, "Missing required field: id.");
+    return APIResponse(false, null, "Missing id");
   }
 
-  const resp = await db.prepare(DELETE_MOVIE_QUERY).bind(id).run();
+  const movie = await db
+    .prepare(DELETE_MOVIE_QUERY)
+    .bind(id)
+    .first();
 
-  if (!resp.success) {
-    console.error("Failed to delete movie:", resp.error);
-    return APIResponse(false, null, "Failed to delete movie.");
+  if (!movie) {
+    return APIResponse(false, null, "Movie not found or delete failed");
   }
 
-  return APIResponse(true, null, "Movie deleted successfully.");
+  return APIResponse(true, movie, "Movie deleted");
 };
+

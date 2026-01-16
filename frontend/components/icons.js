@@ -6,5 +6,6 @@ export const Icons = {
   sort:        '<i class="fa-solid fa-sort"></i>',
   sortUp:      '<i class="fa-solid fa-sort-up"></i>',
   sortDown:    '<i class="fa-solid fa-sort-down"></i>',
+  x:           '<i class="fa-solid fa-x"></i>',
 };
 

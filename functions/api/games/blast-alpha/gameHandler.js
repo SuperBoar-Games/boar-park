@@ -11,23 +11,21 @@ import {
   deleteMovie,
 } from "../../../../db/queries/blast-alpha/moviesQueries";
 import {
-  // getCardsByHeroAndMovieId,
-  // getAllCardsByHeroId,
+  getCardsByHeroAndMovieId,
+  getAllCardsByHeroId,
   createCard,
   updateCard,
   deleteCard,
-} from "../../../../db/queries/blast-alpha/cardsQueries";
+} from "./cards.api.js";
 import {
   getAllTags,
   createTag,
   updateTag,
   deleteTag,
-  getCardsByHeroAndMovieId,
-  getAllCardsByHeroId,
   getTagsByCardId,
   setTagsForCard,
   getTagCountsByHeroId,
-} from "../../../../db/queries/blast-alpha/tagsQueries.js";
+} from "./tags.api.js";
 
 import { errorResponse, successResponse } from "../../utils.js";
 

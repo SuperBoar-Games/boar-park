@@ -1,5 +1,5 @@
 import { renderGameSection } from "./ui/game.js";
-import { loadHeroDetails } from "./ui/hero.js";
+import { loadHeroDetails } from "./ui/hero/hero.js";
 import { loadMovieDetails } from "./ui/movie.js";
 
 const contentSection = document.getElementById("content-section");

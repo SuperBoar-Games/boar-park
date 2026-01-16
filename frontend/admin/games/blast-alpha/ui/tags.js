@@ -1,172 +1,198 @@
 import { Icons } from "../../../../components/icons.js";
 
-/* ---------------- STATE ---------------- */
+/* ================= STATE ================= */
 
-let tagState = {
-  rawData: [],
-  filteredData: [],
-  sortState: { key: "name", dir: "asc" },
-  filters: { name: "", total_cards: "" },
-  container: null
+const state = {
+  raw: [],
+  filtered: [],
+  sort: { key: "tag_name", dir: "asc" },
+  filters: { tag_name: "", card_count: "" },
+
+  root: null,
+  tbody: null,
+  heroId: null,
+  mounted: false,
 };
 
-/* ---------------- PUBLIC API ---------------- */
+/* ================= PUBLIC ================= */
 
-export async function renderTagsSection(container, heroId = null) {
-  if (!container) throw new Error("contentSection container is required");
-  tagState.container = container;
+export async function renderTagsSection(container, heroId) {
+  if (!container) throw new Error("tags container required");
+
+  state.root = container;
+  state.heroId = heroId;
 
   const res = await fetch(
     `/api-proxy/games/?gameSlug=blast-alpha&queryKey=tagsCountByHero&heroId=${heroId}`
   );
   const { data } = await res.json();
 
-  tagState.rawData = data || [];
-  applyFiltersAndSort();
-  renderTable();
+  state.raw = data || [];
+  apply();
+
+  if (!state.mounted) {
+    mount();
+    bindEvents();
+    state.mounted = true;
+  }
+
+  renderBody();
 }
 
-/* ---------------- TABLE ---------------- */
+/* ================= RENDER ================= */
 
-function renderTable() {
-  tagState.container.innerHTML = `
-    <div class="title-header">
+function mount() {
+  state.root.innerHTML = `
+    <div class="tags-header">
       <h2>Tags</h2>
       <div class="header-actions">
         <button id="add-tag">Add Tag</button>
       </div>
     </div>
 
-    <div class="table-wrapper">
-      <table class="movie-table">
+    <div class="tags-table-wrapper">
+      <table class="tags-table">
         <thead>
           <tr>
-            ${th("Tag", "name")}
-            ${th("Cards", "total_cards")}
+            ${th("Tag", "tag_name")}
+            ${th("Cards", "card_count")}
             <th>Actions</th>
           </tr>
           <tr class="filters">
-            ${filterInput("name")}
-            ${filterInput("total_cards")}
+            ${filterInput("tag_name")}
+            ${filterInput("card_count")}
             <td></td>
           </tr>
         </thead>
-        <tbody>${renderRows()}</tbody>
+        <tbody></tbody>
       </table>
     </div>
   `;
-  attachEvents();
+
+  state.tbody = state.root.querySelector("tbody");
 }
 
-function renderRows() {
-  if (!tagState.filteredData.length) {
-    return `<tr><td colspan="3" style="text-align:center;">No tags</td></tr>`;
+function renderBody() {
+  if (!state.filtered.length) {
+    state.tbody.innerHTML =
+      `<tr><td colspan="3" class="empty">No tags</td></tr>`;
+    return;
   }
 
-  return tagState.filteredData
+  state.tbody.innerHTML = state.filtered
     .map(
       t => `
-    <tr data-id="${t.tag_id}">
-      <td>${t.tag_name}</td>
-      <td>${t.card_count || 0}</td>
-      <td>
-        <button class="edit-btn">${Icons.edit}</button>
-        <button class="delete-btn">${Icons.delete}</button>
-      </td>
-    </tr>
-  `
+      <tr data-id="${t.tag_id}">
+        <td>${t.tag_name}</td>
+        <td>${t.card_count || 0}</td>
+        <td>
+          <button class="edit">${Icons.edit}</button>
+          <button class="delete">${Icons.delete}</button>
+        </td>
+      </tr>
+    `
     )
     .join("");
 }
 
-/* ---------------- SORT / FILTER ---------------- */
+/* ================= SORT / FILTER ================= */
+
+function apply() {
+  state.filtered = state.raw.filter(t =>
+    Object.keys(state.filters).every(k =>
+      String(t[k] ?? "")
+        .toLowerCase()
+        .includes(state.filters[k].toLowerCase())
+    )
+  );
+
+  const { key, dir } = state.sort;
+  state.filtered.sort((a, b) =>
+    dir === "asc"
+      ? String(a[key]).localeCompare(String(b[key]), undefined, { numeric: true })
+      : String(b[key]).localeCompare(String(a[key]), undefined, { numeric: true })
+  );
+}
 
 function th(label, key) {
   const icon =
-    tagState.sortState.key === key
-      ? tagState.sortState.dir === "asc"
+    state.sort.key === key
+      ? state.sort.dir === "asc"
         ? Icons.sortUp
         : Icons.sortDown
       : Icons.sort;
 
-  return `<th class="sortable" data-sort="${key}">
-    ${label} <span>${icon}</span>
-  </th>`;
+  return `
+    <th data-sort="${key}" class="sortable">
+      ${label} <span>${icon}</span>
+    </th>
+  `;
 }
 
 function filterInput(key) {
-  return `<td>
-    <input
-      class="column-filter"
-      data-filter="${key}"
-      value="${tagState.filters[key]}"
-    />
-  </td>`;
+  return `
+    <td>
+      <input data-filter="${key}" value="${state.filters[key]}" />
+    </td>
+  `;
 }
 
-function applyFiltersAndSort() {
-  tagState.filteredData = tagState.rawData.filter(t =>
-    Object.keys(tagState.filters).every(k =>
-      String(t[k] || "")
-        .toLowerCase()
-        .includes(tagState.filters[k].toLowerCase())
-    )
-  );
+/* ================= EVENTS ================= */
 
-  const { key, dir } = tagState.sortState;
-  tagState.filteredData.sort((a, b) =>
-    dir === "asc"
-      ? String(a[key]).localeCompare(String(b[key]), undefined, {
-          numeric: true
-        })
-      : String(b[key]).localeCompare(String(a[key]), undefined, {
-          numeric: true
-        })
-  );
-}
-
-/* ---------------- EVENTS ---------------- */
-
-function attachEvents() {
-  const container = tagState.container;
-
-  container.querySelectorAll(".column-filter").forEach(input => {
-    input.oninput = e => {
-      tagState.filters[e.target.dataset.filter] = e.target.value;
-      applyFiltersAndSort();
-      container.querySelector("tbody").innerHTML = renderRows();
-    };
+function bindEvents() {
+  state.root.addEventListener("input", e => {
+    const key = e.target.dataset.filter;
+    if (!key) return;
+    state.filters[key] = e.target.value;
+    apply();
+    renderBody();
   });
 
-  container.querySelectorAll("th.sortable").forEach(th => {
-    th.onclick = () => {
-      const key = th.dataset.sort;
-      tagState.sortState.dir =
-        tagState.sortState.key === key &&
-        tagState.sortState.dir === "asc"
-          ? "desc"
-          : "asc";
-      tagState.sortState.key = key;
-      applyFiltersAndSort();
-      container.querySelector("tbody").innerHTML = renderRows();
-    };
-  });
+  state.root.addEventListener("click", e => {
+    const sortTh = e.target.closest("th[data-sort]");
+    if (sortTh) {
+      const key = sortTh.dataset.sort;
+      state.sort.dir =
+        state.sort.key === key && state.sort.dir === "asc" ? "desc" : "asc";
+      state.sort.key = key;
+      apply();
+      renderBody();
+      syncSortIcons();
+      return;
+    }
 
-  container.querySelector("#add-tag").onclick = () => openModal();
+    if (e.target.closest("#add-tag")) {
+      openModal();
+      return;
+    }
 
-  container.querySelector("tbody").onclick = e => {
-    const row = e.target.closest("tr");
+    const row = e.target.closest("tr[data-id]");
     if (!row) return;
 
-    const id = row.dataset.id;
-    const tag = tagState.rawData.find(t => t.tag_id == id);
+    const tag = state.raw.find(t => String(t.tag_id) === row.dataset.id);
+    if (!tag) return;
 
-    if (e.target.closest(".edit-btn")) openModal(tag);
-    if (e.target.closest(".delete-btn")) deleteTag(tag);
-  };
+    if (e.target.closest(".edit")) openModal(tag);
+    if (e.target.closest(".delete")) deleteTag(tag);
+  });
 }
 
-/* ---------------- CRUD ---------------- */
+function syncSortIcons() {
+  state.root.querySelectorAll("th[data-sort]").forEach(th => {
+    const key = th.dataset.sort;
+    const iconEl = th.querySelector("span");
+    if (!iconEl) return;
+
+    if (state.sort.key !== key) {
+      iconEl.innerHTML = Icons.sort;
+    } else {
+      iconEl.innerHTML =
+        state.sort.dir === "asc" ? Icons.sortUp : Icons.sortDown;
+    }
+  });
+}
+
+/* ================= CRUD ================= */
 
 function openModal(tag = null) {
   const modal = document.createElement("div");
@@ -174,11 +200,14 @@ function openModal(tag = null) {
   modal.innerHTML = `
     <div class="modal-content">
       <h3>${tag ? "Edit" : "Add"} Tag</h3>
-      <input id="tag-name" value="${tag?.name || ""}" />
-      <button id="save">Save</button>
-      <button id="cancel">Cancel</button>
+      <input id="tag-name" value="${tag?.tag_name || ""}" />
+      <div class="actions">
+        <button id="save">Save</button>
+        <button id="cancel">Cancel</button>
+      </div>
     </div>
   `;
+
   document.body.appendChild(modal);
 
   modal.querySelector("#cancel").onclick = () => modal.remove();
@@ -197,7 +226,7 @@ function openModal(tag = null) {
     );
 
     modal.remove();
-    renderTagsSection(tagState.container);
+    await renderTagsSection(state.root, state.heroId);
   };
 }
 
@@ -213,6 +242,12 @@ async function deleteTag(tag) {
     }
   );
 
-  renderTagsSection(tagState.container);
+  await renderTagsSection(state.root, state.heroId);
+}
+
+export function resetTagsSection() {
+  state.mounted = false;
+  state.root = null;
+  state.tbody = null;
 }
 
