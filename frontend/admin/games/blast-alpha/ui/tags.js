@@ -1,20 +1,59 @@
 import { Icons } from "../../../../components/icons.js";
 
-/* ================= STATE ================= */
-
 const state = {
   raw: [],
   filtered: [],
   sort: { key: "tag_name", dir: "asc" },
   filters: { tag_name: "", card_count: "" },
-
   root: null,
   tbody: null,
   heroId: null,
   mounted: false,
+  modal: null
 };
 
-/* ================= PUBLIC ================= */
+function handleInput(e) {
+  const key = e.target.dataset.filter;
+  if (!key) return;
+  state.filters[key] = e.target.value;
+  apply();
+  renderBody();
+}
+
+async function handleClick(e) {
+  const sortTh = e.target.closest("th[data-sort]");
+  if (sortTh) {
+    const key = sortTh.dataset.sort;
+    state.sort.dir =
+      state.sort.key === key && state.sort.dir === "asc" ? "desc" : "asc";
+    state.sort.key = key;
+    apply();
+    renderBody();
+    syncSortIcons();
+    return;
+  }
+
+  if (e.target.closest("#add-tag")) {
+    openModal();
+    return;
+  }
+
+  const row = e.target.closest("tr[data-id]");
+  if (!row) return;
+
+  const tag = state.raw.find(t => String(t.tag_id) === row.dataset.id);
+  if (!tag) return;
+
+  if (e.target.closest(".edit")) {
+    openModal(tag);
+    return;
+  }
+
+  if (e.target.closest(".delete")) {
+    e.preventDefault();
+    await deleteTag(tag);
+  }
+}
 
 export async function renderTagsSection(container, heroId) {
   if (!container) throw new Error("tags container required");
@@ -25,21 +64,18 @@ export async function renderTagsSection(container, heroId) {
   const res = await fetch(
     `/api-proxy/games/?gameSlug=blast-alpha&queryKey=tagsCountByHero&heroId=${heroId}`
   );
-  const { data } = await res.json();
+  const json = await res.json();
 
-  state.raw = data || [];
+  state.raw = json.data || [];
   apply();
 
   if (!state.mounted) {
     mount();
-    bindEvents();
     state.mounted = true;
   }
 
   renderBody();
 }
-
-/* ================= RENDER ================= */
 
 function mount() {
   state.root.innerHTML = `
@@ -70,6 +106,9 @@ function mount() {
   `;
 
   state.tbody = state.root.querySelector("tbody");
+
+  state.root.addEventListener("input", handleInput);
+  state.root.addEventListener("click", handleClick);
 }
 
 function renderBody() {
@@ -84,7 +123,7 @@ function renderBody() {
       t => `
       <tr data-id="${t.tag_id}">
         <td>${t.tag_name}</td>
-        <td>${t.card_count || 0}</td>
+        <td>${t.card_count ?? 0}</td>
         <td>
           <button class="edit">${Icons.edit}</button>
           <button class="delete">${Icons.delete}</button>
@@ -94,8 +133,6 @@ function renderBody() {
     )
     .join("");
 }
-
-/* ================= SORT / FILTER ================= */
 
 function apply() {
   state.filtered = state.raw.filter(t =>
@@ -137,70 +174,30 @@ function filterInput(key) {
   `;
 }
 
-/* ================= EVENTS ================= */
-
-function bindEvents() {
-  state.root.addEventListener("input", e => {
-    const key = e.target.dataset.filter;
-    if (!key) return;
-    state.filters[key] = e.target.value;
-    apply();
-    renderBody();
-  });
-
-  state.root.addEventListener("click", e => {
-    const sortTh = e.target.closest("th[data-sort]");
-    if (sortTh) {
-      const key = sortTh.dataset.sort;
-      state.sort.dir =
-        state.sort.key === key && state.sort.dir === "asc" ? "desc" : "asc";
-      state.sort.key = key;
-      apply();
-      renderBody();
-      syncSortIcons();
-      return;
-    }
-
-    if (e.target.closest("#add-tag")) {
-      openModal();
-      return;
-    }
-
-    const row = e.target.closest("tr[data-id]");
-    if (!row) return;
-
-    const tag = state.raw.find(t => String(t.tag_id) === row.dataset.id);
-    if (!tag) return;
-
-    if (e.target.closest(".edit")) openModal(tag);
-    if (e.target.closest(".delete")) deleteTag(tag);
-  });
-}
-
 function syncSortIcons() {
   state.root.querySelectorAll("th[data-sort]").forEach(th => {
     const key = th.dataset.sort;
     const iconEl = th.querySelector("span");
     if (!iconEl) return;
 
-    if (state.sort.key !== key) {
-      iconEl.innerHTML = Icons.sort;
-    } else {
-      iconEl.innerHTML =
-        state.sort.dir === "asc" ? Icons.sortUp : Icons.sortDown;
-    }
+    iconEl.innerHTML =
+      state.sort.key === key
+        ? state.sort.dir === "asc"
+          ? Icons.sortUp
+          : Icons.sortDown
+        : Icons.sort;
   });
 }
 
-/* ================= CRUD ================= */
-
 function openModal(tag = null) {
+  closeModal();
+
   const modal = document.createElement("div");
   modal.className = "modal";
   modal.innerHTML = `
     <div class="modal-content">
       <h3>${tag ? "Edit" : "Add"} Tag</h3>
-      <input id="tag-name" value="${tag?.tag_name || ""}" />
+      <input id="tag-name" value="${tag ? tag.tag_name : ""}" />
       <div class="actions">
         <button id="save">Save</button>
         <button id="cancel">Cancel</button>
@@ -208,32 +205,59 @@ function openModal(tag = null) {
     </div>
   `;
 
+  state.modal = modal;
   document.body.appendChild(modal);
 
-  modal.querySelector("#cancel").onclick = () => modal.remove();
+  modal.querySelector("#cancel").onclick = closeModal;
 
   modal.querySelector("#save").onclick = async () => {
     const name = modal.querySelector("#tag-name").value.trim();
     if (!name) return;
 
-    await fetch(
+    const res = await fetch(
       "/api-proxy/games/?gameSlug=blast-alpha&queryKey=tags",
       {
         method: tag ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(tag ? { tagId: tag.tag_id, name } : { name })
+        body: JSON.stringify(
+          tag ? { tagId: tag.tag_id, name } : { name }
+        )
       }
     );
 
-    modal.remove();
-    await renderTagsSection(state.root, state.heroId);
+    const json = await res.json();
+    if (!json.success || !json.data) return;
+
+    const normalized = {
+      tag_id: json.data.id,
+      tag_name: json.data.name,
+      card_count: tag?.card_count ?? 0
+    };
+
+    if (tag) {
+      const idx = state.raw.findIndex(t => t.tag_id === tag.tag_id);
+      if (idx !== -1) state.raw[idx] = { ...state.raw[idx], ...normalized };
+    } else {
+      state.raw.push(normalized);
+    }
+
+    closeModal();
+    apply();
+    renderBody();
   };
+}
+
+function closeModal() {
+  if (state.modal) {
+    state.modal.remove();
+    state.modal = null;
+  }
 }
 
 async function deleteTag(tag) {
   if (!confirm(`Delete tag "${tag.tag_name}"?`)) return;
 
-  await fetch(
+  const res = await fetch(
     "/api-proxy/games/?gameSlug=blast-alpha&queryKey=tags",
     {
       method: "DELETE",
@@ -242,10 +266,16 @@ async function deleteTag(tag) {
     }
   );
 
-  await renderTagsSection(state.root, state.heroId);
+  const json = await res.json();
+  if (!json.success) return;
+
+  state.raw = state.raw.filter(t => t.tag_id !== tag.tag_id);
+  apply();
+  renderBody();
 }
 
 export function resetTagsSection() {
+  closeModal();
   state.mounted = false;
   state.root = null;
   state.tbody = null;

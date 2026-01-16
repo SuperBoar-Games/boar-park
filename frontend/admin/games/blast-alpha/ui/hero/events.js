@@ -1,8 +1,6 @@
-import { loadMovieDetails } from "../movie.js";
+import { loadMovieDetails } from "../movie/movie.js";
 import { renderGameSection } from "../game.js";
-import { renderTagsSection } from "../tags.js";
 import { Icons } from "../../../../../components/icons.js";
-
 import { state } from "./state.js";
 import { api } from "./api.js";
 import { preserveScroll } from "./dom.js";
@@ -41,7 +39,7 @@ export function initDelegatedHandlers() {
       return;
     }
 
-    if (e.target.closest("#back-to-hero")) {
+    if (e.target.closest("#back-to-game")) {
       history.pushState({}, "", "/admin/games/blast-alpha");
       renderGameSection();
       return;

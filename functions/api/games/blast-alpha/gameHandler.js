@@ -9,7 +9,7 @@ import {
   createMovie,
   updateMovie,
   deleteMovie,
-} from "../../../../db/queries/blast-alpha/moviesQueries";
+} from "./movie.api.js";
 import {
   getCardsByHeroAndMovieId,
   getAllCardsByHeroId,

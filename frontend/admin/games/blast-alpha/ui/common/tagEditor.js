@@ -1,4 +1,4 @@
-import { Icons } from "../../../../components/icons.js";
+import { Icons } from "../../../../../components/icons.js";
 
 export function createTagEditor({
   container,

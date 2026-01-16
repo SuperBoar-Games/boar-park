@@ -1,6 +1,6 @@
 import { renderGameSection } from "./ui/game.js";
 import { loadHeroDetails } from "./ui/hero/hero.js";
-import { loadMovieDetails } from "./ui/movie.js";
+import { loadMovieDetails } from "./ui/movie/movie.js";
 
 const contentSection = document.getElementById("content-section");
 const logoutButton = document.getElementById("logout-button");

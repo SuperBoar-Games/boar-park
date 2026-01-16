@@ -6,7 +6,7 @@ function headerHtml() {
     <div class="title-header">
       <h2>${state.heroName || "Movies"}</h2>
       <div class="header-actions">
-        <button id="back-to-hero" type="button">Back</button>
+        <button id="back-to-game" type="button">Back</button>
         <button id="toggle-view" type="button">
           ${state.viewMode === "movies" ? "View Cards" : "View Movies"}
         </button>

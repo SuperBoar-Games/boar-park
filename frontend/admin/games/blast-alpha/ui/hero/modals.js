@@ -1,7 +1,7 @@
 import { state } from "./state.js";
 import { api } from "./api.js";
 import { preserveScroll } from "./dom.js";
-import { createTagEditor } from "../tagEditor.js";
+import { createTagEditor } from "../common/tagEditor.js";
 
 function autoGrowTextarea(el) {
   el.style.height = "auto";
@@ -134,13 +134,13 @@ export async function openCardModal({ edit, data, onDone }) {
           </select>
         </label>
 
-          <div class="card-tags">
-            <label>Tags</label>
-            <div class="tags-list"></div>
-            <button type="button" class="add-tag-button">
-              Add Tag
-            </button>
-          </div>
+        <div class="card-tags">
+          <label>Tags</label>
+          <div class="tags-list"></div>
+          <button type="button" class="add-tag-button">
+            Add Tag
+          </button>
+        </div>
 
         <button type="submit">${edit ? "Update" : "Add"}</button>
       </form>
