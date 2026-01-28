@@ -62,5 +62,11 @@ export const DELETE_MOVIE_QUERY = `
   RETURNING *;
 `;
 
+export const UPDATE_MOVIE_LOCKED_STATUS_QUERY = `
+  UPDATE movies
+  SET locked = ?, last_update_user = ?
+  WHERE id = ?
+  RETURNING *;
+`;
 
 

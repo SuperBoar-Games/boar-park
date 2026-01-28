@@ -4,6 +4,7 @@ import {
   INSERT_MOVIE_QUERY,
   UPDATE_MOVIE_TITLE_QUERY,
   UPDATE_MOVIE_NEED_REVIEW_QUERY,
+  UPDATE_MOVIE_LOCKED_STATUS_QUERY,
   DELETE_MOVIE_QUERY,
 } from "../../../../db/queries/blast-alpha/movies.queries.js";
 import { APIResponse } from "../../utils.js";
@@ -134,5 +135,22 @@ export const deleteMovie = async (db, { id }) => {
   }
 
   return APIResponse(true, movie, "Movie deleted");
+};
+
+export const updateMovieLockedStatus = async (db, { id, locked, user }) => {
+  if (id === undefined || locked === undefined || !user) {
+    return APIResponse(false, null, "Missing id, locked status, or user");
+  }
+
+  const movie = await db
+    .prepare(UPDATE_MOVIE_LOCKED_STATUS_QUERY)
+    .bind(locked, user, id)
+    .first();
+
+  if (!movie) {
+    return APIResponse(false, null, "Failed to update locked status");
+  }
+
+  return APIResponse(true, movie, "Movie locked status updated");
 };
 

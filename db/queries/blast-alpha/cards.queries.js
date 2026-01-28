@@ -67,7 +67,6 @@ export const UPDATE_CARD = `
     ability_text2 = COALESCE(?, ability_text2),
     need_review = COALESCE(?, need_review),
     last_update_user = ?
-  WHERE id = ?
   RETURNING *;
 `;
 

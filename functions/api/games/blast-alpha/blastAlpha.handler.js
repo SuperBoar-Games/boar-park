@@ -3,13 +3,13 @@ import {
   createHero,
   updateHero,
   deleteHero,
-} from "../../../../db/queries/blast-alpha/heroesQueries.js";
+} from "./heroes.api.js";
 import {
   getMoviesByHeroId,
   createMovie,
   updateMovie,
   deleteMovie,
-} from "./movie.api.js";
+} from "./movies.api.js";
 import {
   getCardsByHeroAndMovieId,
   getAllCardsByHeroId,

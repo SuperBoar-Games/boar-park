@@ -253,6 +253,16 @@ function th(label, key) {
 }
 
 function actions(row) {
+  const locked = Number(row.locked) === 1;
+
+  if (locked) {
+    return `
+      <div class="card-actions locked">
+        <span title="Locked">${Icons.lock}</span>
+      </div>
+    `;
+  }
+
   return `
     <div class="card-actions">
       <button class="review-action" data-need-review="${row.need_review === "T"}">
@@ -610,6 +620,9 @@ export function initDelegatedHandlers() {
     if (movieRow && state.viewMode === "movies") {
       const id = movieRow.dataset.movieId;
 
+      const m = state.movies.find(x => String(x.id) === String(id));
+      if (!m) return;
+
       if (e.target.closest(".movie-clickable")) {
         history.pushState({}, "", `?heroId=${state.heroId}&movieId=${id}`);
         loadMovieDetails(id, state.heroId);
@@ -619,7 +632,7 @@ export function initDelegatedHandlers() {
       if (e.target.closest(".edit")) {
         openMovieModal({
           edit: true,
-          data: state.movies.find(m => String(m.id) === String(id)),
+          data: m,
           onDone: m => {
             const i = state.movies.findIndex(x => x.id === m.id);
             state.movies[i] = m;
@@ -636,7 +649,6 @@ export function initDelegatedHandlers() {
       }
 
       if (e.target.closest(".review-action")) {
-        const m = state.movies.find(x => String(x.id) === String(id));
         const needs = m.need_review === "T";
         await api.toggleMovieReview({ id, heroId: state.heroId, need_review: needs ? "F" : "T" });
         m.need_review = needs ? "F" : "T";

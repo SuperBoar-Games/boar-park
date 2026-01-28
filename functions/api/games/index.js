@@ -1,9 +1,9 @@
-import { getAllGames } from "../../../db/queries/gamesQueries";
+import { getAllGames } from "./games.api.js";
 import { errorResponse, successResponse } from "../utils.js";
 
 const gameHandlers = {
   "blast-alpha": () =>
-    import("./blast-alpha/gameHandler").then((module) => module.gameHandler),
+    import("./blast-alpha/blastAlpha.handler.js").then((module) => module.gameHandler),
 };
 
 async function getGameHandler(gameSlug) {

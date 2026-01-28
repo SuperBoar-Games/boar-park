@@ -54,7 +54,7 @@ export const updateCard = async (db, payload) => {
       payload.ability_text2 ?? null,
       payload.need_review ?? null,
       payload.user,
-      payload.cardId
+      payload.cardId,
     )
     .first();
 
