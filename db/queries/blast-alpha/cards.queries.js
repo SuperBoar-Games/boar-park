@@ -9,16 +9,14 @@ export const CARD_BASE_COLUMNS = `
   c.ability_text2,
   c.need_review,
   c.last_update_user
-`;
+`; 
 
 export const GET_CARDS_BY_HERO_AND_MOVIE = `
   SELECT
     ${CARD_BASE_COLUMNS},
-    m.title AS movie_title,
     GROUP_CONCAT(DISTINCT t.id) AS tag_ids,
     GROUP_CONCAT(DISTINCT t.name) AS tag_names
   FROM cards c
-  LEFT JOIN movies m ON m.id = c.movie_id
   LEFT JOIN card_tags ct ON ct.card_id = c.id
   LEFT JOIN tags t ON t.id = ct.tag_id
   WHERE c.hero_id = ?
@@ -31,6 +29,7 @@ export const GET_ALL_CARDS_BY_HERO = `
   SELECT
     ${CARD_BASE_COLUMNS},
     m.title AS movie_title,
+    m.locked AS movie_locked,
     GROUP_CONCAT(DISTINCT t.id) AS tag_ids,
     GROUP_CONCAT(DISTINCT t.name) AS tag_names
   FROM cards c

@@ -253,9 +253,7 @@ function th(label, key) {
 }
 
 function actions(row) {
-  const locked = Number(row.locked) === 1;
-
-  if (locked) {
+  if (row.locked || row.movie_locked) {
     return `
       <div class="card-actions locked">
         <span title="Locked">${Icons.lock}</span>
@@ -282,16 +280,16 @@ function moviesTableShell() {
       <thead>
         <tr>
           ${th("Title", "title")}
-          ${th("Total Cards", "total_cards")}
-          ${th("Needs Review", "total_cards_need_review")}
+          ${th("# Cards", "total_cards")}
+          ${th("# Review Cards", "total_cards_need_review")}
           ${th("Status", "done")}
           ${th("Review", "need_review")}
           <th>Actions</th>
         </tr>
         <tr class="filters">
-          <th><input data-filter="movies.title" value="${f.title}"></th>
-          <th><input type="number" data-filter="movies.totalMin" value="${f.totalMin}"></th>
-          <th><input type="number" data-filter="movies.reviewMin" value="${f.reviewMin}"></th>
+          <th><input data-filter="movies.title" placeholder="Filter..." value="${f.title}"></th>
+          <th><input type="number" data-filter="movies.totalMin" placeholder="Filter..." value="${f.totalMin}"></th>
+          <th><input type="number" data-filter="movies.reviewMin" placeholder="Filter..." value="${f.reviewMin}"></th>
           <th>
             <select data-filter="movies.status">
               <option value="all">All</option>
@@ -363,7 +361,7 @@ export function renderTableShell() {
   state.ui.tableContainer.innerHTML = `
     <div class="title-header">
       <h2>${state.heroName || "Movies"}</h2>
-      <div class="header-actions">
+      <div class="hero-header-actions">
         <button id="back-to-game">Back</button>
         <button id="toggle-view">${state.viewMode === "movies" ? "View Cards" : "View Movies"}</button>
         <button id="add-item">${state.viewMode === "movies" ? "Add Movie" : "Add Card"}</button>
@@ -625,7 +623,9 @@ export function initDelegatedHandlers() {
 
       if (e.target.closest(".movie-clickable")) {
         history.pushState({}, "", `?heroId=${state.heroId}&movieId=${id}`);
-        loadMovieDetails(id, state.heroId);
+        const movieTitle = m.title || "Movie";
+        const movieLocked = Number(m.locked) === 1;
+        loadMovieDetails(id, state.heroId, movieTitle, movieLocked);
         return;
       }
 

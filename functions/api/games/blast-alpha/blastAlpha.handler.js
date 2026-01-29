@@ -9,6 +9,7 @@ import {
   createMovie,
   updateMovie,
   deleteMovie,
+  updateMovieLockedStatus,
 } from "./movies.api.js";
 import {
   getCardsByHeroAndMovieId,
@@ -51,6 +52,7 @@ const queryMap = {
     card: updateCard,
     tags: updateTag,
     setTagsForCard: setTagsForCard,
+    updateMovieLockedStatus: updateMovieLockedStatus,
   },
   DELETE: {
     hero: deleteHero,

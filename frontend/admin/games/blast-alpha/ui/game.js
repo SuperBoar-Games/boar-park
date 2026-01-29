@@ -71,14 +71,14 @@ function renderTableStructure() {
   contentSection.innerHTML = `
     <div class="title-header">
       <h2>Blast Alpha</h2>
-      <div class="header-actions">
+      <div class="talkies-header-actions">
         <button id="back-to-admin">Back to Admin</button>
         <button id="clear-filters" class="secondary-btn">Clear Filters</button>
         <button class="add-hero">Add Hero</button>
       </div>
     </div>
     <div class="table-wrapper">
-      <table class="movie-table" id="hero-table">
+      <table class="hero-table" id="hero-table">
         <thead>
           <tr>
             ${th("Hero Name", "name")}
@@ -109,11 +109,11 @@ function renderTableRows() {
   }
   return gameState.filteredData.map(hero => `
     <tr class="hero-row" data-hero-id="${hero.id}">
-      <td class="movie-clickable movie-title-row">${hero.name}</td>
-      <td class="movie-clickable">${hero.category}</td>
-      <td class="movie-clickable">${hero.total_movies || 0}</td>
-      <td class="movie-clickable">${hero.pending_movies || 0}</td>
-      <td class="movie-clickable">${hero.total_cards || 0}</td>
+      <td class="hero-clickable">${hero.name}</td>
+      <td>${hero.category}</td>
+      <td>${hero.total_movies || 0}</td>
+      <td>${hero.pending_movies || 0}</td>
+      <td>${hero.total_cards || 0}</td>
       <td>
         <div class="card-actions">
           <button class="edit-btn" type="button">${Icons.edit}</button>
@@ -183,14 +183,14 @@ function attachEventListeners() {
     // Exit if clicking buttons or action UI
     if (e.target.closest("button") || e.target.closest(".card-actions")) return;
 
-    const cell = e.target.closest(".movie-clickable");
+    const cell = e.target.closest(".hero-clickable");
     if (!cell) return;
 
     const row = cell.closest("tr");
     const heroId = row?.getAttribute("data-hero-id");
     if (!heroId) return;
 
-    const heroName = row.querySelector(".movie-title-row").textContent.trim();
+    const heroName = row.querySelector(".hero-clickable").textContent.trim();
     
     history.pushState(
       { section: "hero", heroId },

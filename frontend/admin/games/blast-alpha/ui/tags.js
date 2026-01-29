@@ -81,23 +81,28 @@ function mount() {
   state.root.innerHTML = `
     <div class="tags-header">
       <h2>Tags</h2>
-      <div class="header-actions">
+      <div class="tags-header-actions">
         <button id="add-tag">Add Tag</button>
       </div>
     </div>
 
     <div class="tags-table-wrapper">
       <table class="tags-table">
+        <colgroup>
+          <col style="width: 50%;" />
+          <col style="width: 15%;" />
+          <col style="width: 35%;" />
+        </colgroup>
         <thead>
           <tr>
             ${th("Tag", "tag_name")}
-            ${th("Cards", "card_count")}
+            ${th("# Cards", "card_count")}
             <th>Actions</th>
           </tr>
           <tr class="filters">
             ${filterInput("tag_name")}
             ${filterInput("card_count")}
-            <td></td>
+            <th></th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -125,8 +130,10 @@ function renderBody() {
         <td>${t.tag_name}</td>
         <td>${t.card_count ?? 0}</td>
         <td>
-          <button class="edit">${Icons.edit}</button>
-          <button class="delete">${Icons.delete}</button>
+          <div class="tags-table-actions">
+            <button class="edit">${Icons.edit}</button>
+            <button class="delete">${Icons.delete}</button>
+          </div>
         </td>
       </tr>
     `
@@ -168,9 +175,9 @@ function th(label, key) {
 
 function filterInput(key) {
   return `
-    <td>
+    <th>
       <input data-filter="${key}" value="${state.filters[key]}" />
-    </td>
+    </th>
   `;
 }
 

@@ -6,6 +6,7 @@ import {
   GET_ALL_CARDS_BY_HERO,
   GET_CARD_BY_ID
 } from "../../../../db/queries/blast-alpha/cards.queries.js";
+import { GET_MOVIE_BY_ID } from "../../../../db/queries/blast-alpha/movies.queries.js";
 import { APIResponse } from "../../utils.js";
 
 
@@ -125,7 +126,23 @@ export const getCardsByHeroAndMovieId = async (db, { heroId, movieId }) => {
     };
   });
 
-  return APIResponse(true, cards, "Cards fetched.");
+  // get movie details
+  const movieResp = await db
+    .prepare(GET_MOVIE_BY_ID)
+    .bind(movieId)
+    .first();
+
+  if (!movieResp) {
+    return APIResponse(false, null, "Failed to fetch movie details.");
+  }
+
+  const movieDetails = {
+    id: movieResp.id,
+    title: movieResp.title,
+    is_locked: Number(movieResp.locked) === 1,
+  };
+
+  return APIResponse(true, { movie: movieDetails, cards }, "Cards fetched.");
 };
 
 export const getAllCardsByHeroId = async (db, { heroId }) => {

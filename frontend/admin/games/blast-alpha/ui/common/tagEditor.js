@@ -6,6 +6,7 @@ export function createTagEditor({
   tagsById,
   initialTagIds,
   onChange,
+  disableEditing = false,
 }) {
   container.dataset.tags = initialTagIds.join(",");
 
@@ -18,20 +19,40 @@ export function createTagEditor({
           .map((id) => {
             const tag = tagsById[id];
             if (!tag) return "";
+
             return `
               <span class="tag">
                 ${tag.name}
-                <button class="remove-tag" data-tag-id="${id}" type="button">
-                  ${Icons.x}
-                </button>
+                ${
+                  disableEditing
+                    ? ""
+                    : `
+                      <button
+                        class="remove-tag"
+                        data-tag-id="${id}"
+                        type="button"
+                      >
+                        ${Icons.x}
+                      </button>
+                    `
+                }
               </span>
             `;
           })
           .join("")
       : `<span class="tag muted">No tags</span>`;
+
+    // hide add button when editing disabled
+    const addBtn = container.querySelector(".add-tag-button");
+    if (addBtn) {
+      addBtn.disabled = disableEditing;
+      addBtn.classList.toggle("is-hidden", disableEditing);
+    }
   }
 
   function setTags(ids, { rollback } = {}) {
+    if (disableEditing) return;
+
     const prev = container.dataset.tags;
     container.dataset.tags = ids.join(",");
     render();
@@ -39,6 +60,7 @@ export function createTagEditor({
   }
 
   function openInput() {
+    if (disableEditing) return;
     if (container.querySelector(".tag-input-wrapper")) return;
 
     const wrapper = document.createElement("div");
@@ -141,6 +163,8 @@ export function createTagEditor({
   }
 
   container.addEventListener("click", (e) => {
+    if (disableEditing) return;
+
     const addBtn = e.target.closest(".add-tag-button");
     if (addBtn) openInput();
 
@@ -156,4 +180,5 @@ export function createTagEditor({
 
   render();
 }
+
 

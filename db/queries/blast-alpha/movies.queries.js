@@ -11,6 +11,7 @@ export const GET_MOVIE_CARD_STATS_BY_HERO_ID_QUERY = `
     m.id,
     m.title,
     m.need_review,
+    m.locked,
     m.last_update_user,
     COUNT(c.id) AS total_cards,
     COUNT(CASE WHEN c.need_review = 'T' THEN 1 END) AS total_cards_need_review,
@@ -25,6 +26,12 @@ export const GET_MOVIE_CARD_STATS_BY_HERO_ID_QUERY = `
   WHERE m.hero_id = ?
   GROUP BY m.id
   ORDER BY m.id ASC;
+`;
+
+export const GET_MOVIE_BY_ID = `
+  SELECT *
+  FROM movies
+  WHERE id = ?;
 `;
 
 export const CHECK_MOVIE_EXISTS_QUERY = `

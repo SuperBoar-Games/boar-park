@@ -9,6 +9,7 @@ export const state = {
   heroId: null,
   movieId: null,
   movieTitle: null,
+  movieIsLocked: false,
 
   cards: [],
   tags: [],
@@ -82,6 +83,15 @@ export const api = {
     });
     return res.data;
   },
+
+  async updateMovieLockedStatus(movieId, isLocked) {
+    const res = await json(`${BASE}&queryKey=updateMovieLockedStatus`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: movieId, locked: isLocked }),
+    });
+    return res.data;
+  },
 };
 
 /* =========================================================
@@ -131,6 +141,29 @@ export function attachTagEditor(container, card) {
         }
       }
     },
+
+    disableEditing: state.movieIsLocked,
+  });
+}
+
+function reattachAllTagEditors() {
+  state.cards.forEach(card => {
+    const cardEl = state.ui.cardsContainer.querySelector(
+      `[data-card-id="${card.id}"]`
+    );
+    if (!cardEl) return;
+
+    const container = cardEl.querySelector(".card-tags");
+    if (!container) return;
+
+    // reset container but keep structure
+    container.innerHTML = `
+      <label>Tags</label>
+      <div class="tags-list"></div>
+      <button type="button" class="add-tag-button">Add Tag</button>
+    `;
+
+    attachTagEditor(container, card);
   });
 }
 
@@ -147,12 +180,25 @@ function renderHeader() {
 
   header.innerHTML = `
     <h2>${state.movieTitle || "Movie Details"}</h2>
+
     <div class="header-actions">
-      <button id="back-to-hero">Back</button>
-      <button id="add-card">Add Card</button>
+      <div class="left-actions">
+        <button id="back-to-hero">Back</button>
+        <button id="add-card">Add Card</button>
+      </div>
+
+      <button
+        id="toggle-lock"
+        class="lock-button ${state.movieIsLocked ? "locked" : "unlocked"}"
+        aria-pressed="${state.movieIsLocked}"
+      >
+        ${state.movieIsLocked ? Icons.lock : Icons.unlock}
+        <span>${state.movieIsLocked ? "Locked" : "Unlocked"}</span>
+      </button>
     </div>
   `;
 }
+
 
 function renderCards() {
   const wrap = state.ui.cardsContainer;
@@ -366,6 +412,20 @@ export function initMovieEvents() {
   const root = state.ui.contentSection;
 
   root.addEventListener("click", async e => {
+
+    if (state.movieIsLocked) {
+      if (
+        e.target.closest("#add-card") ||
+        e.target.closest(".review-action") ||
+        e.target.closest(".edit") ||
+        e.target.closest(".delete") ||
+        e.target.closest(".add-tag-button") ||
+        e.target.closest(".remove-tag")
+      ) {
+        return;
+      }
+    }
+
     if (e.target.closest("#back-to-hero")) {
       history.pushState(
         { section: "hero", heroId: state.heroId },
@@ -377,10 +437,35 @@ export function initMovieEvents() {
     }
 
     if (e.target.closest("#add-card")) {
+      if (state.movieIsLocked) return;
       openCardModal({ edit: false });
       return;
     }
 
+    if (e.target.closest("#toggle-lock")) {
+      const btn = e.target.closest("#toggle-lock");
+      const newLockedStatus = !state.movieIsLocked;
+
+      try {
+        const res = await api.updateMovieLockedStatus(state.movieId, newLockedStatus);
+      
+        state.movieIsLocked = newLockedStatus;
+        btn.className = `lock-button ${newLockedStatus ? "locked" : "unlocked"}`;
+        btn.setAttribute("aria-pressed", String(newLockedStatus));
+        btn.innerHTML = `
+          ${newLockedStatus ? Icons.lock : Icons.unlock}
+          <span>${newLockedStatus ? "Locked" : "Unlocked"}</span>
+        `;
+        patchLockedUI();
+        reattachAllTagEditors();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to update movie lock status");
+      }
+      return;
+    }
+
+    // -----------------------
     const cardEl = e.target.closest("[data-card-id]");
     if (!cardEl) return;
 
@@ -395,6 +480,7 @@ export function initMovieEvents() {
     }
 
     if (e.target.closest(".edit")) {
+      if (state.movieIsLocked) return;
       openCardModal({ edit: true, data: card });
     }
 
@@ -410,15 +496,48 @@ export function initMovieEvents() {
   });
 }
 
+function patchLockedUI() {
+  const addCardBtn = state.ui.contentSection.querySelector("#add-card");
+  if (addCardBtn) {
+    addCardBtn.disabled = state.movieIsLocked;
+    addCardBtn.classList.toggle("is-hidden", state.movieIsLocked);
+  }
+
+  // card actions
+  const cardActions = state.ui.contentSection.querySelectorAll(
+    ".movie-card-details .card-actions button"
+  );
+  for (const btn of cardActions) {
+    btn.disabled = state.movieIsLocked;
+    btn.classList.toggle("is-hidden", state.movieIsLocked);
+  }
+
+  // add tag button
+  const addTagButtons = state.ui.contentSection.querySelectorAll(
+    ".movie-card-details .add-tag-button"
+  );
+  for (const btn of addTagButtons) {
+    btn.disabled = state.movieIsLocked;
+    btn.classList.toggle("is-hidden", state.movieIsLocked);
+  }
+
+  // remove tag buttons
+  const removeTagButtons = state.ui.contentSection.querySelectorAll(
+    ".movie-card-details .tags-list .remove-tag"
+  );
+  for (const btn of removeTagButtons) {
+    btn.disabled = state.movieIsLocked;
+    btn.classList.toggle("is-hidden", state.movieIsLocked);
+  }
+}
+
 /* =========================================================
    entry point
    ========================================================= */
 let eventsInit = false;
 
-export async function loadMovieDetails(movieId, heroId, movieTitle) {
-  state.movieId = movieId;
+export async function loadMovieDetails(movieId, heroId, movieTitle, locked) {
   state.heroId = heroId;
-  state.movieTitle = movieTitle;
 
   state.ui.contentSection = document.getElementById("content-section");
 
@@ -434,12 +553,17 @@ export async function loadMovieDetails(movieId, heroId, movieTitle) {
     api.getTags(),
   ]);
 
-  state.cards = cardsRes || [];
+  state.movieId = movieId;
+  state.movieTitle = cardsRes.movie.title || movieTitle;
+  state.movieIsLocked = cardsRes.movie.is_locked;
+
+  state.cards = cardsRes.cards || [];
   state.tags = tagsRes || [];
   state.tagsById = Object.fromEntries(
     state.tags.map(t => [String(t.id), t])
   );
 
   renderMoviePage();
+  patchLockedUI();
 }
 
