@@ -89,8 +89,8 @@ export const gameHandler = async (context) => {
       payload.user = request.headers.get("x-bp-user");
       payload.gameSlug = url.searchParams.get("gameSlug");
     }
-
-    const resp = await handler(env.BoarDB, payload);
+    
+    const resp = await handler(env.BoarDB, payload, env);
 
     if (!resp?.success) {
       return errorResponse(resp?.message || "Operation failed", 400);

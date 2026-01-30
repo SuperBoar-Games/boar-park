@@ -92,6 +92,16 @@ export const api = {
     });
     return res.data;
   },
+
+  async unlockMovie(movieId, password) {
+    const res = await json(`${BASE}&queryKey=unlockMovie`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: movieId, password }),
+      credentials: "include",
+    });
+    return res.data;
+  },
 };
 
 /* =========================================================

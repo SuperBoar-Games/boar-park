@@ -137,9 +137,17 @@ export const deleteMovie = async (db, { id }) => {
   return APIResponse(true, movie, "Movie deleted");
 };
 
-export const updateMovieLockedStatus = async (db, { id, locked, user }) => {
+
+export const updateMovieLockedStatus = async (db, { id, locked, user }, env) => {
   if (id === undefined || locked === undefined || !user) {
     return APIResponse(false, null, "Missing id, locked status, or user");
+  }
+
+  if (!locked) {
+    const allowedUsers = (env.BOARS || "").split(",").map(u => u.trim());
+    if (!allowedUsers.includes(user)) {
+      return APIResponse(false, null, "User not authorized to update locked status");
+    }
   }
 
   const movie = await db
