@@ -10,3 +10,11 @@ node_modules/
 .dev.vars
 
 .vscode/
+
+# Environment variables (may contain sensitive data)
+.env
+.env.local
+
+# Seed data files (contain user emails and sensitive information)
+db/seeds/
+seed_data.sql

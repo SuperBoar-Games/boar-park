@@ -3,7 +3,7 @@ const logoutButton = document.getElementById("logout-button");
 
 export async function loadGames() {
   try {
-    const res = await fetch("/api-proxy/games");
+    const res = await fetch("/api/games");
 
     if (!res.ok) {
       const message = `Error: ${res.status} - ${res.statusText}`;

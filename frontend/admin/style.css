@@ -1,92 +1,4 @@
-:root {
-  --clr-dark-a0: #000000;
-  --clr-light-a0: #ffffff;
-
-  /** Theme primary colors */
-  --clr-primary-a0: #38473f;
-  --clr-primary-a10: #4c5952;
-  --clr-primary-a20: #606c65;
-  --clr-primary-a30: #75807a;
-  --clr-primary-a40: #8a948f;
-  --clr-primary-a50: #a1a8a4;
-
-  /** Theme surface colors */
-  --clr-surface-a0: #171717;
-  --clr-surface-a10: #2c2c2c;
-  --clr-surface-a20: #434343;
-  --clr-surface-a30: #5b5b5b;
-  --clr-surface-a40: #747474;
-  --clr-surface-a50: #8e8e8e;
-
-  /** Theme tonal surface colors */
-  --clr-surface-tonal-a0: #1a1b1b;
-  --clr-surface-tonal-a10: #2f3030;
-  --clr-surface-tonal-a20: #454646;
-  --clr-surface-tonal-a30: #5d5e5e;
-  --clr-surface-tonal-a40: #767777;
-  --clr-surface-tonal-a50: #909090;
-}
-
-html,
-body {
-  height: 100%;
-  margin: 0;
-  background-color: var(--clr-surface-a0);
-  color: var(--clr-light-a0);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-}
-
-header {
-  background-color: var(--clr-surface-tonal-a10);
-  color: var(--clr-light-a0);
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--clr-surface-a20);
-  backdrop-filter: blur(10px);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-header h1 {
-  color: var(--clr-light-a0);
-  font-size: 1.5em;
-  margin: 0;
-}
-
-header p {
-  color: var(--clr-surface-a40);
-  font-size: 0.85em;
-  margin: 0;
-}
-
-.header-actions {
-  display: flex;
-  gap: 15px;
-}
-
-.header-actions button,
-.header-actions a {
-  background: none;
-  color: var(--clr-surface-a40);
-  border: 1px solid var(--clr-surface-a30);
-  padding: 8px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  text-decoration: none;
-  font-size: 0.9em;
-  transition: color 0.3s ease, border-color 0.3s ease;
-}
-
-.header-actions button:hover,
-.header-actions a:hover {
-  color: var(--clr-primary-a40);
-  border-color: var(--clr-primary-a40);
-  transform: scale(1.05);
-  transition: transform 0.2s ease;
-}
+@import url('/admin/header.css');
 
 main {
   padding: 20px;
@@ -148,7 +60,7 @@ h2::after {
 a {
   text-decoration: none;
   background-color: var(--clr-primary-a40);
-  color: var(--clr-surface-a0);
+  color: var(--clr-dark-a0);
   padding: 8px 12px;
   border-radius: 4px;
   font-weight: bold;

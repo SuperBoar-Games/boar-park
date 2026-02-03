@@ -1,8 +1,16 @@
 {
+  "name": "boar-park",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "build": "bun build src/index.ts --outdir dist"
+  },
   "dependencies": {
     "jose": "^6.0.10"
   },
   "devDependencies": {
-    "wrangler": "^4.54.0"
+    "bun-types": "latest"
   }
 }
