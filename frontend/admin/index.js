@@ -7,14 +7,14 @@ export async function loadGames() {
 
     if (!res.ok) {
       const message = `Error: ${res.status} - ${res.statusText}`;
-      gameList.innerHTML = `<li>${message}</li>`;
+      gameList.innerHTML = `<li style="color: var(--clr-danger); padding: 1rem;">${message}</li>`;
       return;
     }
 
     const { data: games } = await res.json();
 
     if (!games?.length) {
-      gameList.innerHTML = "<li>No games available.</li>";
+      gameList.innerHTML = "<li style=\"color: var(--clr-text-muted); padding: 1rem;\"><i class=\"fas fa-inbox\"></i> No games available.</li>";
       return;
     }
 
@@ -23,14 +23,14 @@ export async function loadGames() {
         (game) => `
         <li>
           <strong>${game.name}</strong>
-          <a href="/admin/games/${game.slug}">Enter</a>
+          <a href="/admin/games/${game.slug}" class="enter-game-btn"><i class="fas fa-arrow-right"></i> Enter Game</a>
         </li>
       `
       )
       .join("");
   } catch (err) {
     console.error("Failed to load games:", err);
-    gameList.innerHTML = `<li>${err.message || "Error loading data"}</li>`;
+    gameList.innerHTML = `<li style="color: var(--clr-danger); padding: 1rem;"><i class="fas fa-exclamation-circle"></i> ${err.message || "Error loading data"}</li>`;
   }
 }
 
@@ -44,5 +44,5 @@ if (logoutButton) {
       "http://super-boar.cloudflareaccess.com/cdn-cgi/access/logout?returnTo=https://superboar.com";
   });
 } else {
-  console.error("Logout button not found.  Check the HTML.");
+  console.error("Logout button not found. Check the HTML.");
 }

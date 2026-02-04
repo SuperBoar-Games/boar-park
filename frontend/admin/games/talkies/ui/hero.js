@@ -317,12 +317,12 @@ ${th("Ability 2", "ability_text2")}
           <th>Actions</th>
         </tr>
         <tr class="filters">
-          <th><input data-filter="cards.movieTitle" value="${f.movieTitle}"></th>
-          <th><input data-filter="cards.name" value="${f.name}"></th>
-          <th><input data-filter="cards.type" value="${f.type}"></th>
-          <th><input data-filter="cards.callSign" value="${f.callSign}"></th>
-          <th><input data-filter="cards.ability1" value="${f.ability1}"></th>
-          <th><input data-filter="cards.ability2" value="${f.ability2}"></th>
+          <th><input data-filter="cards.movieTitle" placeholder="Filter..." value="${f.movieTitle}"></th>
+          <th><input data-filter="cards.name" placeholder="Filter..." value="${f.name}"></th>
+          <th><input data-filter="cards.type" placeholder="Filter..." value="${f.type}"></th>
+          <th><input data-filter="cards.callSign" placeholder="Filter..." value="${f.callSign}"></th>
+          <th><input data-filter="cards.ability1" placeholder="Filter..." value="${f.ability1}"></th>
+          <th><input data-filter="cards.ability2" placeholder="Filter..." value="${f.ability2}"></th>
           <th>
             <select data-filter="cards.tag">
               <option value="">All</option>
@@ -706,7 +706,7 @@ function ensureLayout() {
   const tags = document.createElement("div");
   tags.className = "tags-section";
 
-  contentSection.append(table, document.createElement("hr"), tags);
+  contentSection.append(table, tags);
 
   state.ui.contentSection = contentSection;
   state.ui.tableContainer = table;

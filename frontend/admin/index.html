@@ -4,25 +4,114 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BoarAdmin</title>
-    <link rel="stylesheet" href="/admin/style.css" />
+    <title>Boar Park Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link rel="stylesheet" href="/css/theme.css" />
 </head>
 
 <body>
     <header>
-        <h1>Boar Park Admin</h1>
-        <p>tread carefully!</p>
+        <div>
+            <h1>Boar Park Admin</h1>
+            <p>Tread carefully!</p>
+        </div>
         <div class="title-header-actions">
-            <button id="logout-button">Logout</button>
+            <select id="theme-selector" class="theme-selector" title="Change color theme">
+                <option value="mocha">🌙 Mocha (Dark)</option>
+                <option value="macchiato">☕ Macchiato (Dark)</option>
+                <option value="frappe">🍫 Frappe (Dark)</option>
+                <option value="latte">🥛 Latte (Light)</option>
+            </select>
+            <button type="button" class="theme-mobile-btn" aria-haspopup="dialog" aria-controls="theme-modal"
+                aria-label="Change theme">
+                <span class="theme-mobile-icon" aria-hidden="true">🌙</span>
+            </button>
+            <button id="logout-button"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></button>
         </div>
     </header>
 
+    <div id="theme-modal" class="theme-modal" aria-hidden="true">
+        <div class="theme-modal-content" role="dialog" aria-modal="true" aria-labelledby="theme-modal-title">
+            <div class="theme-modal-header">
+                <h3 id="theme-modal-title">Select theme</h3>
+                <button type="button" class="theme-modal-close" aria-label="Close">×</button>
+            </div>
+            <div class="theme-modal-body">
+                <button type="button" class="theme-modal-option" data-theme="mocha">🌙 Mocha</button>
+                <button type="button" class="theme-modal-option" data-theme="macchiato">☕ Macchiato</button>
+                <button type="button" class="theme-modal-option" data-theme="frappe">🍫 Frappe</button>
+                <button type="button" class="theme-modal-option" data-theme="latte">🥛 Latte</button>
+            </div>
+        </div>
+    </div>
+
     <main>
         <section id="games-section">
-            <h2>Games</h2>
+            <h2><i class="fas fa-gamepad"></i> Games</h2>
             <ul id="games-list"></ul>
         </section>
     </main>
+
+    <script>
+        // Theme selector
+        const themeSelector = document.getElementById('theme-selector');
+        const themeButtons = document.querySelectorAll('.theme-modal-option');
+        const themeModal = document.getElementById('theme-modal');
+        const themeMobileBtn = document.querySelector('.theme-mobile-btn');
+        const themeMobileIcon = document.querySelector('.theme-mobile-icon');
+        const themeModalClose = document.querySelector('.theme-modal-close');
+        const savedTheme = localStorage.getItem('catppuccin-theme') || 'mocha';
+
+        const themeIconMap = {
+            mocha: '🌙',
+            macchiato: '☕',
+            frappe: '🍫',
+            latte: '🥛'
+        };
+
+        const applyTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('catppuccin-theme', theme);
+            if (themeSelector) themeSelector.value = theme;
+            themeButtons.forEach(btn => btn.classList.toggle('is-active', btn.dataset.theme === theme));
+            if (themeMobileIcon) themeMobileIcon.textContent = themeIconMap[theme] || '🎨';
+        };
+
+        // Set initial theme
+        applyTheme(savedTheme);
+
+        // Listen for theme changes (select)
+        themeSelector?.addEventListener('change', (e) => {
+            applyTheme(e.target.value);
+        });
+
+        // Listen for theme changes (modal options)
+        themeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                applyTheme(btn.dataset.theme);
+                themeModal?.classList.remove('is-open');
+                themeModal?.setAttribute('aria-hidden', 'true');
+            });
+        });
+
+        // Mobile modal open/close
+        themeMobileBtn?.addEventListener('click', () => {
+            themeModal?.classList.add('is-open');
+            themeModal?.setAttribute('aria-hidden', 'false');
+        });
+
+        themeModalClose?.addEventListener('click', () => {
+            themeModal?.classList.remove('is-open');
+            themeModal?.setAttribute('aria-hidden', 'true');
+        });
+
+        themeModal?.addEventListener('click', (e) => {
+            if (e.target === themeModal) {
+                themeModal.classList.remove('is-open');
+                themeModal.setAttribute('aria-hidden', 'true');
+            }
+        });
+    </script>
 
     <script type="module" src="/admin/index.js"></script>
 </body>

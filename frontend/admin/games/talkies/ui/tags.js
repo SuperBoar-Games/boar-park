@@ -99,8 +99,8 @@ function mount() {
     <div class="tags-table-wrapper">
       <table class="tags-table">
         <colgroup>
-          <col style="width: 50%;" />
-          <col style="width: 15%;" />
+          <col style="width: 40%;" />
+          <col style="width: 25%;" />
           <col style="width: 35%;" />
         </colgroup>
         <thead>
@@ -184,9 +184,13 @@ function th(label, key) {
 }
 
 function filterInput(key) {
+  const placeholders = {
+    tag_name: "Filter by tag name...",
+    card_count: "Filter by count..."
+  };
   return `
     <th>
-      <input data-filter="${key}" value="${state.filters[key]}" />
+      <input data-filter="${key}" placeholder="${placeholders[key] || 'Filter...'}" value="${state.filters[key]}" />
     </th>
   `;
 }
