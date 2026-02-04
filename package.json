@@ -4,13 +4,20 @@
   "type": "module",
   "scripts": {
     "dev": "bun run --watch src/index.ts",
+    "dev:react": "bun --hot index.html",
     "start": "bun run src/index.ts",
-    "build": "bun build src/index.ts --outdir dist"
+    "build": "bun build src/index.ts --outdir dist",
+    "build:client": "bun build src/client/main.tsx --outdir dist/client --minify --sourcemap"
   },
   "dependencies": {
-    "jose": "^6.0.10"
+    "jose": "^6.0.10",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.0"
   },
   "devDependencies": {
+    "@types/react": "^19.2.11",
+    "@types/react-dom": "^19.2.3",
     "bun-types": "latest"
   }
 }

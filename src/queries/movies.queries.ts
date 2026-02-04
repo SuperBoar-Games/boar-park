@@ -4,17 +4,20 @@
 
 export const GET_MOVIE_CARD_STATS_BY_HERO_ID_QUERY = `
     SELECT
-        movie_id AS id,
-        title,
-        need_review,
-        locked,
-        last_update_user,
-        total_cards,
-        total_cards_need_review,
-        done
-    FROM movie_stats
-    WHERE hero_id = $1
-    ORDER BY movie_id ASC
+        ms.movie_id AS id,
+        ms.title,
+        ms.need_review,
+        ms.locked,
+        ms.last_update_user,
+        ms.total_cards,
+        ms.total_cards_need_review,
+        ms.done,
+        ms.hero_id,
+        h.name AS hero_name
+    FROM movie_stats ms
+    JOIN heroes h ON ms.hero_id = h.id
+    WHERE ms.hero_id = $1
+    ORDER BY ms.movie_id ASC
 `;
 
 export const CHECK_MOVIE_EXISTS_QUERY = `

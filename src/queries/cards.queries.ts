@@ -14,13 +14,15 @@ export const GET_CARDS_BY_HERO_AND_MOVIE_QUERY = `
         c.ability_text2,
         c.need_review,
         c.last_update_user,
+        m.title AS movie_title,
         ARRAY_AGG(DISTINCT t.id) FILTER (WHERE t.id IS NOT NULL) AS tag_ids,
         ARRAY_AGG(DISTINCT t.name) FILTER (WHERE t.name IS NOT NULL) AS tag_names
     FROM cards c
+    LEFT JOIN movies m ON m.id = c.movie_id
     LEFT JOIN card_tags ct ON ct.card_id = c.id
     LEFT JOIN tags t ON t.id = ct.tag_id
     WHERE c.hero_id = $1 AND c.movie_id = $2
-    GROUP BY c.id, c.name, c.type, c.hero_id, c.movie_id, c.call_sign, c.ability_text, c.ability_text2, c.need_review, c.last_update_user
+    GROUP BY c.id, c.name, c.type, c.hero_id, c.movie_id, c.call_sign, c.ability_text, c.ability_text2, c.need_review, c.last_update_user, m.title
     ORDER BY c.type ASC, c.id ASC
 `;
 

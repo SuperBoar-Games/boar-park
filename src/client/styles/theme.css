@@ -1,0 +1,160 @@
+/* ========== CATPPUCCIN MOCHA THEME (Default) ========== */
+:root,
+:root[data-theme="mocha"] {
+    /* Primary Colors */
+    --ctp-primary: #cba6f7;
+    --ctp-secondary: #89b4fa;
+    --ctp-tertiary: #74c7ec;
+    --ctp-success: #a6e3a1;
+    --ctp-warning: #f9e2af;
+    --ctp-danger: #f38ba8;
+    --ctp-info: #89dceb;
+    --ctp-accent: #f5c2e7;
+
+    /* Text & Contrast */
+    --ctp-text: #cdd6f4;
+    --ctp-text-alt: #000000;
+    --ctp-subtext1: #bac2de;
+    --ctp-subtext0: #a6adc8;
+
+    /* Surface Colors (from light to dark) */
+    --ctp-surface2: #585b70;
+    --ctp-surface1: #45475a;
+    --ctp-surface0: #313244;
+    --ctp-base: #1e1e2e;
+
+    /* Additional Colors */
+    --ctp-overlay2: #9399b2;
+    --ctp-overlay1: #7f849c;
+    --ctp-overlay0: #6c7086;
+    --ctp-peach: #fab387;
+    --ctp-maroon: #eba0ac;
+    --ctp-red: #f38ba8;
+    --ctp-pink: #f5c2e7;
+    --ctp-flamingo: #f2cdcd;
+    --ctp-rosewater: #f5e0dc;
+    --ctp-lavender: #b4befe;
+    --ctp-blue: #89b4fa;
+    --ctp-sapphire: #74c7ec;
+    --ctp-sky: #89dceb;
+    --ctp-teal: #94e2d5;
+    --ctp-green: #a6e3a1;
+    --ctp-yellow: #f9e2af;
+}
+
+/* ========== CATPPUCCIN MACCHIATO THEME ========== */
+:root[data-theme="macchiato"] {
+    --ctp-primary: #c6a0f6;
+    --ctp-secondary: #8aadf4;
+    --ctp-tertiary: #7dc4e4;
+    --ctp-success: #a6da95;
+    --ctp-warning: #eed49f;
+    --ctp-danger: #ed8796;
+    --ctp-info: #91d7e3;
+    --ctp-accent: #f5bde6;
+
+    --ctp-text: #cad3f5;
+    --ctp-text-alt: #000000;
+    --ctp-subtext1: #b8c0e0;
+    --ctp-subtext0: #a5adcb;
+
+    --ctp-surface2: #5b6078;
+    --ctp-surface1: #494d64;
+    --ctp-surface0: #363a4f;
+    --ctp-base: #24273a;
+
+    --ctp-overlay2: #939ab7;
+    --ctp-overlay1: #8087a2;
+    --ctp-overlay0: #6e738d;
+    --ctp-peach: #f5a97f;
+    --ctp-maroon: #ee99a0;
+    --ctp-red: #ed8796;
+    --ctp-pink: #f5bde6;
+    --ctp-flamingo: #f0c6c6;
+    --ctp-rosewater: #f4dbd6;
+    --ctp-lavender: #b7bdf8;
+    --ctp-blue: #8aadf4;
+    --ctp-sapphire: #7dc4e4;
+    --ctp-sky: #91d7e3;
+    --ctp-teal: #8bd5ca;
+    --ctp-green: #a6da95;
+    --ctp-yellow: #eed49f;
+}
+
+/* ========== CATPPUCCIN FRAPPE THEME ========== */
+:root[data-theme="frappe"] {
+    --ctp-primary: #ca9ee6;
+    --ctp-secondary: #8caaee;
+    --ctp-tertiary: #81c8be;
+    --ctp-success: #a6d189;
+    --ctp-warning: #e5c890;
+    --ctp-danger: #e78284;
+    --ctp-info: #99d1db;
+    --ctp-accent: #f4b8e4;
+
+    --ctp-text: #c6d0f5;
+    --ctp-text-alt: #000000;
+    --ctp-subtext1: #b5bfe2;
+    --ctp-subtext0: #a5adce;
+
+    --ctp-surface2: #626880;
+    --ctp-surface1: #51576d;
+    --ctp-surface0: #414559;
+    --ctp-base: #303446;
+
+    --ctp-overlay2: #949cbb;
+    --ctp-overlay1: #838ba7;
+    --ctp-overlay0: #737994;
+    --ctp-peach: #ef9f76;
+    --ctp-maroon: #ea999c;
+    --ctp-red: #e78284;
+    --ctp-pink: #f4b8e4;
+    --ctp-flamingo: #eebebe;
+    --ctp-rosewater: #f2d5cf;
+    --ctp-lavender: #babbf1;
+    --ctp-blue: #8caaee;
+    --ctp-sapphire: #85c1dc;
+    --ctp-sky: #99d1db;
+    --ctp-teal: #81c8be;
+    --ctp-green: #a6d189;
+    --ctp-yellow: #e5c890;
+}
+
+/* ========== CATPPUCCIN LATTE THEME (Light) ========== */
+:root[data-theme="latte"] {
+    --ctp-primary: #8839ef;
+    --ctp-secondary: #1e66f5;
+    --ctp-tertiary: #179299;
+    --ctp-success: #40a02b;
+    --ctp-warning: #df8e1d;
+    --ctp-danger: #d20f39;
+    --ctp-info: #04a5e5;
+    --ctp-accent: #ea76cb;
+
+    --ctp-text: #4c4f69;
+    --ctp-text-alt: #ffffff;
+    --ctp-subtext1: #5c5f77;
+    --ctp-subtext0: #6c6f85;
+
+    --ctp-surface2: #acb0be;
+    --ctp-surface1: #bcc0cc;
+    --ctp-surface0: #ccd0da;
+    --ctp-base: #eff1f5;
+
+    --ctp-overlay2: #7c7f93;
+    --ctp-overlay1: #8c8fa1;
+    --ctp-overlay0: #9ca0b0;
+    --ctp-peach: #fe640b;
+    --ctp-maroon: #e64553;
+    --ctp-red: #d20f39;
+    --ctp-pink: #ea76cb;
+    --ctp-flamingo: #dd7878;
+    --ctp-rosewater: #dc8a78;
+    --ctp-lavender: #7287fd;
+    --ctp-blue: #1e66f5;
+    --ctp-sapphire: #209fb5;
+    --ctp-sky: #04a5e5;
+    --ctp-teal: #179299;
+    --ctp-green: #40a02b;
+    --ctp-yellow: #df8e1d;
+}

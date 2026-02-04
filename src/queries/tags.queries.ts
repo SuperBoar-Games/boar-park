@@ -37,7 +37,8 @@ export const GET_TAG_COUNTS_BY_HERO_QUERY = `
         COUNT(DISTINCT ct.card_id) as card_count
     FROM tags t
     LEFT JOIN card_tags ct ON ct.tag_id = t.id
-    LEFT JOIN cards c ON c.id = ct.card_id AND c.hero_id = $1
+    LEFT JOIN cards c ON c.id = ct.card_id
+    WHERE c.hero_id = $1 OR c.hero_id IS NULL
     GROUP BY t.id, t.name
     ORDER BY t.name ASC
 `;

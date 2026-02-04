@@ -48,10 +48,25 @@ Bun.serve({
         const url = new URL(request.url);
         const method = request.method;
 
+        // CORS headers for development
+        const corsHeaders = {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        };
+
+        // Handle OPTIONS preflight requests
+        if (method === "OPTIONS") {
+            return new Response(null, {
+                status: 204,
+                headers: corsHeaders,
+            });
+        }
+
         // Health check
         if (url.pathname === "/health") {
             return new Response(JSON.stringify({ status: "ok" }), {
-                headers: { "Content-Type": "application/json" }
+                headers: { "Content-Type": "application/json", ...corsHeaders }
             });
         }
 
