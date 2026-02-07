@@ -26,30 +26,23 @@ DATABASE_URL=postgresql://user:password@localhost:5432/boar_park
 PORT=3000
 ```
 
-### Start Development Server
+### Start Backend Server
 ```bash
-# Start Bun dev server
 bun run dev
 
 # Server runs on http://localhost:3000
 ```
+### Start Frontend Server
+```bash
+bun run dev:react
+
+# Server runs on http://localhost:3001
+```
+
 
 ### Access Admin Interface
-- Admin Dashboard: `http://localhost:3000/admin`
-- Talkies Management: `http://localhost:3000/admin/games/talkies`
+- Admin Dashboard: `http://localhost:3001/admin`
 
-## Project Structure
-```
-/frontend/admin           # Admin UI
-  /games/talkies         # Talkies game management
-  header.css             # Shared header/theme styles
-  style.css              # Admin page styles
 
-/functions/api           # API endpoints
-/db                      # Database schema & migrations
-```
 
-## Documentation
-- [API Documentation](./docs/API.md) - REST endpoints and request/response formats
-- [Database Documentation](./docs/DATABASE.md) - Schema, tables, and materialized views
 

@@ -1,3 +1,5 @@
+// Theme selector dropdown component for switching between Catppuccin color schemes
+
 import React from 'react';
 import { useTheme } from './ThemeProvider';
 import { Select } from './Select';

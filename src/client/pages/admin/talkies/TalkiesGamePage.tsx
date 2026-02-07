@@ -1,10 +1,12 @@
+// Admin page for managing Talkies game heroes with sorting and filtering
+
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../../../components/AdminLayout';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
 import { Icons } from '../../../components/Icons';
-import { useHeroes, Hero, talkiesApi } from '../../../hooks/useTalkies';
+import { useHeroes, Hero, talkiesApi } from '../../../hooks/talkies/useTalkies';
 
 type SortKey = 'name' | 'industry' | 'total_movies' | 'pending_movies' | 'total_cards';
 

@@ -1,3 +1,5 @@
+// Custom select dropdown component with click-outside detection
+
 import React, { useState, useRef, useEffect } from 'react';
 
 interface SelectOption {

@@ -1,3 +1,5 @@
+// Theme context provider for managing application theming (Catppuccin themes)
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type Theme = 'mocha' | 'macchiato' | 'frappe' | 'latte';

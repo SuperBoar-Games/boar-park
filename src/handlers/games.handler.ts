@@ -1,3 +1,5 @@
+// Game API handlers for fetching game data
+
 import { sql } from "bun";
 import { jsonResponse } from "../utils";
 import { GET_ALL_GAMES_QUERY } from "../queries/games.queries";

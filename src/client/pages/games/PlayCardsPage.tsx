@@ -1,3 +1,5 @@
+// Play cards game page (placeholder for game implementation)
+
 import React from 'react';
 
 export default function PlayCardsPage() {

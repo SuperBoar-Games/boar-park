@@ -1,3 +1,5 @@
+// Movie details page for managing cards within a specific movie
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AdminLayout } from '../../../components/AdminLayout';
@@ -5,7 +7,7 @@ import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
 import { Select } from '../../../components/Select';
 import { Icons } from '../../../components/Icons';
-import { Card, Movie, talkiesApi, useTags } from '../../../hooks/useTalkies';
+import { Card, Movie, talkiesApi, useTags } from '../../../hooks/talkies/useTalkies';
 
 export default function MovieDetailsPage() {
     const { movieId } = useParams();

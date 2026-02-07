@@ -1,3 +1,5 @@
+// 404 Not Found page with link to home
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 

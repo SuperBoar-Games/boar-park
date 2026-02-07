@@ -1,3 +1,5 @@
+// Client entry point - renders React app to DOM root element
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';

@@ -1,3 +1,5 @@
+// Modal dialog component with close button and ESC key support
+
 import React, { useEffect, useRef } from 'react';
 import { Icons } from './Icons';
 import '../styles/modal.css';

@@ -1,3 +1,5 @@
+// API client wrapper with GET, POST, PUT, PATCH, DELETE methods
+
 // API base URL - uses backend server in dev, same origin in production
 const API_BASE_URL = import.meta.env.PROD ? '' : 'http://localhost:3000';
 

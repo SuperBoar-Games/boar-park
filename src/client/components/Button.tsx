@@ -1,3 +1,5 @@
+// Reusable button component with variant styling (primary, secondary, danger, lock)
+
 import React, { ButtonHTMLAttributes } from 'react';
 import '../styles/button.css';
 

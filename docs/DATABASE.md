@@ -1,94 +1,137 @@
 # Database Documentation
 
 ## Overview
-PostgreSQL database with materialized views for performance optimization. Automatic refresh triggers update views on data changes.
 
-## Schema
+Boar Park uses **PostgreSQL** as its primary database. The database is managed through migrations and includes support for complex queries, transactions, and data seeding.
 
-### Tables
+## Database Structure
 
-#### games
-| Column | Type | Constraints |
-|--------|------|-------------|
-| id | SERIAL | PRIMARY KEY |
-| name | VARCHAR(255) | NOT NULL, UNIQUE |
-| display_name | VARCHAR(255) | NOT NULL |
+### Core Tables
 
-Root entity. Each game can have multiple heroes.
+#### Users
+- `id` (integer, primary key)
+- `username` (string, unique)
+- `email` (string, unique)
+- `password_hash` (string)
+- `status` (enum: 'pending', 'active', 'disabled')
+- `is_verified` (boolean)
+- `created_at` (timestamp)
+- `updated_at` (timestamp)
 
-#### heroes
-| Column | Type | Constraints |
-|--------|------|-------------|
-| id | SERIAL | PRIMARY KEY |
-| game_id | INT | NOT NULL, FOREIGN KEY → games(id) |
-| name | VARCHAR(255) | NOT NULL |
-| industry | VARCHAR(255) | |
-| | | UNIQUE(game_id, name) |
+#### Games
+- `id` (integer, primary key)
+- `slug` (string, unique)
+- `name` (string)
+- `description` (text)
+- `created_at` (timestamp)
 
-Heroes belong to games. Each hero can have multiple movies.
+#### Heroes/Cards
+- `id` (integer, primary key)
+- `game_id` (integer, foreign key)
+- `name` (string)
+- `rarity` (string)
+- `created_at` (timestamp)
 
-#### movies
-| Column | Type | Constraints |
-|--------|------|-------------|
-| id | SERIAL | PRIMARY KEY |
-| hero_id | INT | NOT NULL, FOREIGN KEY → heroes(id) |
-| title | VARCHAR(255) | NOT NULL |
-| locked | BOOLEAN | DEFAULT FALSE |
-| | | UNIQUE(hero_id, title) |
+#### Movies
+- `id` (integer, primary key)
+- `game_id` (integer, foreign key)
+- `title` (string)
+- `description` (text)
+- `is_locked` (boolean)
+- `created_at` (timestamp)
 
-Movies belong to heroes and contain cards. Can be locked to prevent editing.
+#### Roles
+- `id` (integer, primary key)
+- `name` (string, unique)
+- `description` (text)
+- `created_at` (timestamp)
 
-#### cards
-| Column | Type | Constraints |
-|--------|------|-------------|
-| id | SERIAL | PRIMARY KEY |
-| movie_id | INT | NOT NULL, FOREIGN KEY → movies(id) |
-| type | VARCHAR(100) | |
-| name | VARCHAR(255) | NOT NULL |
-| description | TEXT | |
-| need_review | BOOLEAN | DEFAULT FALSE |
+#### User Roles (Junction Table)
+- `id` (integer, primary key)
+- `user_id` (integer, foreign key)
+- `role_id` (integer, foreign key)
+- `game_id` (integer, foreign key, nullable)
+- `created_at` (timestamp)
 
-Cards belong to movies. Can be tagged and marked for review.
+## Migrations
 
-#### tags
-| Column | Type | Constraints |
-|--------|------|-------------|
-| id | SERIAL | PRIMARY KEY |
-| name | VARCHAR(255) | NOT NULL, UNIQUE |
+Migrations are located in `/db/migrations/` and follow a numbered sequence for versioning.
 
-Tags for organization. Applied to cards via card_tags junction table.
+### Migration Files
 
-#### card_tags
-| Column | Type | Constraints |
-|--------|------|-------------|
-| card_id | INT | NOT NULL, FOREIGN KEY → cards(id) ON DELETE CASCADE |
-| tag_id | INT | NOT NULL, FOREIGN KEY → tags(id) ON DELETE CASCADE |
-| | | PRIMARY KEY(card_id, tag_id) |
+- **0001_initial_schema.sql** - Initial database schema
+- **0001_initial_schema_with_data.sql** - Initial schema with seed data
+- **0003_remove_status_column.sql** - Removed deprecated status column
+- **0004_create_stats_materialized_views.sql** - Created materialized views for statistics
+- **0005_create_stats_triggers.sql** - Created triggers for stats updates
+- **0006_auth_schema.sql** - Authentication schema with user roles
 
-Many-to-many relationship between cards and tags.
+### Running Migrations
 
-## Materialized Views
+Migrations are managed by the application startup process. To manually run a migration:
 
-### movie_stats
-Aggregates card count and review count per movie for fast lookups without counting on each query.
+```bash
+# Using Bun
+bun run db/migrations/[migration_file].sql
+```
 
-### hero_stats
-Aggregates movie and card counts per hero.
+## Database Utilities
 
-### tag_stats
-Aggregates card count per tag for stats display.
+Database utilities are located in `/db/utils.ts` and provide helper functions for common operations.
 
-## Indexes
+### Available Functions
 
-Key indexes for performance: idx_heroes_game_id, idx_movies_hero_id, idx_cards_movie_id, idx_card_tags_tag_id.
+#### `query<T>(sqlString: string, params: any[]): Promise<T[]>`
+Execute a raw SQL query and return results as an array.
 
-## Triggers
+```typescript
+import { query } from '../db/utils';
 
-Auto-refresh triggers on `cards`, `movies`, and `tags` automatically refresh the materialized views on INSERT/UPDATE/DELETE operations. Views stay up-to-date automatically without manual refresh calls.
+const users = await query('SELECT * FROM users WHERE status = $1', ['active']);
+```
 
-## Performance Notes
+#### `queryOne<T>(sqlString: string, params: any[]): Promise<T | null>`
+Execute a query and return the first result or null.
 
-- **Materialized Views**: Provides 10-100x faster aggregation queries compared to runtime calculations
-- **CONCURRENTLY Refresh**: Allows queries to run during view refresh - no locking
-- **Unique Indexes**: Prevent duplicate entries at database level
-- **Foreign Keys with CASCADE**: Automatically clean up related records on deletion
+```typescript
+const user = await queryOne('SELECT * FROM users WHERE id = $1', [userId]);
+```
+
+#### `transaction<T>(callback: () => Promise<T>): Promise<T>`
+Execute operations within a database transaction.
+
+```typescript
+const result = await transaction(async () => {
+    // Multiple queries within a transaction
+    await query('UPDATE users SET status = $1 WHERE id = $2', ['active', userId]);
+    await query('INSERT INTO logs ...');
+    return result;
+});
+```
+
+#### `exec<T>(sqlString: string, ...params: any[]): Promise<T[]>`
+Execute a query using Bun's native parameter binding (more efficient for complex queries).
+
+```typescript
+const results = await exec('SELECT * FROM users WHERE email = ?', userEmail);
+```
+
+## Schema Files
+
+The `/db/schema/` directory contains schema definitions:
+
+- **schema.sql** - Current database schema definition
+
+## Seeds
+
+Database seeds are located in `/db/seeds/` for initial data population.
+
+## Connection Configuration
+
+Database connection is managed through environment variables:
+
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/boar_park_db
+```
+
+

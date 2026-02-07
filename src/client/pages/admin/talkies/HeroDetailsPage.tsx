@@ -1,12 +1,15 @@
+// Hero details page for managing movies and cards for a specific hero
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AdminLayout } from '../../../components/AdminLayout';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
 import { Icons } from '../../../components/Icons';
-import { TagsSection } from '../../../components/TagsSection';
+import { TagsSection } from '../../../components/talkies/TagsSection';
 import { Select } from '../../../components/Select';
-import { useMovies, useCards, useTags, Movie, Card, talkiesApi } from '../../../hooks/useTalkies';
+import { useMovies, useCards, useTags, Movie, Card, talkiesApi } from '../../../hooks/talkies/useTalkies';
+import { exportHeroToCSV } from '../../../utils/csvExport';
 
 type MovieSortKey = 'title' | 'total_cards' | 'review_cards' | 'done';
 type CardSortKey = 'movie_title' | 'name' | 'type' | 'call_sign';
@@ -184,6 +187,26 @@ export default function HeroDetailsPage() {
     const changeViewMode = (mode: 'movies' | 'cards') => {
         setViewMode(mode);
         localStorage.setItem('hero.viewMode', mode);
+    };
+
+    const handleExportCSV = () => {
+        try {
+            const exportData = {
+                heroName,
+                cards: cards.map(card => ({
+                    movie: card.movie_title || '',
+                    card_name: card.name || '',
+                    card_type: card.type || '',
+                    call_sign: card.call_sign || '',
+                    ability_text: card.ability_text || '',
+                    ability_text2: card.ability_text2 || '',
+                })),
+            };
+            exportHeroToCSV(exportData);
+        } catch (err) {
+            alert('Failed to export data');
+            console.error(err);
+        }
     };
 
     const openAddMovieModal = () => {
@@ -375,21 +398,26 @@ export default function HeroDetailsPage() {
             }
         >
             <div className="table-controls">
-                <Button variant="secondary" onClick={clearFilters}>
-                    {Icons.filter} <span>Clear Filters</span>
-                </Button>
-                <Button variant="secondary" onClick={() => changeViewMode(viewMode === 'movies' ? 'cards' : 'movies')}>
-                    {Icons.toggle} <span>{viewMode === 'movies' ? 'View Cards' : 'View Movies'}</span>
-                </Button>
-                {viewMode === 'movies' ? (
-                    <Button onClick={openAddMovieModal}>
-                        {Icons.plus} <span>Add Movie</span>
+                <div className="table-controls-left">
+                    <Button variant="secondary" onClick={clearFilters}>
+                        {Icons.filter} <span>Clear Filters</span>
                     </Button>
-                ) : (
-                    <Button onClick={openAddCardModal}>
-                        {Icons.plus} <span>Add Card</span>
+                    <Button variant="secondary" onClick={() => changeViewMode(viewMode === 'movies' ? 'cards' : 'movies')}>
+                        {Icons.toggle} <span>{viewMode === 'movies' ? 'View Cards' : 'View Movies'}</span>
                     </Button>
-                )}
+                    {viewMode === 'movies' ? (
+                        <Button onClick={openAddMovieModal}>
+                            {Icons.plus} <span>Add Movie</span>
+                        </Button>
+                    ) : (
+                        <Button onClick={openAddCardModal}>
+                            {Icons.plus} <span>Add Card</span>
+                        </Button>
+                    )}
+                </div>
+                <Button variant="secondary" onClick={handleExportCSV}>
+                    {Icons.download} <span>Export CSV</span>
+                </Button>
             </div>
 
             {viewMode === 'movies' ? (

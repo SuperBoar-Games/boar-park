@@ -1,68 +1,45 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+// Home page with theme selector and animated cooking pan
+
 import { ThemeSelector } from '../components/ThemeSelector';
 
 export default function HomePage() {
     return (
-        <div className="container">
-            <header style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '2rem',
-                paddingBottom: '1rem',
-                borderBottom: `1px solid var(--ctp-surface1)`
-            }}>
-                <h1 style={{ color: 'var(--ctp-primary)', fontSize: '2rem' }}>
-                    🐗 Boar Park
-                </h1>
+        <div className="home-container">
+            <div className="home-footer">
                 <ThemeSelector />
+            </div>
+
+            <header className="home-header">
+                <h1 className="home-title">🐗 SUPERBOAR</h1>
             </header>
 
-            <main>
-                <h2 style={{ marginBottom: '1rem' }}>Welcome to Boar Park</h2>
-                <p style={{ marginBottom: '2rem', color: 'var(--ctp-subtext0)' }}>
-                    A React-powered game platform
-                </p>
-
-                <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
-                    <Link
-                        to="/games/play-cards"
-                        style={{
-                            padding: '1rem',
-                            backgroundColor: 'var(--ctp-surface0)',
-                            borderRadius: '0.5rem',
-                            border: `1px solid var(--ctp-surface1)`,
-                            transition: 'all 0.2s ease'
-                        }}
-                    >
-                        <h3 style={{ marginBottom: '0.5rem', color: 'var(--ctp-secondary)' }}>
-                            🎴 Play Cards
-                        </h3>
-                        <p style={{ fontSize: '0.875rem', color: 'var(--ctp-subtext0)' }}>
-                            Play the card matching game
-                        </p>
-                    </Link>
-
-                    <Link
-                        to="/admin"
-                        style={{
-                            padding: '1rem',
-                            backgroundColor: 'var(--ctp-surface0)',
-                            borderRadius: '0.5rem',
-                            border: `1px solid var(--ctp-surface1)`,
-                            transition: 'all 0.2s ease'
-                        }}
-                    >
-                        <h3 style={{ marginBottom: '0.5rem', color: 'var(--ctp-primary)' }}>
-                            ⚙️ Admin Dashboard
-                        </h3>
-                        <p style={{ fontSize: '0.875rem', color: 'var(--ctp-subtext0)' }}>
-                            Manage games and content
-                        </p>
-                    </Link>
+            <div className="cooking-animation">
+                {/* Fire */}
+                <div className="fire">
+                    <div className="flame flame-1"></div>
+                    <div className="flame flame-2"></div>
+                    <div className="flame flame-3"></div>
                 </div>
-            </main>
+
+                {/* Pan */}
+                <div className="pan">
+                    <div className="pan-handle"></div>
+                </div>
+
+                {/* Vegetables cooking */}
+                <div className="pan-content">
+                    <div className="vegetable carrot"></div>
+                    <div className="vegetable pepper"></div>
+                    <div className="vegetable onion"></div>
+                    <div className="vegetable pea"></div>
+                </div>
+
+                {/* Steam */}
+                <div className="steam steam-1"></div>
+                <div className="steam steam-2"></div>
+                <div className="steam steam-3"></div>
+            </div>
+
         </div>
     );
 }

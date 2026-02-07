@@ -1,0 +1,392 @@
+/* Users Management Page */
+.users-management-container {
+    padding: 2rem;
+}
+
+/* Sortable Headers */
+.users-table thead th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.users-table thead th.sortable:hover {
+    background-color: var(--ctp-surface2);
+}
+
+.users-table thead th .sort-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.users-table thead th.text-left .sort-header {
+    justify-content: flex-start;
+}
+
+.users-table thead th.text-center .sort-header {
+    justify-content: center;
+}
+
+.users-table thead th.text-left {
+    text-align: left;
+}
+
+.users-table thead th.text-center {
+    text-align: center;
+}
+
+.users-table tbody td.text-left {
+    text-align: left;
+}
+
+.users-table tbody td.text-center {
+    text-align: center;
+}
+
+/* Filter Row */
+.users-table thead tr.filter-row {
+    position: relative;
+    z-index: 10;
+    overflow: visible;
+}
+
+.users-table thead tr.filter-row td {
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--ctp-surface1);
+    background-color: var(--ctp-surface0);
+    position: relative;
+    z-index: 10;
+    overflow: visible;
+}
+
+.users-table thead tr.filter-row td .custom-select {
+    position: relative;
+    z-index: 11;
+}
+
+.users-table thead .filter-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    background-color: var(--ctp-crust);
+    border: 1px solid var(--ctp-surface1);
+    border-radius: 0.375rem;
+    color: var(--ctp-text);
+    transition: all 0.2s ease;
+}
+
+.users-table thead .custom-select.filter-input {
+    width: 70px !important;
+    min-width: unset !important;
+    max-width: 70px !important;
+    background-color: var(--ctp-crust);
+    border: 1px solid var(--ctp-surface1);
+    border-radius: 0.375rem;
+    padding: 0;
+}
+
+.users-table thead .custom-select.filter-input .custom-select-trigger {
+    border: none;
+    background-color: transparent;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.users-table thead .filter-input:hover {
+    background-color: var(--ctp-surface1);
+}
+
+.users-table thead .filter-input:focus {
+    background-color: var(--ctp-surface1);
+    border-color: var(--ctp-primary);
+    outline: none;
+}
+
+.users-table thead .filter-input::placeholder {
+    color: var(--ctp-subtext0);
+}
+
+.users-table thead .custom-select-dropdown {
+    z-index: 1000 !important;
+    position: absolute !important;
+    left: 0 !important;
+    right: auto !important;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Desktop filter display */
+.users-table thead tr.filter-row td.filter-combined-desktop {
+    display: table-cell;
+}
+
+.users-table thead tr.filter-row td.filter-combined-mobile {
+    display: none;
+}
+
+.users-management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.table-wrapper {
+    overflow: visible !important;
+}
+
+div[style*="overflowX"] {
+    overflow: visible !important;
+}
+
+.users-management-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--ctp-text);
+}
+
+/* Users Table */
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--ctp-surface0);
+    border-radius: 0.5rem;
+    overflow: visible;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.users-table thead {
+    background-color: var(--ctp-surface1);
+    border-bottom: 2px solid var(--ctp-surface2);
+    overflow: visible;
+}
+
+.users-table thead th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--ctp-text);
+    white-space: nowrap;
+}
+
+.users-table tbody tr {
+    border-bottom: 1px solid var(--ctp-surface1);
+    transition: background-color 0.2s ease;
+}
+
+.users-table tbody tr:hover {
+    background-color: var(--ctp-surface1);
+}
+
+.users-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.users-table td {
+    padding: 1rem;
+    color: var(--ctp-text);
+}
+
+.users-table td.username {
+    font-weight: 500;
+    color: var(--ctp-primary);
+}
+
+.users-table td.email {
+    font-size: 0.9rem;
+    color: var(--ctp-subtext0);
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-badge.active {
+    background-color: rgba(0, 200, 100, 0.2);
+    color: #00c864;
+}
+
+.status-badge.pending {
+    background-color: rgba(255, 200, 0, 0.2);
+    color: #ffc800;
+}
+
+.status-badge.disabled {
+    background-color: rgba(255, 100, 100, 0.2);
+    color: #ff6464;
+}
+
+/* Roles Display */
+.user-roles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    background-color: rgba(100, 150, 255, 0.2);
+    color: #6496ff;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    width: fit-content;
+}
+
+.role-badge-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.role-badge-game {
+    font-size: 0.75rem;
+    color: var(--ctp-subtext0);
+    display: block;
+}
+
+.role-badge-remove {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
+    margin-left: 0.5rem;
+    transition: color 0.2s;
+}
+
+.role-badge-remove:hover {
+    color: var(--ctp-danger);
+}
+
+.role-badge-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    background-color: var(--ctp-surface1);
+    border: 1px solid var(--ctp-surface2);
+    border-radius: 0.25rem;
+    color: var(--ctp-text);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.role-badge-add:hover {
+    background-color: var(--ctp-surface2);
+    border-color: var(--ctp-primary);
+    color: var(--ctp-primary);
+}
+
+/* Actions */
+.user-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.user-action-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border: none;
+    border-radius: 0.25rem;
+    background: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.user-action-btn.approve {
+    color: var(--ctp-success);
+}
+
+.user-action-btn.approve:hover {
+    background-color: rgba(0, 200, 100, 0.1);
+}
+
+.user-action-btn.disable {
+    color: var(--ctp-warning);
+}
+
+.user-action-btn.disable:hover {
+    background-color: rgba(255, 200, 0, 0.1);
+}
+
+.user-action-btn.delete {
+    color: var(--ctp-danger);
+}
+
+.user-action-btn.delete:hover {
+    background-color: rgba(255, 100, 100, 0.1);
+}
+
+/* Empty State */
+.users-empty {
+    text-align: center;
+    padding: 3rem;
+    color: var(--ctp-subtext0);
+}
+
+@media (max-width: 1024px) {
+    .users-table {
+        font-size: 0.9rem;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 0.75rem;
+    }
+
+    .user-roles {
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .users-management-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .users-table {
+        font-size: 0.85rem;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 0.5rem;
+    }
+
+    .user-actions {
+        flex-direction: column;
+    }
+
+    .user-action-btn {
+        width: 100%;
+        text-align: left;
+    }
+}
+
+@media (max-width: 640px) {
+    .users-management-container {
+        padding: 0;
+    }
+}
+
