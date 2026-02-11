@@ -11,8 +11,8 @@ WorkingDirectory=/var/www/boar-park
 # Load environment from .env file
 EnvironmentFile=/var/www/boar-park/.env
 
-# Start command
-ExecStart=/home/batsy/.bun/bin/bun run src/index.ts
+# Start command — adjust bun path if installed elsewhere
+ExecStart=/usr/local/bin/bun run src/index.ts
 
 # Restart policy
 Restart=always
@@ -26,7 +26,7 @@ SyslogIdentifier=boar-park
 # Security
 NoNewPrivileges=true
 ProtectSystem=strict
-ProtectHome=yes
+ReadWritePaths=/var/www/boar-park
 PrivateTmp=yes
 
 # Process management

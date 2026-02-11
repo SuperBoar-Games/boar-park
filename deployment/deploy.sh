@@ -8,7 +8,7 @@ set -e
 ENVIRONMENT=${1:-production}
 BRANCH=${2:-main}
 DEPLOY_DIR="/var/www/boar-park"
-REPO_URL="https://github.com/your-username/boar-park.git"  # Update this
+REPO_URL="https://github.com/SuperBoar-Games/boar-park.git"
 BACKUP_DIR="/var/backups/boar-park"
 SERVICE_NAME="boar-park"
 LOG_FILE="/var/log/boar-park-deploy.log"

@@ -62,6 +62,8 @@ import { getGameIdFromSlug, canViewGame, canEditGame, getGamesForUser } from "./
 
 const PORT = process.env.PORT || 3000;
 const TALKIES_GAME_SLUG = "talkies";
+// Resolve project root from this file's location (src/index.ts → project root)
+const PROJECT_ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 
 Bun.serve({
     port: PORT,
@@ -458,7 +460,7 @@ Bun.serve({
 
         // Serve static files from /public directory (PWA assets)
         try {
-            const publicFile = Bun.file(`/home/batsy/web/sb/boar-park/public${url.pathname}`);
+            const publicFile = Bun.file(`${PROJECT_ROOT}/public${url.pathname}`);
             if (await publicFile.exists()) {
                 return new Response(publicFile);
             }
@@ -469,8 +471,8 @@ Bun.serve({
         // Serve static files from /frontend directory
         try {
             let filePath = url.pathname === "/"
-                ? "/home/batsy/web/sb/boar-park/frontend/index.html"
-                : `/home/batsy/web/sb/boar-park/frontend${url.pathname}`;
+                ? `${PROJECT_ROOT}/frontend/index.html`
+                : `${PROJECT_ROOT}/frontend${url.pathname}`;
 
             // If path ends with / or is a directory, append index.html
             if (url.pathname.endsWith('/') || !url.pathname.includes('.')) {
