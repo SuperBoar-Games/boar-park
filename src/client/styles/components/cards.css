@@ -1,0 +1,168 @@
+/* Cards Grid Layout */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.card-item {
+    background-color: var(--ctp-surface0);
+    border: 1px solid var(--ctp-surface1);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.card-item:hover {
+    border-color: var(--ctp-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--ctp-surface1);
+}
+
+.card-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.card-header h3 {
+    color: var(--ctp-primary);
+    font-size: 1.25rem;
+    margin: 0;
+    word-break: break-word;
+}
+
+.card-title-row .review-flag-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.125rem;
+    color: var(--ctp-subtext0);
+    font-size: 0.875rem;
+    margin-left: 0.5rem;
+    transition: color 0.2s;
+}
+
+.card-title-row .review-flag-btn:hover {
+    color: var(--ctp-text);
+}
+
+.card-title-row .review-flag-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.card-title-row .review-flag-btn svg {
+    color: var(--ctp-peach);
+}
+
+.card-type-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    padding: 0.125rem 0.375rem;
+    background-color: var(--ctp-primary);
+    color: var(--ctp-base);
+    font-size: 0.625rem;
+    font-weight: 900;
+    border-radius: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.35rem;
+    flex-shrink: 0;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-self: flex-end;
+}
+
+.card-actions .action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.125rem;
+    color: var(--ctp-subtext0);
+    font-size: 0.875rem;
+    transition: color 0.2s;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-actions .action-btn:hover {
+    color: var(--ctp-text);
+}
+
+.card-actions .action-btn.edit:hover {
+    color: var(--ctp-secondary);
+}
+
+.card-actions .action-btn.delete:hover {
+    color: var(--ctp-danger);
+}
+
+.card-actions .action-btn.warning {
+    color: var(--ctp-peach);
+}
+
+.card-actions .action-btn.warning:hover {
+    color: var(--ctp-peach);
+    opacity: 0.8;
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.card-field {
+    margin-bottom: 1rem;
+}
+
+.card-field:last-child {
+    margin-bottom: 0;
+}
+
+.field-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--ctp-peach);
+    letter-spacing: 0.5px;
+    margin-bottom: 0.375rem;
+}
+
+.field-value {
+    display: block;
+    color: var(--ctp-text);
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--ctp-subtext0);
+}
+
+@media (max-width: 640px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+}

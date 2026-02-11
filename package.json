@@ -10,6 +10,8 @@
     "build:client": "bun build src/client/main.tsx --outdir dist/client --minify --sourcemap"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.20",
+    "@tanstack/react-query-devtools": "^5.91.3",
     "argon2": "^0.44.0",
     "jose": "^6.0.10",
     "nodemailer": "^8.0.0",

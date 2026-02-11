@@ -24,7 +24,13 @@ export async function getHeroesHandler(): Promise<Response> {
 export async function createHeroHandler(body: any): Promise<Response> {
     const { name, industry, gameSlug, user } = body;
     if (!name || !industry || !gameSlug || !user) {
-        return jsonResponse({ success: false, data: null, message: "Missing required fields: name, industry, gameSlug, or user." }, 400);
+        const missing = [];
+        if (!name) missing.push('name');
+        if (!industry) missing.push('industry');
+        if (!gameSlug) missing.push('gameSlug');
+        if (!user) missing.push('user');
+        console.warn(`[createHero] Validation failed: Missing fields [${missing.join(', ')}]`, { received: body });
+        return jsonResponse({ success: false, data: null, message: `Missing required fields: ${missing.join(', ')}` }, 400);
     }
 
     try {
@@ -49,7 +55,12 @@ export async function createHeroHandler(body: any): Promise<Response> {
 export async function updateHeroHandler(id: number, body: any): Promise<Response> {
     const { name, industry, user } = body;
     if (!name || !industry || !user) {
-        return jsonResponse({ success: false, data: null, message: "Missing required fields: name, industry, or user." }, 400);
+        const missing = [];
+        if (!name) missing.push('name');
+        if (!industry) missing.push('industry');
+        if (!user) missing.push('user');
+        console.warn(`[updateHero] Validation failed for hero ${id}: Missing fields [${missing.join(', ')}]`, { received: body });
+        return jsonResponse({ success: false, data: null, message: `Missing required fields: ${missing.join(', ')}` }, 400);
     }
 
     try {

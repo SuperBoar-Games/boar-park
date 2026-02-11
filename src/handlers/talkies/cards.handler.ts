@@ -23,7 +23,11 @@ function normalizeTags(card: any) {
 
 export async function getCardsByHeroAndMovieHandler(heroId: number, movieId: number): Promise<Response> {
     if (!heroId || !movieId) {
-        return jsonResponse({ success: false, data: null, message: "Missing heroId or movieId" }, 400);
+        const missing = [];
+        if (!heroId) missing.push('heroId');
+        if (!movieId) missing.push('movieId');
+        console.warn(`[getCardsByHeroAndMovie] Validation failed: Missing fields [${missing.join(', ')}]`);
+        return jsonResponse({ success: false, data: null, message: `Missing required fields: ${missing.join(', ')}` }, 400);
     }
 
     try {
@@ -41,6 +45,7 @@ export async function getCardsByHeroAndMovieHandler(heroId: number, movieId: num
 
 export async function getAllCardsByHeroHandler(heroId: number): Promise<Response> {
     if (!heroId) {
+        console.warn(`[getAllCardsByHero] Validation failed: Missing heroId`);
         return jsonResponse({ success: false, data: null, message: "Missing heroId" }, 400);
     }
 
@@ -58,9 +63,22 @@ export async function getAllCardsByHeroHandler(heroId: number): Promise<Response
 }
 
 export async function createCardHandler(body: any): Promise<Response> {
-    const { name, type, heroId, movieId, call_sign, ability_text, ability_text2, user, tagIds } = body;
+    // Support both camelCase and snake_case for compatibility
+    const { name, type, call_sign, ability_text, ability_text2, user, tag_ids } = body;
+    const heroId = body.heroId || body.hero_id;
+    const movieId = body.movieId || body.movie_id;
+    const tagIds = body.tagIds || body.tag_ids;
+
     if (!name || !type || !heroId || !movieId || !ability_text || !user) {
-        return jsonResponse({ success: false, data: null, message: "Missing required fields" }, 400);
+        const missing = [];
+        if (!name) missing.push('name');
+        if (!type) missing.push('type');
+        if (!heroId) missing.push('heroId');
+        if (!movieId) missing.push('movieId');
+        if (!ability_text) missing.push('ability_text');
+        if (!user) missing.push('user');
+        console.warn(`[createCard] Validation failed: Missing fields [${missing.join(', ')}]`, { received: body });
+        return jsonResponse({ success: false, data: null, message: `Missing required fields: ${missing.join(', ')}` }, 400);
     }
 
     try {
@@ -77,7 +95,7 @@ export async function createCardHandler(body: any): Promise<Response> {
         }
 
         const cardRaw = await sql.unsafe(GET_CARD_BY_ID_QUERY, [cardId]);
-        const { tag_ids, tag_names, ...card } = cardRaw[0];
+        const { tag_ids: returned_tag_ids, tag_names, ...card } = cardRaw[0];
         const result = { ...card, tags: normalizeTags(cardRaw[0]) };
         return jsonResponse({ success: true, data: result, message: "Card created successfully" });
     } catch (error) {
@@ -87,7 +105,10 @@ export async function createCardHandler(body: any): Promise<Response> {
 }
 
 export async function updateCardHandler(id: number, body: any): Promise<Response> {
-    const { name, type, call_sign, ability_text, ability_text2, need_review, user, tagIds } = body;
+    // Support both camelCase and snake_case for compatibility
+    const { name, type, call_sign, ability_text, ability_text2, need_review, user } = body;
+    const tagIds = body.tagIds || body.tag_ids;
+
     if (!user) {
         return jsonResponse({ success: false, data: null, message: "Missing user field" }, 400);
     }

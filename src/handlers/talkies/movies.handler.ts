@@ -17,6 +17,7 @@ import {
  */
 export async function getMoviesByHeroIdHandler(heroId: number): Promise<Response> {
     if (!heroId) {
+        console.warn(`[getMoviesByHeroId] Validation failed: Missing heroId`);
         return jsonResponse({ success: false, data: null, message: "Missing heroId" }, 400);
     }
 
@@ -32,7 +33,12 @@ export async function getMoviesByHeroIdHandler(heroId: number): Promise<Response
 export async function createMovieHandler(body: any): Promise<Response> {
     const { title, heroId, user } = body;
     if (!title || !heroId || !user) {
-        return jsonResponse({ success: false, data: null, message: "Missing required fields" }, 400);
+        const missing = [];
+        if (!title) missing.push('title');
+        if (!heroId) missing.push('heroId');
+        if (!user) missing.push('user');
+        console.warn(`[createMovie] Validation failed: Missing fields [${missing.join(', ')}]`, { received: body });
+        return jsonResponse({ success: false, data: null, message: `Missing required fields: ${missing.join(', ')}` }, 400);
     }
 
     try {
@@ -52,7 +58,11 @@ export async function createMovieHandler(body: any): Promise<Response> {
 export async function updateMovieTitleHandler(id: number, body: any): Promise<Response> {
     const { title, user } = body;
     if (!title || !user) {
-        return jsonResponse({ success: false, data: null, message: "Missing required fields" }, 400);
+        const missing = [];
+        if (!title) missing.push('title');
+        if (!user) missing.push('user');
+        console.warn(`[updateMovieTitle] Validation failed for movie ${id}: Missing fields [${missing.join(', ')}]`, { received: body });
+        return jsonResponse({ success: false, data: null, message: `Missing required fields: ${missing.join(', ')}` }, 400);
     }
 
     try {
@@ -67,7 +77,11 @@ export async function updateMovieTitleHandler(id: number, body: any): Promise<Re
 export async function updateMovieReviewHandler(id: number, body: any): Promise<Response> {
     const { needReview, user } = body;
     if (needReview === undefined || !user) {
-        return jsonResponse({ success: false, data: null, message: "Missing required fields" }, 400);
+        const missing = [];
+        if (needReview === undefined) missing.push('needReview');
+        if (!user) missing.push('user');
+        console.warn(`[updateMovieReview] Validation failed for movie ${id}: Missing fields [${missing.join(', ')}]`, { received: body });
+        return jsonResponse({ success: false, data: null, message: `Missing required fields: ${missing.join(', ')}` }, 400);
     }
 
     try {
@@ -82,7 +96,11 @@ export async function updateMovieReviewHandler(id: number, body: any): Promise<R
 export async function updateMovieLockedHandler(id: number, body: any): Promise<Response> {
     const { locked, user } = body;
     if (locked === undefined || !user) {
-        return jsonResponse({ success: false, data: null, message: "Missing required fields" }, 400);
+        const missing = [];
+        if (locked === undefined) missing.push('locked');
+        if (!user) missing.push('user');
+        console.warn(`[updateMovieLocked] Validation failed for movie ${id}: Missing fields [${missing.join(', ')}]`, { received: body });
+        return jsonResponse({ success: false, data: null, message: `Missing required fields: ${missing.join(', ')}` }, 400);
     }
 
     try {

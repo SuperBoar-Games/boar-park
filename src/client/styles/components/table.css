@@ -1,0 +1,192 @@
+/* Shared Data Table Styles */
+.data-table {
+    width: 100%;
+    background-color: var(--ctp-surface0);
+    border-radius: 0.5rem;
+    border-collapse: collapse;
+}
+
+.data-table thead tr {
+    border-bottom: 2px solid var(--ctp-surface1);
+}
+
+.data-table thead th {
+    padding: 1rem;
+    font-weight: 600;
+    background-color: var(--ctp-surface1);
+}
+
+.data-table thead tr:first-child th:first-child {
+    border-top-left-radius: 0.5rem;
+}
+
+.data-table thead tr:first-child th:last-child {
+    border-top-right-radius: 0.5rem;
+}
+
+.data-table thead th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.data-table thead th.sortable:hover {
+    background-color: var(--ctp-surface2);
+}
+
+.data-table thead th .sort-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.data-table thead th.text-left {
+    text-align: left;
+}
+
+.data-table thead th.text-center {
+    text-align: center;
+}
+
+.data-table tbody td.text-left {
+    text-align: left;
+}
+
+.data-table tbody td.text-center {
+    text-align: center;
+}
+
+.data-table thead th.text-left .sort-header {
+    justify-content: flex-start;
+}
+
+.data-table thead th.text-center .sort-header {
+    justify-content: center;
+}
+
+.data-table thead tr.filter-row td {
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--ctp-surface1);
+    background-color: var(--ctp-surface0);
+}
+
+.data-table thead .filter-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    background-color: var(--ctp-crust);
+    border: 1px solid var(--ctp-surface1);
+    border-radius: 0.375rem;
+    color: var(--ctp-text);
+    transition: all 0.2s ease;
+}
+
+.data-table thead select.filter-input {
+    background-color: var(--ctp-surface0);
+    cursor: pointer;
+}
+
+.data-table thead .filter-input option {
+    background-color: var(--ctp-base);
+    color: var(--ctp-text);
+    padding: 0.5rem;
+}
+
+.data-table thead .filter-input:hover {
+    background-color: var(--ctp-surface1);
+}
+
+.data-table thead .filter-input:focus {
+    background-color: var(--ctp-surface1);
+    border-color: var(--ctp-primary);
+    outline: none;
+}
+
+.data-table thead .filter-input::placeholder {
+    color: var(--ctp-subtext0);
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid var(--ctp-surface1);
+    transition: background 0.2s;
+}
+
+.data-table tbody tr:hover {
+    background-color: var(--ctp-surface1);
+}
+
+.data-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.data-table tbody td {
+    padding: 1rem;
+}
+
+.data-table tbody td.clickable {
+    cursor: pointer;
+    color: var(--ctp-primary);
+}
+
+.data-table tbody td.empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--ctp-subtext0);
+}
+
+.data-table .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.data-table .action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: var(--ctp-subtext0);
+    transition: color 0.2s;
+    font-size: 1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.data-table .action-btn:hover {
+    color: var(--ctp-text);
+}
+
+.data-table .action-btn.edit:hover {
+    color: var(--ctp-secondary);
+}
+
+.data-table .action-btn.delete:hover {
+    color: var(--ctp-danger);
+}
+
+.data-table .action-btn.warning {
+    color: var(--ctp-peach);
+}
+
+.data-table .action-btn.warning:hover {
+    color: var(--ctp-peach);
+    opacity: 0.8;
+}
+
+.data-table .locked-icon {
+    color: var(--ctp-warning);
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+/* Cell Truncate */
+.cell-truncate {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

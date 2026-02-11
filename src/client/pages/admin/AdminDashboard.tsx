@@ -9,14 +9,7 @@ export default function AdminDashboard() {
     const navigate = useNavigate();
 
     return (
-        <AdminLayout
-            title={<h1>Admin Dashboard</h1>}
-            actions={
-                <Button variant="secondary" onClick={() => navigate('/')}>
-                    {Icons.arrowLeft} <span>Back to Home</span>
-                </Button>
-            }
-        >
+        <AdminLayout title={<h1>Admin Dashboard</h1>}>
             <main>
                 <h2>User Management</h2>
                 <div className="game-cards">
@@ -29,7 +22,7 @@ export default function AdminDashboard() {
                     </Link>
                 </div>
 
-                <h2>Games</h2>
+                <h2 style={{ marginTop: '3rem' }}>Games</h2>
                 <div className="game-cards">
                     <Link
                         to="/admin/games/talkies"

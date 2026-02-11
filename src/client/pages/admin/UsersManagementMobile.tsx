@@ -4,7 +4,7 @@ import React from 'react';
 import { Icons } from '../../components/Icons';
 import { Modal } from '../../components/Modal';
 import { Button } from '../../components/Button';
-import '../../styles/users-management-mobile.css';
+import '../../styles/pages/users-management-mobile.css';
 
 interface User {
     id: number;
@@ -59,10 +59,10 @@ interface UsersManagementMobileProps {
     setSelectedUser: (user: User | null) => void;
     handleApproveUser: (userId: number) => void;
     handleDisableUser: (userId: number) => void;
-    handleDeleteUser: (userId: number) => void;
+    handleDeleteUser: (user: User) => void;
     handleSendResetEmail: (userId: number, email: string, username: string) => void;
     handleAssignRole: () => void;
-    handleRemoveRole: (userId: number, roleId: number, gameId: number | null) => void;
+    handleRemoveRole: (userId: number, roleId: number, gameId: number | null, roleName: string) => void;
     handleCreateUser: () => void;
     getRoleBadgeColor: (roleName: string) => string;
     newUser: { username: string; email: string; roleId: string; gameId: string };
@@ -179,7 +179,7 @@ export function UsersManagementMobile({
                                                 )}
                                                 <button
                                                     onClick={() =>
-                                                        handleRemoveRole(user.id, role.roleId, role.gameId)
+                                                        handleRemoveRole(user.id, role.roleId, role.gameId, role.roleName)
                                                     }
                                                     className="mobile-role-remove"
                                                     title="Remove role"
@@ -234,7 +234,7 @@ export function UsersManagementMobile({
                                     </>
                                 )}
                                 <button
-                                    onClick={() => handleDeleteUser(user.id)}
+                                    onClick={() => handleDeleteUser(user)}
                                     className="mobile-action-btn mobile-action-delete"
                                     title="Delete this user permanently"
                                 >

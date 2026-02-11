@@ -1,35 +1,41 @@
 // Talkies tags management section for viewing, creating, editing, and deleting tags
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Icons } from '../Icons';
 import { Button } from '../Button';
 import { Modal } from '../Modal';
-import type { Tag } from '../../hooks/talkies/useTalkies';
+import { ConfirmDialog } from '../ConfirmDialog';
+import { useTagsQuery } from '../../hooks/talkies/useTalkiesQueries';
+import {
+  useCreateTagMutation,
+  useUpdateTagMutation,
+  useDeleteTagMutation,
+} from '../../hooks/talkies/useTalkiesMutations';
+import type { Tag } from '../../hooks/talkies/types';
 
 interface TagsSectionProps {
     heroId: number;
-    tags: Tag[];
-    onRefresh: () => void;
 }
 
 interface TagFormData {
     name: string;
 }
 
-export function TagsSection({ heroId, tags, onRefresh }: TagsSectionProps) {
+export function TagsSection({ heroId }: TagsSectionProps) {
+    // Fetch tags for this hero
+    const { data: tags = [] } = useTagsQuery(heroId);
+    const createTag = useCreateTagMutation();
+    const updateTag = useUpdateTagMutation();
+    const deleteTag = useDeleteTagMutation();
+
+    // UI state only
     const [sortKey, setSortKey] = useState<'tag_name' | 'card_count'>('tag_name');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
     const [filters, setFilters] = useState({ tag_name: '', card_count: '' });
     const [showModal, setShowModal] = useState(false);
     const [editingTag, setEditingTag] = useState<Tag | null>(null);
     const [formData, setFormData] = useState<TagFormData>({ name: '' });
-    const [saving, setSaving] = useState(false);
-    const [localTags, setLocalTags] = useState<Tag[]>([]);
-
-    // Sync from props to local state
-    useEffect(() => {
-        setLocalTags(tags);
-    }, [tags]);
+    const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; tagId: number; tagName: string }>({ isOpen: false, tagId: 0, tagName: '' });
 
     const handleSort = (key: 'tag_name' | 'card_count') => {
         if (sortKey === key) {
@@ -64,91 +70,61 @@ export function TagsSection({ heroId, tags, onRefresh }: TagsSectionProps) {
         setShowModal(false);
         setEditingTag(null);
         setFormData({ name: '' });
-        setSaving(false);
     };
 
     const handleSave = async () => {
         if (!formData.name.trim()) return;
 
-        setSaving(true);
-        const previousTags = localTags;
         try {
-            const url = editingTag
-                ? `/api/talkies/tags/${editingTag.id}`
-                : '/api/talkies/tags';
-
-            const response = await fetch(url, {
-                method: editingTag ? 'PUT' : 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: formData.name.trim() })
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                if (editingTag) {
-                    const updatedTag = { ...editingTag, name: formData.name.trim() };
-                    setLocalTags(prev => prev.map(t => t.id === editingTag.id ? updatedTag : t));
-                } else {
-                    // For new tags, add the created tag from response
-                    if (data.data) {
-                        setLocalTags([...localTags, data.data]);
-                    }
-                }
-                closeModal();
+            if (editingTag) {
+                await updateTag.mutateAsync({ id: editingTag.id, data: { name: formData.name.trim() } });
             } else {
-                setLocalTags(previousTags);
+                await createTag.mutateAsync({ name: formData.name.trim(), color: '#ffffff' });
             }
+            closeModal();
         } catch (error) {
-            setLocalTags(previousTags);
             console.error('Failed to save tag:', error);
-        } finally {
-            setSaving(false);
         }
     };
 
-    const handleDelete = async (tag: Tag) => {
-        if (!confirm(`Delete tag "${tag.name}"?`)) return;
+    const handleDelete = (tag: Tag) => {
+        setConfirmDialog({ isOpen: true, tagId: tag.id, tagName: tag.name });
+    };
 
-        const previousTags = localTags;
-        try {
-            setLocalTags(prev => prev.filter(t => t.id !== tag.id));
-            const response = await fetch(`/api/talkies/tags/${tag.id}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' }
-            });
+    const handleConfirmDelete = () => {
+        deleteTag.mutate(confirmDialog.tagId);
+        setConfirmDialog({ isOpen: false, tagId: 0, tagName: '' });
+    };
 
-            const data = await response.json();
-            if (!data.success) {
-                setLocalTags(previousTags);
+    const handleCancelDelete = () => {
+        setConfirmDialog({ isOpen: false, tagId: 0, tagName: '' });
+    };
+
+    // Derived data with useMemo
+    const filteredAndSortedTags = useMemo(() => {
+        let filtered = tags.filter(tag => {
+            const nameMatch = tag.name.toLowerCase().includes(filters.tag_name.toLowerCase());
+            const countMatch = String(tag.card_count || 0).includes(filters.card_count);
+            return nameMatch && countMatch;
+        });
+
+        filtered.sort((a, b) => {
+            let aVal: string | number = sortKey === 'tag_name' ? a.name : (a.card_count || 0);
+            let bVal: string | number = sortKey === 'tag_name' ? b.name : (b.card_count || 0);
+
+            if (typeof aVal === 'string' && typeof bVal === 'string') {
+                return sortDir === 'asc'
+                    ? aVal.localeCompare(bVal, undefined, { numeric: true })
+                    : bVal.localeCompare(aVal, undefined, { numeric: true });
+            } else {
+                return sortDir === 'asc'
+                    ? (aVal as number) - (bVal as number)
+                    : (bVal as number) - (aVal as number);
             }
-        } catch (error) {
-            setLocalTags(previousTags);
-            console.error('Failed to delete tag:', error);
-        }
-    };
+        });
 
-    // Apply filters
-    const filteredTags = localTags.filter(tag => {
-        const nameMatch = tag.name.toLowerCase().includes(filters.tag_name.toLowerCase());
-        const countMatch = String(tag.card_count || 0).includes(filters.card_count);
-        return nameMatch && countMatch;
-    });
-
-    // Apply sorting
-    const sortedTags = [...filteredTags].sort((a, b) => {
-        let aVal: string | number = sortKey === 'tag_name' ? a.name : (a.card_count || 0);
-        let bVal: string | number = sortKey === 'tag_name' ? b.name : (b.card_count || 0);
-
-        if (typeof aVal === 'string' && typeof bVal === 'string') {
-            return sortDir === 'asc'
-                ? aVal.localeCompare(bVal, undefined, { numeric: true })
-                : bVal.localeCompare(aVal, undefined, { numeric: true });
-        } else {
-            return sortDir === 'asc'
-                ? (aVal as number) - (bVal as number)
-                : (bVal as number) - (aVal as number);
-        }
-    });
+        return filtered;
+    }, [tags, filters, sortKey, sortDir]);
 
     const getSortIcon = (key: string) => {
         if (sortKey !== key) return Icons.sort;
@@ -169,7 +145,7 @@ export function TagsSection({ heroId, tags, onRefresh }: TagsSectionProps) {
             </div>
 
             <div className="table-wrapper">
-                <table className="admin-table">
+                <table className="data-table">
                     <thead>
                         <tr>
                             <th
@@ -215,12 +191,12 @@ export function TagsSection({ heroId, tags, onRefresh }: TagsSectionProps) {
                         </tr>
                     </thead>
                     <tbody>
-                        {sortedTags.length === 0 ? (
+                        {filteredAndSortedTags.length === 0 ? (
                             <tr>
                                 <td colSpan={3} className="empty">No tags</td>
                             </tr>
                         ) : (
-                            sortedTags.map(tag => (
+                            filteredAndSortedTags.map(tag => (
                                 <tr key={tag.id} data-id={tag.id}>
                                     <td>{tag.name}</td>
                                     <td className="text-center">{tag.card_count || 0}</td>
@@ -262,15 +238,26 @@ export function TagsSection({ heroId, tags, onRefresh }: TagsSectionProps) {
                         />
                     </div>
                     <div className="form-actions">
-                        <Button variant="primary" onClick={handleSave} disabled={saving || !formData.name.trim()}>
-                            {saving ? 'Saving...' : 'Save'}
+                        <Button variant="primary" onClick={handleSave} disabled={!formData.name.trim()}>
+                            Save
                         </Button>
-                        <Button variant="secondary" onClick={closeModal} disabled={saving}>
+                        <Button variant="secondary" onClick={closeModal}>
                             Cancel
                         </Button>
                     </div>
                 </div>
             </Modal>
+
+            <ConfirmDialog
+                isOpen={confirmDialog.isOpen}
+                title="Delete Tag"
+                message={`Are you sure you want to delete "${confirmDialog.tagName}"? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={handleConfirmDelete}
+                onCancel={handleCancelDelete}
+                isDangerous
+            />
         </>
     );
 }

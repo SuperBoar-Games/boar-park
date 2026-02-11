@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { AdminLayout } from '../components/AdminLayout';
+import { Button } from '../components/Button';
+import { Icons } from '../components/Icons';
 
 const API_BASE_URL = import.meta.env.PROD ? '' : 'http://localhost:3000';
 
@@ -77,30 +80,33 @@ export default function UserProfilePage() {
     }
 
     return (
-        <div
-            style={{
-                minHeight: '100vh',
-                backgroundColor: 'var(--ctp-base)',
-                padding: '2rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}
+        <AdminLayout
+            title={<h1>My Profile</h1>}
+            actions={
+                <Button variant="secondary" onClick={() => navigate(-1)}>
+                    {Icons.arrowLeft} <span>Go Back</span>
+                </Button>
+            }
         >
             <div
                 style={{
-                    maxWidth: '500px',
-                    width: '100%',
-                    backgroundColor: 'var(--ctp-surface0)',
-                    border: '1px solid var(--ctp-surface1)',
-                    borderRadius: '0.5rem',
                     padding: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: 'calc(100vh - 60px)',
                 }}
             >
-                <h1 style={{ color: 'var(--ctp-text)', marginBottom: '2rem', fontSize: '1.75rem' }}>
-                    My Profile
-                </h1>
-
+                <div
+                    style={{
+                        maxWidth: '500px',
+                        width: '100%',
+                        backgroundColor: 'var(--ctp-surface0)',
+                        border: '1px solid var(--ctp-surface1)',
+                        borderRadius: '0.5rem',
+                        padding: '2rem',
+                    }}
+                >
                 {error && (
                     <div
                         style={{
@@ -281,7 +287,8 @@ export default function UserProfilePage() {
                         </button>
                     </div>
                 </form>
+                </div>
             </div>
-        </div>
+        </AdminLayout>
     );
 }

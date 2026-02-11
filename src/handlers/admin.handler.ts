@@ -101,8 +101,13 @@ export async function createUserHandler(body: any): Promise<Response> {
     const { username, email, roleId, gameId } = body;
 
     if (!username || !email || !roleId) {
+        const missing = [];
+        if (!username) missing.push('username');
+        if (!email) missing.push('email');
+        if (!roleId) missing.push('roleId');
+        console.error(`[createUser] Validation failed: Missing fields [${missing.join(', ')}]`, { received: body });
         return jsonResponse(
-            { success: false, message: "Username, email, and role are required" },
+            { success: false, message: `Username, email, and role are required. Missing: ${missing.join(', ')}` },
             400
         );
     }
@@ -110,12 +115,14 @@ export async function createUserHandler(body: any): Promise<Response> {
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+        console.error(`[createUser] Invalid email format: ${email}`);
         return jsonResponse({ success: false, message: "Invalid email format" }, 400);
     }
 
     // Validate username
     const usernameRegex = /^[a-zA-Z0-9_]{3,32}$/;
     if (!usernameRegex.test(username)) {
+        console.error(`[createUser] Invalid username format: ${username} (must be 3-32 chars, alphanumeric + underscore)`);
         return jsonResponse(
             { success: false, message: "Username must be 3-32 characters (letters, numbers, underscore)" },
             400

@@ -1,40 +1,25 @@
 // Admin users management page with CRUD, filtering, sorting, and role assignment
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { AdminLayout } from '../../components/AdminLayout';
 import { Button } from '../../components/Button';
 import { Modal } from '../../components/Modal';
-import { Select } from '../../components/Select';
+import { ConfirmDialog } from '../../components/ConfirmDialog';
+import { Dropdown } from '../../components/Dropdown';
 import { Icons } from '../../components/Icons';
 import { UsersManagementMobile } from './UsersManagementMobile';
-
-const API_BASE_URL = import.meta.env.PROD ? '' : 'http://localhost:3000';
-
-async function fetchWithTokenRefresh(
-    url: string,
-    options: RequestInit,
-    getToken: () => string | null,
-    refreshToken: () => Promise<boolean>
-): Promise<Response> {
-    let token = getToken();
-    const headers = { ...options.headers, ...(token && { 'Authorization': `Bearer ${token}` }) };
-
-    let response = await fetch(url, { ...options, headers });
-
-    // If 401/403 and token exists, try refreshing and retrying
-    if ((response.status === 401 || response.status === 403) && token) {
-        const refreshed = await refreshToken();
-        if (refreshed) {
-            token = getToken();
-            const newHeaders = { ...options.headers, ...(token && { 'Authorization': `Bearer ${token}` }) };
-            response = await fetch(url, { ...options, headers: newHeaders });
-        }
-    }
-
-    return response;
-}
+import { useUsersQuery, useRolesQuery, useGamesQuery } from '../../hooks/admin/useAdminQueries';
+import {
+  useCreateUserMutation,
+  useApproveUserMutation,
+  useDisableUserMutation,
+  useDeleteUserMutation,
+  useAssignRoleMutation,
+  useRemoveRoleMutation,
+  useSendResetEmailMutation,
+} from '../../hooks/admin/useAdminMutations';
 
 interface User {
     id: number;
@@ -63,11 +48,23 @@ interface Game {
 }
 
 export default function UsersManagementPage() {
-    const { accessToken, refreshAccessToken } = useAuth();
-    const [users, setUsers] = useState<User[]>([]);
-    const [roles, setRoles] = useState<Role[]>([]);
-    const [games, setGames] = useState<Game[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
+
+    // Fetch data from React Query
+    const { data: users = [], isLoading } = useUsersQuery();
+    const { data: roles = [] } = useRolesQuery();
+    const { data: games = [] } = useGamesQuery();
+
+    // Mutations
+    const createUser = useCreateUserMutation();
+    const approveUser = useApproveUserMutation();
+    const disableUser = useDisableUserMutation();
+    const deleteUser = useDeleteUserMutation();
+    const assignRole = useAssignRoleMutation();
+    const removeRole = useRemoveRoleMutation();
+    const sendResetEmail = useSendResetEmailMutation();
+
+    // UI state only
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showRoleModal, setShowRoleModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -90,12 +87,12 @@ export default function UsersManagementPage() {
     // Sort state
     const [sort, setSort] = useState({ field: 'username', direction: 'asc' as 'asc' | 'desc' });
 
+    // Confirm dialogs
+    const [deleteUserConfirm, setDeleteUserConfirm] = useState<{ isOpen: boolean; userId: number; username: string }>({ isOpen: false, userId: 0, username: '' });
+    const [removeRoleConfirm, setRemoveRoleConfirm] = useState<{ isOpen: boolean; userId: number; roleId: number; gameId: number | null; roleName: string }>({ isOpen: false, userId: 0, roleId: 0, gameId: null, roleName: '' });
+
     // Mobile detection
     const isMobile = useIsMobile();
-
-    useEffect(() => {
-        fetchData();
-    }, []);
 
     // Auto-dismiss success/error messages after 4 seconds
     useEffect(() => {
@@ -108,46 +105,6 @@ export default function UsersManagementPage() {
         }
     }, [success, error]);
 
-    const fetchData = async () => {
-        setIsLoading(true);
-        try {
-            const [usersRes, rolesRes, gamesRes] = await Promise.all([
-                fetchWithTokenRefresh(
-                    `${API_BASE_URL}/api/admin/users`,
-                    {},
-                    () => localStorage.getItem('accessToken'),
-                    refreshAccessToken
-                ),
-                fetchWithTokenRefresh(
-                    `${API_BASE_URL}/api/admin/roles`,
-                    {},
-                    () => localStorage.getItem('accessToken'),
-                    refreshAccessToken
-                ),
-                fetchWithTokenRefresh(
-                    `${API_BASE_URL}/api/admin/games`,
-                    {},
-                    () => localStorage.getItem('accessToken'),
-                    refreshAccessToken
-                ),
-            ]);
-
-            if (usersRes.ok && rolesRes.ok && gamesRes.ok) {
-                const usersData = await usersRes.json();
-                const rolesData = await rolesRes.json();
-                const gamesData = await gamesRes.json();
-
-                setUsers(usersData.data);
-                setRoles(rolesData.data);
-                setGames(gamesData.data);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            setError('Failed to load data');
-        }
-        setIsLoading(false);
-    };
-
     const handleCreateUser = async () => {
         setError('');
         setSuccess('');
@@ -157,94 +114,54 @@ export default function UsersManagementPage() {
         }
 
         try {
-            const response = await fetchWithTokenRefresh(
-                `${API_BASE_URL}/api/admin/users`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username: newUser.username,
-                        email: newUser.email,
-                        roleId: parseInt(newUser.roleId),
-                        gameId: newUser.gameId ? parseInt(newUser.gameId) : null,
-                    }),
-                },
-                () => localStorage.getItem('accessToken'),
-                refreshAccessToken
-            );
-
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                setSuccess('User created successfully');
-                setShowCreateModal(false);
-                setNewUser({ username: '', email: '', roleId: '', gameId: '' });
-                fetchData();
-            } else {
-                setError(data.message || 'Failed to create user');
-            }
+            await createUser.mutateAsync({
+                username: newUser.username,
+                email: newUser.email,
+                roleId: parseInt(newUser.roleId),
+                gameId: newUser.gameId ? parseInt(newUser.gameId) : null,
+            });
+            setSuccess('User created successfully');
+            setShowCreateModal(false);
+            setNewUser({ username: '', email: '', roleId: '', gameId: '' });
         } catch (error) {
-            setError('Network error');
+            setError('Failed to create user');
         }
     };
 
     const handleApproveUser = async (userId: number) => {
         try {
-            const response = await fetchWithTokenRefresh(
-                `${API_BASE_URL}/api/admin/users/${userId}/approve`,
-                { method: 'POST' },
-                () => localStorage.getItem('accessToken'),
-                refreshAccessToken
-            );
-
-            if (response.ok) {
-                setSuccess('User approved');
-                fetchData();
-            }
+            await approveUser.mutateAsync(userId);
+            setSuccess('User approved');
         } catch (error) {
-            console.error('Error approving user:', error);
             setError('Failed to approve user');
         }
     };
 
     const handleDisableUser = async (userId: number) => {
         try {
-            const response = await fetchWithTokenRefresh(
-                `${API_BASE_URL}/api/admin/users/${userId}/disable`,
-                { method: 'POST' },
-                () => localStorage.getItem('accessToken'),
-                refreshAccessToken
-            );
-
-            if (response.ok) {
-                setSuccess('User disabled');
-                fetchData();
-            }
+            await disableUser.mutateAsync(userId);
+            setSuccess('User disabled');
         } catch (error) {
-            console.error('Error disabling user:', error);
             setError('Failed to disable user');
         }
     };
 
-    const handleDeleteUser = async (userId: number) => {
-        if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+    const handleDeleteUser = (user: User) => {
+        setDeleteUserConfirm({ isOpen: true, userId: user.id, username: user.username });
+    };
 
+    const handleConfirmDeleteUser = async () => {
         try {
-            const response = await fetchWithTokenRefresh(
-                `${API_BASE_URL}/api/admin/users/${userId}`,
-                { method: 'DELETE' },
-                () => localStorage.getItem('accessToken'),
-                refreshAccessToken
-            );
-
-            if (response.ok) {
-                setSuccess('User deleted');
-                fetchData();
-            }
+            await deleteUser.mutateAsync(deleteUserConfirm.userId);
+            setSuccess('User deleted');
+            setDeleteUserConfirm({ isOpen: false, userId: 0, username: '' });
         } catch (error) {
-            console.error('Error deleting user:', error);
             setError('Failed to delete user');
         }
+    };
+
+    const handleCancelDeleteUser = () => {
+        setDeleteUserConfirm({ isOpen: false, userId: 0, username: '' });
     };
 
     const handleAssignRole = async () => {
@@ -255,71 +172,43 @@ export default function UsersManagementPage() {
         }
 
         try {
-            const response = await fetchWithTokenRefresh(
-                `${API_BASE_URL}/api/admin/assign-role`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: roleForm.userId,
-                        roleId: parseInt(roleForm.roleId),
-                        gameId: roleForm.gameId ? parseInt(roleForm.gameId) : null,
-                    }),
-                },
-                () => localStorage.getItem('accessToken'),
-                refreshAccessToken
-            );
-
-            if (response.ok) {
-                setSuccess('Role assigned');
-                setShowRoleModal(false);
-                setRoleForm({ userId: 0, roleId: '', gameId: '' });
-                fetchData();
-            }
+            await assignRole.mutateAsync({
+                userId: roleForm.userId,
+                roleId: parseInt(roleForm.roleId),
+                gameId: roleForm.gameId ? parseInt(roleForm.gameId) : null,
+            });
+            setSuccess('Role assigned');
+            setShowRoleModal(false);
+            setRoleForm({ userId: 0, roleId: '', gameId: '' });
         } catch (error) {
-            setError('Network error');
+            setError('Failed to assign role');
         }
     };
 
-    const handleRemoveRole = async (userId: number, roleId: number, gameId: number | null) => {
-        if (!confirm('Remove this role?')) return;
+    const handleRemoveRole = (userId: number, roleId: number, gameId: number | null, roleName: string) => {
+        setRemoveRoleConfirm({ isOpen: true, userId, roleId, gameId, roleName });
+    };
 
+    const handleConfirmRemoveRole = async () => {
+        const { userId, roleId, gameId } = removeRoleConfirm;
         try {
-            await fetchWithTokenRefresh(
-                `${API_BASE_URL}/api/admin/remove-role`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, roleId, gameId }),
-                },
-                () => localStorage.getItem('accessToken'),
-                refreshAccessToken
-            );
+            await removeRole.mutateAsync({ userId, roleId, gameId });
             setSuccess('Role removed');
-            fetchData();
+            setRemoveRoleConfirm({ isOpen: false, userId: 0, roleId: 0, gameId: null, roleName: '' });
         } catch (error) {
-            console.error('Error removing role:', error);
             setError('Failed to remove role');
         }
     };
 
+    const handleCancelRemoveRole = () => {
+        setRemoveRoleConfirm({ isOpen: false, userId: 0, roleId: 0, gameId: null, roleName: '' });
+    };
+
     const handleSendResetEmail = async (userId: number, userEmail: string, username: string) => {
         try {
-            const response = await fetchWithTokenRefresh(
-                `${API_BASE_URL}/api/admin/users/${userId}/send-reset-email`,
-                { method: 'POST' },
-                () => localStorage.getItem('accessToken'),
-                refreshAccessToken
-            );
-
-            const data = await response.json();
-            if (response.ok) {
-                setSuccess(`Password reset email sent to ${username}`);
-            } else {
-                setError(data.message || 'Failed to send reset email');
-            }
+            await sendResetEmail.mutateAsync(userId);
+            setSuccess(`Password reset email sent to ${username}`);
         } catch (error) {
-            console.error('Error sending reset email:', error);
             setError('Failed to send reset email');
         }
     };
@@ -439,7 +328,14 @@ export default function UsersManagementPage() {
 
     if (isLoading) {
         return (
-            <AdminLayout title={<h1>User Management</h1>}>
+            <AdminLayout
+                title={<h1>User Management</h1>}
+                actions={
+                    <Button variant="secondary" onClick={() => navigate('/admin')}>
+                        {Icons.arrowLeft} <span>Back to Admin</span>
+                    </Button>
+                }
+            >
                 <div className="users-management-container">
                     <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--ctp-subtext0)' }}>
                         Loading users...
@@ -450,7 +346,14 @@ export default function UsersManagementPage() {
     }
 
     return (
-        <AdminLayout title={<h1>User Management</h1>}>
+        <AdminLayout
+            title={<h1>User Management</h1>}
+            actions={
+                <Button variant="secondary" onClick={() => navigate('/admin')}>
+                    {Icons.arrowLeft} <span>Back to Admin</span>
+                </Button>
+            }
+        >
             <div className="users-management-container">
                 {error && (
                     <div className="modal-error" style={{ marginBottom: '1rem' }}>
@@ -569,49 +472,46 @@ export default function UsersManagementPage() {
                                         />
                                     </td>
                                     <td>
-                                        <Select
+                                        <Dropdown
                                             value={filters.status}
                                             onChange={(value) =>
-                                                setFilters({ ...filters, status: value })
+                                                setFilters({ ...filters, status: String(value) })
                                             }
                                             options={[
-                                                { value: '', label: 'All' },
-                                                { value: 'active', label: 'Active' },
-                                                { value: 'pending', label: 'Pending' },
-                                                { value: 'disabled', label: 'Disabled' },
+                                                { id: '', name: 'All' },
+                                                { id: 'active', name: 'Active' },
+                                                { id: 'pending', name: 'Pending' },
+                                                { id: 'disabled', name: 'Disabled' },
                                             ]}
-                                            className="filter-input"
                                         />
                                     </td>
                                     <td>
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            <Select
+                                            <Dropdown
                                                 value={filters.role}
                                                 onChange={(value) =>
-                                                    setFilters({ ...filters, role: value })
+                                                    setFilters({ ...filters, role: String(value) })
                                                 }
                                                 options={[
-                                                    { value: '', label: 'All' },
+                                                    { id: '', name: 'All' },
                                                     ...roles.map((role) => ({
-                                                        value: role.id.toString(),
-                                                        label: role.name,
+                                                        id: role.id,
+                                                        name: role.name,
                                                     })),
                                                 ]}
-                                                className="filter-input"
                                             />
-                                            <Select
+                                            <Dropdown
                                                 value={filters.game}
                                                 onChange={(value) =>
-                                                    setFilters({ ...filters, game: value })
+                                                    setFilters({ ...filters, game: String(value) })
                                                 }
                                                 options={[
-                                                    { value: '', label: 'All' },
+                                                    { id: '', name: 'All' },
                                                     ...games.map((game) => ({
-                                                        value: game.id.toString(),
-                                                        label: game.name,
+                                                        id: game.id,
+                                                        name: game.name,
                                                     })),
                                                 ]}
-                                                className="filter-input"
                                             />
                                         </div>
                                     </td>
@@ -657,7 +557,7 @@ export default function UsersManagementPage() {
                                                             </div>
                                                             <button
                                                                 onClick={() =>
-                                                                    handleRemoveRole(user.id, role.roleId, role.gameId)
+                                                                    handleRemoveRole(user.id, role.roleId, role.gameId, role.roleName)
                                                                 }
                                                                 className="role-badge-remove"
                                                                 title="Remove role"
@@ -694,15 +594,17 @@ export default function UsersManagementPage() {
                                                     </button>
                                                 )}
                                                 {user.status === 'active' && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => handleSendResetEmail(user.id, user.email, user.username)}
-                                                            className="user-action-btn"
-                                                            title="Send password reset email"
-                                                            style={{ backgroundColor: 'var(--ctp-info-color, #89B4FA)', color: 'var(--ctp-base)' }}
-                                                        >
-                                                            Reset Email
-                                                        </button>
+                                                    <button
+                                                        onClick={() => handleSendResetEmail(user.id, user.email, user.username)}
+                                                        className="user-action-btn"
+                                                        title="Send password reset email"
+                                                        style={{ backgroundColor: 'var(--ctp-info-color, #89B4FA)', color: 'var(--ctp-base)' }}
+                                                    >
+                                                        Reset Email
+                                                    </button>
+                                                )}
+                                                <div className="user-actions-secondary">
+                                                    {user.status === 'active' && (
                                                         <button
                                                             onClick={() => handleDisableUser(user.id)}
                                                             className="user-action-btn disable"
@@ -710,15 +612,15 @@ export default function UsersManagementPage() {
                                                         >
                                                             {Icons.disable}
                                                         </button>
-                                                    </>
-                                                )}
-                                                <button
-                                                    onClick={() => handleDeleteUser(user.id)}
-                                                    className="user-action-btn delete"
-                                                    title="Delete this user permanently"
-                                                >
-                                                    {Icons.delete}
-                                                </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleDeleteUser(user)}
+                                                        className="user-action-btn delete"
+                                                        title="Delete this user permanently"
+                                                    >
+                                                        {Icons.delete}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -729,17 +631,7 @@ export default function UsersManagementPage() {
                 )}
 
                 {/* Create User Modal */}
-                <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>
-                    <div className="modal-header">
-                        <h2 className="modal-title">Create New User</h2>
-                        <button
-                            onClick={() => setShowCreateModal(false)}
-                            className="modal-close"
-                            aria-label="Close"
-                        >
-                            ×
-                        </button>
-                    </div>
+                <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create New User">
                     <div className="modal-body">
                         {error && <div className="modal-error">{error}</div>}
                         <div className="modal-form-group">
@@ -764,33 +656,22 @@ export default function UsersManagementPage() {
                         </div>
                         <div className="modal-form-group">
                             <label className="modal-label">Role *</label>
-                            <select
+                            <Dropdown
                                 value={newUser.roleId}
-                                onChange={(e) => setNewUser({ ...newUser, roleId: e.target.value })}
-                                className="modal-select"
-                            >
-                                <option value="">Select a role...</option>
-                                {roles.map((role) => (
-                                    <option key={role.id} value={role.id}>
-                                        {role.name}
-                                    </option>
-                                ))}
-                            </select>
+                                onChange={(value) => setNewUser({ ...newUser, roleId: String(value) })}
+                                options={roles}
+                                placeholder="Select a role..."
+                                required
+                            />
                         </div>
                         <div className="modal-form-group">
                             <label className="modal-label">Game (Optional)</label>
-                            <select
+                            <Dropdown
                                 value={newUser.gameId}
-                                onChange={(e) => setNewUser({ ...newUser, gameId: e.target.value })}
-                                className="modal-select"
-                            >
-                                <option value="">All games / Admin only</option>
-                                {games.map((game) => (
-                                    <option key={game.id} value={game.id}>
-                                        {game.name}
-                                    </option>
-                                ))}
-                            </select>
+                                onChange={(value) => setNewUser({ ...newUser, gameId: String(value) })}
+                                options={games}
+                                placeholder="All games / Admin only"
+                            />
                         </div>
                     </div>
                     <div className="modal-footer">
@@ -807,50 +688,27 @@ export default function UsersManagementPage() {
                 </Modal>
 
                 {/* Assign Role Modal */}
-                <Modal isOpen={showRoleModal} onClose={() => setShowRoleModal(false)}>
-                    <div className="modal-header">
-                        <h2 className="modal-title">
-                            Assign Role to {selectedUser?.username}
-                        </h2>
-                        <button
-                            onClick={() => setShowRoleModal(false)}
-                            className="modal-close"
-                            aria-label="Close"
-                        >
-                            ×
-                        </button>
-                    </div>
+                <Modal isOpen={showRoleModal} onClose={() => setShowRoleModal(false)} title={`Assign Role to ${selectedUser?.username}`}>
                     <div className="modal-body">
                         {error && <div className="modal-error">{error}</div>}
                         <div className="modal-form-group">
                             <label className="modal-label">Role *</label>
-                            <select
+                            <Dropdown
                                 value={roleForm.roleId}
-                                onChange={(e) => setRoleForm({ ...roleForm, roleId: e.target.value })}
-                                className="modal-select"
-                            >
-                                <option value="">Select a role...</option>
-                                {roles.map((role) => (
-                                    <option key={role.id} value={role.id}>
-                                        {role.name}
-                                    </option>
-                                ))}
-                            </select>
+                                onChange={(value) => setRoleForm({ ...roleForm, roleId: String(value) })}
+                                options={roles}
+                                placeholder="Select a role..."
+                                required
+                            />
                         </div>
                         <div className="modal-form-group">
                             <label className="modal-label">Game (Optional)</label>
-                            <select
+                            <Dropdown
                                 value={roleForm.gameId}
-                                onChange={(e) => setRoleForm({ ...roleForm, gameId: e.target.value })}
-                                className="modal-select"
-                            >
-                                <option value="">All games / Admin only</option>
-                                {games.map((game) => (
-                                    <option key={game.id} value={game.id}>
-                                        {game.name}
-                                    </option>
-                                ))}
-                            </select>
+                                onChange={(value) => setRoleForm({ ...roleForm, gameId: String(value) })}
+                                options={games}
+                                placeholder="All games / Admin only"
+                            />
                         </div>
                     </div>
                     <div className="modal-footer">
@@ -865,6 +723,28 @@ export default function UsersManagementPage() {
                         </button>
                     </div>
                 </Modal>
+
+                <ConfirmDialog
+                    isOpen={deleteUserConfirm.isOpen}
+                    title="Delete User"
+                    message={`Are you sure you want to delete "${deleteUserConfirm.username}"? This action cannot be undone.`}
+                    confirmText="Delete"
+                    cancelText="Cancel"
+                    onConfirm={handleConfirmDeleteUser}
+                    onCancel={handleCancelDeleteUser}
+                    isDangerous
+                />
+
+                <ConfirmDialog
+                    isOpen={removeRoleConfirm.isOpen}
+                    title="Remove Role"
+                    message={`Remove "${removeRoleConfirm.roleName}" role? This action cannot be undone.`}
+                    confirmText="Remove"
+                    cancelText="Cancel"
+                    onConfirm={handleConfirmRemoveRole}
+                    onCancel={handleCancelRemoveRole}
+                    isDangerous
+                />
             </div>
         </AdminLayout>
     );

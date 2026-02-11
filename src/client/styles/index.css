@@ -1,11 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+/* Theme */
 @import './theme.css';
-@import './admin.css';
-@import './auth.css';
-@import './home.css';
+
+/* Reusable Components */
+@import './components/table.css';
+@import './components/cards.css';
+@import './components/tags.css';
+@import './components/badges.css';
+@import './components/forms.css';
+@import './components/user-menu.css';
 @import './modal.css';
-@import './users-management.css';
+
+/* Pages */
+@import './pages/admin.css';
+@import './pages/admin-talkies.css';
+@import './pages/users-management.css';
+@import './pages/auth.css';
+@import './pages/home.css';
 
 * {
     margin: 0;
@@ -49,6 +62,8 @@ main,
     max-width: 1400px;
     margin: 0 auto;
     padding: 2rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 @media (max-width: 640px) {
@@ -122,330 +137,4 @@ a:hover {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--ctp-surface2);
-}
-
-/* Section separator */
-.section-separator {
-    margin: 2rem 0;
-}
-
-/* Tags section */
-.tags-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.tags-header h2 {
-    color: var(--ctp-primary);
-    font-size: 1.5rem;
-}
-
-.tags-header-actions {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.tags-table-wrapper {
-    overflow-x: auto;
-}
-
-.tags-table {
-    width: 100%;
-    background-color: var(--ctp-surface0);
-    border-radius: 0.5rem;
-    border-collapse: collapse;
-}
-
-.tags-table th,
-.tags-table td {
-    padding: 1rem;
-    text-align: left;
-}
-
-.tags-table th {
-    background-color: var(--ctp-surface1);
-    font-weight: 600;
-    color: var(--ctp-text);
-}
-
-.tags-table th.sortable {
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.2s;
-}
-
-.tags-table th.sortable:hover {
-    background-color: var(--ctp-surface2);
-}
-
-.tags-table th.sortable span {
-    margin-left: 0.5rem;
-}
-
-.tags-table tbody tr {
-    border-bottom: 1px solid var(--ctp-surface1);
-    transition: background-color 0.2s;
-}
-
-.tags-table tbody tr:hover {
-    background-color: var(--ctp-surface1);
-}
-
-.tags-table tbody tr:last-child {
-    border-bottom: none;
-}
-
-.tags-table td.empty {
-    text-align: center;
-    padding: 2rem;
-    color: var(--ctp-subtext0);
-}
-
-.tags-table-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.tags-table-actions button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.25rem;
-    color: var(--ctp-subtext0);
-    transition: color 0.2s;
-}
-
-.tags-table-actions button.edit:hover {
-    color: var(--ctp-secondary);
-}
-
-.tags-table-actions button.delete:hover {
-    color: var(--ctp-danger);
-}
-
-.tags-table thead .filters input {
-    width: 100%;
-    background-color: var(--ctp-base);
-    border: 1px solid var(--ctp-surface2);
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    color: var(--ctp-text);
-}
-
-.tags-table thead .filters input::placeholder {
-    color: var(--ctp-subtext0);
-}
-
-.tags-table thead .filters th {
-    padding: 0.5rem 1rem;
-    background-color: var(--ctp-surface0);
-}
-
-/* Section separator */
-.section-separator {
-    margin: 2rem 0;
-}
-
-/* Tags section */
-.tags-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.tags-header h2 {
-    color: var(--ctp-primary);
-    font-size: 1.5rem;
-}
-
-.tags-header-actions {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.tags-table-wrapper {
-    overflow-x: auto;
-}
-
-.tags-table {
-    width: 100%;
-    background-color: var(--ctp-surface0);
-    border-radius: 0.5rem;
-    border-collapse: collapse;
-}
-
-.tags-table th,
-.tags-table td {
-    padding: 1rem;
-    text-align: left;
-}
-
-.tags-table th {
-    background-color: var(--ctp-surface1);
-    font-weight: 600;
-    color: var(--ctp-text);
-}
-
-.tags-table th.sortable {
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.2s;
-}
-
-.tags-table th.sortable:hover {
-    background-color: var(--ctp-surface2);
-}
-
-.tags-table th.sortable span {
-    margin-left: 0.5rem;
-}
-
-.tags-table tbody tr {
-    border-bottom: 1px solid var(--ctp-surface1);
-    transition: background-color 0.2s;
-}
-
-.tags-table tbody tr:hover {
-    background-color: var(--ctp-surface1);
-}
-
-.tags-table tbody tr:last-child {
-    border-bottom: none;
-}
-
-.tags-table td.empty {
-    text-align: center;
-    padding: 2rem;
-    color: var(--ctp-subtext0);
-}
-
-.tags-table-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.tags-table-actions button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.25rem;
-    color: var(--ctp-subtext0);
-    transition: color 0.2s;
-}
-
-.tags-table-actions button.edit:hover {
-    color: var(--ctp-secondary);
-}
-
-.tags-table-actions button.delete:hover {
-    color: var(--ctp-danger);
-}
-
-.tags-table thead .filters input {
-    width: 100%;
-    background-color: var(--ctp-base);
-    border: 1px solid var(--ctp-surface2);
-    padding: 0.5rem;
-    border-radius: 0.25rem;
-    color: var(--ctp-text);
-}
-
-.tags-table thead .filters input::placeholder {
-    color: var(--ctp-subtext0);
-}
-
-.tags-table thead .filters th {
-    padding: 0.5rem 1rem;
-    background-color: var(--ctp-surface0);
-}
-
-/* Admin Tables Shared Styles */
-.admin-table {
-    width: 100%;
-    background-color: var(--ctp-surface0);
-    border-radius: 0.5rem;
-    border-collapse: collapse;
-}
-
-.admin-table thead tr {
-    border-bottom: 2px solid var(--ctp-surface1);
-}
-
-.admin-table thead th {
-    padding: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    user-select: none;
-}
-
-.admin-table thead th.sortable {
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.admin-table thead th.sortable:hover {
-    background-color: var(--ctp-surface2);
-}
-
-.admin-table thead th .sort-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.admin-table thead th.text-left,
-.admin-table tbody td.text-left {
-    text-align: left;
-}
-
-.admin-table thead th.text-center,
-.admin-table tbody td.text-center {
-    text-align: center;
-}
-
-.admin-table thead th.text-left .sort-header {
-    justify-content: flex-start;
-}
-
-.admin-table thead th.text-center .sort-header {
-    justify-content: center;
-}
-
-.admin-table tbody tr {
-    border-bottom: 1px solid var(--ctp-surface1);
-    transition: background 0.2s;
-}
-
-.admin-table tbody tr:hover {
-    background-color: var(--ctp-surface1);
-}
-
-.admin-table tbody tr:last-child {
-    border-bottom: none;
-}
-
-.admin-table tbody td {
-    padding: 1rem;
-}
-
-.admin-table tbody td.clickable {
-    cursor: pointer;
-    color: var(--ctp-primary);
-}
-
-.admin-table tbody td.empty {
-    text-align: center;
-    padding: 2rem;
-    color: var(--ctp-subtext0);
-}
-
-.table-wrapper {
-    overflow-x: auto;
 }

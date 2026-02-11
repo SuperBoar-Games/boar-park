@@ -1,14 +1,25 @@
 // Hero details page for managing movies and cards for a specific hero
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 import { AdminLayout } from '../../../components/AdminLayout';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
+import { ConfirmDialog } from '../../../components/ConfirmDialog';
 import { Icons } from '../../../components/Icons';
 import { TagsSection } from '../../../components/talkies/TagsSection';
-import { Select } from '../../../components/Select';
-import { useMovies, useCards, useTags, Movie, Card, talkiesApi } from '../../../hooks/talkies/useTalkies';
+import { Dropdown } from '../../../components/Dropdown';
+import { useMoviesQuery, useCardsQuery } from '../../../hooks/talkies/useTalkiesQueries';
+import {
+  useCreateMovieMutation,
+  useUpdateMovieMutation,
+  useDeleteMovieMutation,
+  useCreateCardMutation,
+  useUpdateCardMutation,
+  useDeleteCardMutation,
+} from '../../../hooks/talkies/useTalkiesMutations';
+import type { Movie, Card } from '../../../hooks/talkies/types';
 import { exportHeroToCSV } from '../../../utils/csvExport';
 
 type MovieSortKey = 'title' | 'total_cards' | 'review_cards' | 'done';
@@ -23,35 +34,31 @@ export default function HeroDetailsPage() {
     const { heroId } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
+    const { user } = useAuth();
     const [heroName, setHeroName] = useState((location.state as any)?.heroName || `Hero #${heroId}`);
     const [viewMode, setViewMode] = useState<ViewMode>(() => {
         const saved = localStorage.getItem('hero.viewMode');
         return isValidViewMode(saved) ? saved : 'movies';
     });
 
-    const { movies: moviesFromHook, loading: moviesLoading, refetch: refetchMovies } = useMovies(parseInt(heroId!));
-    const { cards: cardsFromHook, loading: cardsLoading, refetch: refetchCards } = useCards(parseInt(heroId!));
-    const { tags, loading: tagsLoading, refetch: refetchTags } = useTags(parseInt(heroId!));
+    // Fetch data from React Query
+    const { data: movies = [], isLoading: moviesLoading } = useMoviesQuery(parseInt(heroId!));
+    const { data: cards = [], isLoading: cardsLoading } = useCardsQuery(parseInt(heroId!));
 
-    // Local state for optimistic updates
-    const [movies, setMovies] = useState<Movie[]>([]);
-    const [cards, setCards] = useState<Card[]>([]);
+    // Movie mutations
+    const createMovie = useCreateMovieMutation();
+    const updateMovie = useUpdateMovieMutation();
+    const deleteMovie = useDeleteMovieMutation();
 
-    // Sync from hooks to local state
-    useEffect(() => {
-        setMovies(moviesFromHook);
-    }, [moviesFromHook]);
+    // Card mutations
+    const createCard = useCreateCardMutation();
+    const updateCard = useUpdateCardMutation();
+    const deleteCard = useDeleteCardMutation();
 
-    useEffect(() => {
-        setCards(cardsFromHook);
-    }, [cardsFromHook]);
-
-    // Get hero name from movies response once loaded
-    useEffect(() => {
-        if (!moviesLoading && movies.length > 0 && movies[0].hero_name) {
-            setHeroName(movies[0].hero_name);
-        }
-    }, [movies, moviesLoading]);
+    // Update hero name from first movie
+    if (movies.length > 0 && movies[0].hero_name && heroName.startsWith('Hero #')) {
+        setHeroName(movies[0].hero_name);
+    }
 
     // Sorting state
     const [movieSort, setMovieSort] = useState<{ key: MovieSortKey; dir: 'asc' | 'desc' }>({
@@ -92,6 +99,7 @@ export default function HeroDetailsPage() {
         ability2: '',
         movie_id: 0,
     });
+    const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; type: 'movie' | 'card'; id: number; name: string }>({ isOpen: false, type: 'movie', id: 0, name: '' });
 
     // Filtered and sorted movies
     const filteredMovies = useMemo(() => {
@@ -223,19 +231,11 @@ export default function HeroDetailsPage() {
 
     const handleSaveMovie = async () => {
         try {
+            const currentUser = user?.username || 'admin';
             if (editingMovie) {
-                await talkiesApi.updateMovieTitle(editingMovie.id, movieForm.title);
-                // Update locally
-                setMovies(prevMovies =>
-                    prevMovies.map(m =>
-                        m.id === editingMovie.id ? { ...m, title: movieForm.title } : m
-                    )
-                );
+                await updateMovie.mutateAsync({ id: editingMovie.id, data: { title: movieForm.title } });
             } else {
-                const response = await talkiesApi.createMovie({ title: movieForm.title, heroId: parseInt(heroId!) });
-                if (response.data && response.data.data) {
-                    setMovies(prev => [...prev, response.data.data]);
-                }
+                await createMovie.mutateAsync({ title: movieForm.title, heroId: parseInt(heroId!), user: currentUser });
             }
             setIsMovieModalOpen(false);
         } catch (err) {
@@ -243,81 +243,29 @@ export default function HeroDetailsPage() {
         }
     };
 
-    const handleDeleteMovie = async (movie: Movie) => {
-        if (!confirm(`Delete "${movie.title}"?`)) return;
-
-        // Optimistic update
-        const previousMovies = movies;
-        setMovies(prevMovies => prevMovies.filter(m => m.id !== movie.id));
-
-        try {
-            await talkiesApi.deleteMovie(movie.id);
-        } catch (err) {
-            // Rollback on error
-            setMovies(previousMovies);
-            alert('Failed to delete movie');
-        }
+    const handleDeleteMovie = (movie: Movie) => {
+        setDeleteConfirm({ isOpen: true, type: 'movie', id: movie.id, name: movie.title });
     };
 
-    const toggleMovieLock = async (movie: Movie) => {
-        // Optimistic update
-        setMovies(prevMovies =>
-            prevMovies.map(m =>
-                m.id === movie.id ? { ...m, locked: !m.locked } : m
-            )
-        );
-
-        try {
-            await talkiesApi.updateMovieLocked(movie.id, !movie.locked);
-        } catch (err) {
-            // Rollback on error
-            setMovies(prevMovies =>
-                prevMovies.map(m =>
-                    m.id === movie.id ? { ...m, locked: movie.locked } : m
-                )
-            );
-            alert('Failed to update movie');
-        }
+    const handleConfirmDeleteMovie = () => {
+        deleteMovie.mutate({ id: deleteConfirm.id, heroId: parseInt(heroId!) });
+        setDeleteConfirm({ isOpen: false, type: 'movie', id: 0, name: '' });
     };
 
-    const toggleMovieReview = async (movie: Movie) => {
-        // Optimistic update
-        setMovies(prevMovies =>
-            prevMovies.map(m =>
-                m.id === movie.id ? { ...m, need_review: !m.need_review } : m
-            )
-        );
+    const toggleMovieLock = (movie: Movie) => {
+        // Fire-and-forget: React Query handles the request + auto-refetch on success
+        updateMovie.mutate({ id: movie.id, data: { locked: !movie.locked } });
+    };
 
-        try {
-            await talkiesApi.updateMovieReview(movie.id, !movie.need_review);
-        } catch (err) {
-            // Rollback on error
-            setMovies(prevMovies =>
-                prevMovies.map(m =>
-                    m.id === movie.id ? { ...m, need_review: movie.need_review } : m
-                )
-            );
-            alert('Failed to update movie');
-        }
+    const toggleMovieReview = (movie: Movie) => {
+        // Fire-and-forget: React Query handles the request + auto-refetch on success
+        updateMovie.mutate({ id: movie.id, data: { needReview: !movie.need_review } });
     };
 
     const toggleCardReview = async (card: Card) => {
-        // Optimistic update
-        setCards(prevCards =>
-            prevCards.map(c =>
-                c.id === card.id ? { ...c, need_review: !c.need_review } : c
-            )
-        );
-
         try {
-            await talkiesApi.updateCard(card.id, { need_review: !card.need_review });
+            await updateCard.mutateAsync({ id: card.id, data: { need_review: !card.need_review } });
         } catch (err) {
-            // Rollback on error
-            setCards(prevCards =>
-                prevCards.map(c =>
-                    c.id === card.id ? { ...c, need_review: card.need_review } : c
-                )
-            );
             alert('Failed to update card');
         }
     };
@@ -351,18 +299,9 @@ export default function HeroDetailsPage() {
     const handleSaveCard = async () => {
         try {
             if (editingCard) {
-                await talkiesApi.updateCard(editingCard.id, { ...cardForm, heroId: parseInt(heroId!) });
-                // Update locally
-                setCards(prevCards =>
-                    prevCards.map(c =>
-                        c.id === editingCard.id ? { ...c, ...cardForm } : c
-                    )
-                );
+                await updateCard.mutateAsync({ id: editingCard.id, data: { ...cardForm, heroId: parseInt(heroId!) } });
             } else {
-                const response = await talkiesApi.createCard({ ...cardForm, heroId: parseInt(heroId!) });
-                if (response.data && response.data.data) {
-                    setCards(prev => [...prev, response.data.data]);
-                }
+                await createCard.mutateAsync({ ...cardForm, heroId: parseInt(heroId!) });
             }
             setIsCardModalOpen(false);
         } catch (err) {
@@ -370,20 +309,17 @@ export default function HeroDetailsPage() {
         }
     };
 
-    const handleDeleteCard = async (card: Card) => {
-        if (!confirm(`Delete "${card.name}"?`)) return;
+    const handleDeleteCard = (card: Card) => {
+        setDeleteConfirm({ isOpen: true, type: 'card', id: card.id, name: card.name });
+    };
 
-        // Optimistic update
-        const previousCards = cards;
-        setCards(prevCards => prevCards.filter(c => c.id !== card.id));
+    const handleConfirmDeleteCard = () => {
+        deleteCard.mutate({ id: deleteConfirm.id, heroId: parseInt(heroId!) });
+        setDeleteConfirm({ isOpen: false, type: 'movie', id: 0, name: '' });
+    };
 
-        try {
-            await talkiesApi.deleteCard(card.id);
-        } catch (err) {
-            // Rollback on error
-            setCards(previousCards);
-            alert('Failed to delete card');
-        }
+    const handleCancelDelete = () => {
+        setDeleteConfirm({ isOpen: false, type: 'movie', id: 0, name: '' });
     };
 
     if (moviesLoading || cardsLoading) return <AdminLayout title={<h1>{heroName}</h1>}><p>Loading...</p></AdminLayout>;
@@ -422,7 +358,7 @@ export default function HeroDetailsPage() {
 
             {viewMode === 'movies' ? (
                 <div className="table-wrapper">
-                    <table className="admin-table">
+                    <table className="data-table">
                         <thead>
                             <tr>
                                 {[
@@ -457,14 +393,15 @@ export default function HeroDetailsPage() {
                                     </td>
                                 ))}
                                 <td>
-                                    <Select
+                                    <Dropdown
                                         value={movieFilters.done}
-                                        onChange={(value) => handleMovieFilterChange('done', value)}
+                                        onChange={(value) => handleMovieFilterChange('done', String(value))}
                                         options={[
-                                            { value: '', label: 'All' },
-                                            { value: 'done', label: 'Done' },
-                                            { value: 'pending', label: 'Pending' },
+                                            { id: '', name: 'All' },
+                                            { id: 'done', name: 'Done' },
+                                            { id: 'pending', name: 'Pending' },
                                         ]}
+                                        placeholder="Filter..."
                                     />
                                 </td>
                                 <td></td>
@@ -482,8 +419,8 @@ export default function HeroDetailsPage() {
                                     <tr key={movie.id}>
                                         <td
                                             className="clickable"
-                                            onClick={() => navigate(`/admin/games/talkies/movie/${movie.id}`, {
-                                                state: { heroId: parseInt(heroId!), movieTitle: movie.title, movieLocked: movie.locked }
+                                            onClick={() => navigate(`/admin/games/talkies/hero/${heroId}/movie/${movie.id}`, {
+                                                state: { movieTitle: movie.title, movieLocked: movie.locked }
                                             })}
                                         >
                                             {movie.title}
@@ -537,7 +474,7 @@ export default function HeroDetailsPage() {
                 </div>
             ) : (
                 <div className="table-wrapper">
-                    <table className="admin-table">
+                    <table className="data-table">
                         <thead>
                             <tr>
                                 {[
@@ -628,13 +565,7 @@ export default function HeroDetailsPage() {
             )}
 
             {/* Tags Section */}
-            {!tagsLoading && tags && (
-                <TagsSection
-                    heroId={parseInt(heroId!)}
-                    tags={tags}
-                    onRefresh={refetchTags}
-                />
-            )}
+            <TagsSection heroId={parseInt(heroId!)} />
 
             {/* Movie Modal */}
             <Modal
@@ -689,16 +620,15 @@ export default function HeroDetailsPage() {
                         <label>
                             Movie *
                         </label>
-                        <Select
+                        <Dropdown
                             value={String(cardForm.movie_id)}
                             onChange={(value) => setCardForm({ ...cardForm, movie_id: parseInt(value) })}
-                            options={[
-                                { value: '0', label: 'Select a movie...' },
-                                ...movies.map(movie => ({
-                                    value: String(movie.id),
-                                    label: movie.title
-                                }))
-                            ]}
+                            options={movies.map(movie => ({
+                                id: movie.id,
+                                name: movie.title
+                            }))}
+                            placeholder="Select a movie..."
+                            required
                         />
                     </div>
                     <div className="form-group">
@@ -716,17 +646,18 @@ export default function HeroDetailsPage() {
                         <label>
                             Type *
                         </label>
-                        <Select
+                        <Dropdown
                             value={cardForm.type}
-                            onChange={(value) => setCardForm({ ...cardForm, type: value })}
+                            onChange={(value) => setCardForm({ ...cardForm, type: String(value) })}
                             options={[
-                                { value: '', label: 'Select type...' },
-                                { value: 'HERO', label: 'HERO' },
-                                { value: 'VILLAIN', label: 'VILLAIN' },
-                                { value: 'SR1', label: 'SR1' },
-                                { value: 'SR2', label: 'SR2' },
-                                { value: 'WC', label: 'WC' },
+                                { id: 'HERO', name: 'HERO' },
+                                { id: 'VILLAIN', name: 'VILLAIN' },
+                                { id: 'SR1', name: 'SR1' },
+                                { id: 'SR2', name: 'SR2' },
+                                { id: 'WC', name: 'WC' },
                             ]}
+                            placeholder="Select type..."
+                            required
                         />
                     </div>
                     <div className="form-group">
@@ -767,6 +698,17 @@ export default function HeroDetailsPage() {
                     </div>
                 </form>
             </Modal>
+
+            <ConfirmDialog
+                isOpen={deleteConfirm.isOpen}
+                title={`Delete ${deleteConfirm.type === 'movie' ? 'Movie' : 'Card'}`}
+                message={`Are you sure you want to delete "${deleteConfirm.name}"? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={deleteConfirm.type === 'movie' ? handleConfirmDeleteMovie : handleConfirmDeleteCard}
+                onCancel={handleCancelDelete}
+                isDangerous
+            />
         </AdminLayout>
     );
 }

@@ -456,6 +456,16 @@ Bun.serve({
             }
         }
 
+        // Serve static files from /public directory (PWA assets)
+        try {
+            const publicFile = Bun.file(`/home/batsy/web/sb/boar-park/public${url.pathname}`);
+            if (await publicFile.exists()) {
+                return new Response(publicFile);
+            }
+        } catch {
+            // Not in public, continue
+        }
+
         // Serve static files from /frontend directory
         try {
             let filePath = url.pathname === "/"

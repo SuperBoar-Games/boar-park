@@ -10,6 +10,7 @@ export const Icons = {
     sort: <i className="fa-solid fa-sort"></i>,
     sortUp: <i className="fa-solid fa-sort-up"></i>,
     sortDown: <i className="fa-solid fa-sort-down"></i>,
+    chevronDown: <i className="fa-solid fa-chevron-down"></i>,
     x: <i className="fa-solid fa-x"></i>,
     lock: <i className="fa-solid fa-lock"></i>,
     unlock: <i className="fa-solid fa-unlock"></i>,

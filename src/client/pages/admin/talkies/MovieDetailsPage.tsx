@@ -1,31 +1,49 @@
 // Movie details page for managing cards within a specific movie
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 import { AdminLayout } from '../../../components/AdminLayout';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
-import { Select } from '../../../components/Select';
+import { ConfirmDialog } from '../../../components/ConfirmDialog';
+import { Dropdown } from '../../../components/Dropdown';
 import { Icons } from '../../../components/Icons';
-import { Card, Movie, talkiesApi, useTags } from '../../../hooks/talkies/useTalkies';
+import { useCardsQuery, useTagsQuery } from '../../../hooks/talkies/useTalkiesQueries';
+import {
+  useCreateCardMutation,
+  useUpdateCardMutation,
+  useDeleteCardMutation,
+  useUpdateMovieMutation,
+} from '../../../hooks/talkies/useTalkiesMutations';
+import type { Card, Movie } from '../../../hooks/talkies/types';
 
 export default function MovieDetailsPage() {
-    const { movieId } = useParams();
+    const { heroId, movieId } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
+    const { user } = useAuth();
     const state = (location.state as any) || {};
-    const heroId = state.heroId;
     const movieTitle = state.movieTitle || 'Movie';
     const initialLocked = state.movieLocked || false;
 
-    const [movie, setMovie] = useState<Movie | null>(null);
-    const [cards, setCards] = useState<Card[]>([]);
-    const [loading, setLoading] = useState(true);
+    // Fetch data from React Query
+    const { data: cards = [], isLoading: cardsLoading } = useCardsQuery(heroId ? parseInt(heroId) : null, parseInt(movieId!));
+    const { data: tags = [] } = useTagsQuery(heroId ? parseInt(heroId) : undefined);
+
+    // Card mutations
+    const createCard = useCreateCardMutation();
+    const updateCard = useUpdateCardMutation();
+    const deleteCard = useDeleteCardMutation();
+    const updateMovie = useUpdateMovieMutation();
+
+    // Track movie state locally
+    const [movieLocked, setMovieLocked] = useState(initialLocked);
+
+    // UI state only
     const [editingTagsForCard, setEditingTagsForCard] = useState<number | null>(null);
     const [tagSearchTerm, setTagSearchTerm] = useState('');
     const tagInputRef = useRef<HTMLInputElement>(null);
-
-    const { tags } = useTags(heroId ? parseInt(heroId) : undefined);
 
     const [isCardModalOpen, setIsCardModalOpen] = useState(false);
     const [editingCard, setEditingCard] = useState<Card | null>(null);
@@ -36,51 +54,22 @@ export default function MovieDetailsPage() {
         ability_text: '',
         ability_text2: '',
     });
+    const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; cardId: number; cardName: string }>({ isOpen: false, cardId: 0, cardName: '' });
 
-    useEffect(() => {
-        const loadData = async () => {
-            if (!movieId || !heroId) return;
-            try {
-                setLoading(true);
-                // Get cards for this movie - this also returns movie_title now
-                const cardsResponse = await talkiesApi.getCardsByHeroAndMovie(heroId, parseInt(movieId));
-                const cardsData = cardsResponse.data || [];
-                setCards(cardsData);
+    // Create movie object from state and cards data
+    const movie = useMemo<Movie>(() => {
+        const movieFromCards = cards.length > 0 && cards[0].movie_title
+            ? { title: cards[0].movie_title }
+            : { title: movieTitle };
 
-                // Get movie title from cards if available, otherwise fetch movies
-                if (cardsData.length > 0 && cardsData[0].movie_title) {
-                    setMovie({
-                        id: parseInt(movieId),
-                        hero_id: heroId,
-                        title: cardsData[0].movie_title,
-                        locked: initialLocked,
-                        need_review: false,
-                    });
-                } else {
-                    // Fetch movie details only if cards don't have the title
-                    const moviesResponse = await talkiesApi.getMoviesByHeroId(heroId);
-                    const foundMovie = moviesResponse.data.find(m => m.id === parseInt(movieId));
-                    if (foundMovie) {
-                        setMovie(foundMovie);
-                    } else {
-                        setMovie({
-                            id: parseInt(movieId),
-                            hero_id: heroId,
-                            title: movieTitle,
-                            locked: initialLocked,
-                            need_review: false,
-                        });
-                    }
-                }
-            } catch (err) {
-                console.error('Failed to load movie data', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadData();
-    }, [movieId, heroId, movieTitle, initialLocked]);
+        return {
+            id: parseInt(movieId!),
+            hero_id: heroId,
+            title: movieFromCards.title,
+            locked: initialLocked,
+            need_review: false,
+        } as Movie;
+    }, [cards, movieId, heroId, movieTitle, initialLocked]);
 
     const openAddCardModal = () => {
         setEditingCard(null);
@@ -108,105 +97,70 @@ export default function MovieDetailsPage() {
 
     const handleSaveCard = async () => {
         if (!movie) return;
-        const previousCards = cards;
         try {
+            const currentUser = user?.username || 'admin';
             if (editingCard) {
-                const updatedCard = { ...editingCard, ...cardForm };
-                setCards(prev => prev.map(c => c.id === editingCard.id ? updatedCard : c));
-                await talkiesApi.updateCard(editingCard.id, {
-                    ...cardForm,
-                    heroId: movie.hero_id,
-                    movieId: movie.id,
+                await updateCard.mutateAsync({
+                    id: editingCard.id,
+                    data: { ...cardForm, hero_id: movie.hero_id, movie_id: movie.id, user: currentUser },
                 });
             } else {
-                const response = await talkiesApi.createCard({
-                    ...cardForm,
-                    heroId: movie.hero_id,
-                    movieId: movie.id,
-                });
-                if (response.data && response.data.data) {
-                    setCards(prev => [...prev, response.data.data]);
-                }
+                await createCard.mutateAsync({ ...cardForm, hero_id: movie.hero_id, movie_id: movie.id, user: currentUser });
             }
             setIsCardModalOpen(false);
         } catch (err) {
-            setCards(previousCards);
             alert('Failed to save card');
         }
     };
 
-    const handleDeleteCard = async (card: Card) => {
-        if (!confirm(`Delete "${card.name}"?`)) return;
-        const previousCards = cards;
-        try {
-            setCards(prev => prev.filter(c => c.id !== card.id));
-            await talkiesApi.deleteCard(card.id);
-        } catch (err) {
-            setCards(previousCards);
-            alert('Failed to delete card');
-        }
+    const handleDeleteCard = (card: Card) => {
+        setDeleteConfirm({ isOpen: true, cardId: card.id, cardName: card.name });
+    };
+
+    const handleConfirmDeleteCard = () => {
+        deleteCard.mutate({ id: deleteConfirm.cardId, heroId: movie.hero_id });
+        setDeleteConfirm({ isOpen: false, cardId: 0, cardName: '' });
+    };
+
+    const handleCancelDelete = () => {
+        setDeleteConfirm({ isOpen: false, cardId: 0, cardName: '' });
     };
 
     const handleToggleCardReview = async (card: Card) => {
-        if (movie?.locked) return;
-        const previousCards = cards;
+        if (movieLocked) return;
         try {
-            setCards(prev => prev.map(c =>
-                c.id === card.id ? { ...c, need_review: !c.need_review } : c
-            ));
-            await talkiesApi.updateCard(card.id, { needReview: !card.need_review });
+            await updateCard.mutateAsync({ id: card.id, data: { need_review: !card.need_review } });
         } catch (err) {
-            setCards(previousCards);
             alert('Failed to update card review status');
         }
     };
 
-    const toggleMovieLock = async () => {
-        if (!movie) return;
-        try {
-            await talkiesApi.updateMovieLocked(movie.id, !movie.locked);
-            setMovie({ ...movie, locked: !movie.locked });
-        } catch (err) {
-            alert('Failed to update movie');
-        }
-    };
-
-    const handleRemoveTag = async (card: Card, tagId: number) => {
-        if (movie?.locked) return;
-        const previousCards = cards;
-        try {
-            const currentTagIds = (card.tags || []).map(t => t.id);
-            const newTagIds = currentTagIds.filter(id => id !== tagId);
-            setCards(prev => prev.map(c =>
-                c.id === card.id ? { ...c, tags: c.tags?.filter(t => t.id !== tagId) } : c
-            ));
-            await talkiesApi.updateCard(card.id, { tagIds: newTagIds });
-        } catch (err) {
-            setCards(previousCards);
-            alert('Failed to remove tag');
-        }
+    const handleRemoveTag = (card: Card, tagId: number) => {
+        if (movieLocked) return;
+        const currentTagIds = (card.tags || []).map(t => t.id);
+        const newTagIds = currentTagIds.filter(id => id !== tagId);
+        updateCard.mutateAsync({ id: card.id, data: { tag_ids: newTagIds } });
     };
 
     const handleAddTag = async (card: Card, tagId: number) => {
-        if (movie?.locked) return;
+        if (movieLocked) return;
         const currentTagIds = (card.tags || []).map(t => t.id);
-        if (currentTagIds.includes(tagId)) return;
+        if (currentTagIds.includes(tagId)) {
+            return;
+        }
 
-        const previousCards = cards;
         const tagToAdd = tags.find(t => t.id === tagId);
-        if (!tagToAdd) return;
+        if (!tagToAdd) {
+            return;
+        }
 
         try {
             const newTagIds = [...currentTagIds, tagId];
-            setCards(prev => prev.map(c =>
-                c.id === card.id ? { ...c, tags: [...(c.tags || []), tagToAdd] } : c
-            ));
-            await talkiesApi.updateCard(card.id, { tagIds: newTagIds });
+            await updateCard.mutateAsync({ id: card.id, data: { tag_ids: newTagIds } });
             setEditingTagsForCard(null);
             setTagSearchTerm('');
         } catch (err) {
-            setCards(previousCards);
-            alert('Failed to add tag');
+            alert(`Failed to add tag: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
     };
 
@@ -219,6 +173,18 @@ export default function MovieDetailsPage() {
     const closeTagEditor = () => {
         setEditingTagsForCard(null);
         setTagSearchTerm('');
+    };
+
+    const handleToggleMovieLock = async () => {
+        try {
+            await updateMovie.mutateAsync({
+                id: movie.id,
+                data: { locked: !movieLocked },
+            });
+            setMovieLocked(!movieLocked);
+        } catch (err) {
+            alert('Failed to toggle movie lock');
+        }
     };
 
     useEffect(() => {
@@ -234,8 +200,8 @@ export default function MovieDetailsPage() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [editingTagsForCard]);
 
-    if (loading) return <AdminLayout title={<h1>Movie Details</h1>}><p>Loading...</p></AdminLayout>;
-    if (!heroId) return <AdminLayout title={<h1>Movie Details</h1>}><p>Invalid navigation - please navigate from hero details page</p></AdminLayout>;
+    if (cardsLoading) return <AdminLayout title={<h1>Movie Details</h1>}><p>Loading...</p></AdminLayout>;
+    if (!heroId || !movieId) return <AdminLayout title={<h1>Movie Details</h1>}><p>Invalid movie or hero ID</p></AdminLayout>;
 
     return (
         <AdminLayout
@@ -248,14 +214,14 @@ export default function MovieDetailsPage() {
         >
             <div className="movie-controls">
                 <button
-                    className={`lock-toggle ${movie.locked ? 'locked' : ''}`}
-                    onClick={toggleMovieLock}
-                    title={movie.locked ? 'Click to unlock' : 'Click to lock'}
+                    className={`lock-toggle ${movieLocked ? 'locked' : ''}`}
+                    onClick={handleToggleMovieLock}
+                    title={movieLocked ? 'Click to unlock' : 'Click to lock'}
                 >
-                    {movie.locked ? Icons.lock : Icons.unlock}
-                    <span>{movie.locked ? 'Locked' : 'Unlocked'}</span>
+                    {movieLocked ? Icons.lock : Icons.unlock}
+                    <span>{movieLocked ? 'Locked' : 'Unlocked'}</span>
                 </button>
-                {!movie.locked && (
+                {!movieLocked && (
                     <Button onClick={openAddCardModal}>
                         {Icons.plus} <span>Add Card</span>
                     </Button>
@@ -277,7 +243,7 @@ export default function MovieDetailsPage() {
                                     </span>
                                     <h3>{card.name}</h3>
                                 </div>
-                                {!movie.locked && (
+                                {!movieLocked && (
                                     <div className="card-actions">
                                         <button
                                             onClick={() => handleToggleCardReview(card)}
@@ -328,7 +294,7 @@ export default function MovieDetailsPage() {
                                             card.tags.map(tag => (
                                                 <span key={tag.id} className="tag-badge">
                                                     {tag.name}
-                                                    {!movie.locked && (
+                                                    {!movieLocked && (
                                                         <button
                                                             className="remove-tag-btn"
                                                             onClick={() => handleRemoveTag(card, tag.id)}
@@ -343,7 +309,7 @@ export default function MovieDetailsPage() {
                                             <span className="tag-badge muted">No tags</span>
                                         )}
                                     </div>
-                                    {!movie.locked && (
+                                    {!movieLocked && (
                                         <div className="tag-editor-container">
                                             <button
                                                 className="add-tag-btn"
@@ -419,17 +385,18 @@ export default function MovieDetailsPage() {
                         <label>
                             Type *
                         </label>
-                        <Select
+                        <Dropdown
                             value={cardForm.type}
-                            onChange={(value) => setCardForm({ ...cardForm, type: value })}
+                            onChange={(value) => setCardForm({ ...cardForm, type: String(value) })}
                             options={[
-                                { value: '', label: 'Select type...' },
-                                { value: 'HERO', label: 'HERO' },
-                                { value: 'VILLAIN', label: 'VILLAIN' },
-                                { value: 'SR1', label: 'SR1' },
-                                { value: 'SR2', label: 'SR2' },
-                                { value: 'WC', label: 'WC' },
+                                { id: 'HERO', name: 'HERO' },
+                                { id: 'VILLAIN', name: 'VILLAIN' },
+                                { id: 'SR1', name: 'SR1' },
+                                { id: 'SR2', name: 'SR2' },
+                                { id: 'WC', name: 'WC' },
                             ]}
+                            placeholder="Select type..."
+                            required
                         />
                     </div>
                     <div className="form-group">
@@ -470,6 +437,17 @@ export default function MovieDetailsPage() {
                     </div>
                 </form>
             </Modal>
+
+            <ConfirmDialog
+                isOpen={deleteConfirm.isOpen}
+                title="Delete Card"
+                message={`Are you sure you want to delete "${deleteConfirm.cardName}"? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                onConfirm={handleConfirmDeleteCard}
+                onCancel={handleCancelDelete}
+                isDangerous
+            />
         </AdminLayout>
     );
 }
