@@ -16,8 +16,7 @@ node_modules/
 .env.local
 
 # Seed data files (contain user emails and sensitive information)
-db/seeds/
-seed_data.sql
+src/db/seeds/
 
 dist/
 scripts/
