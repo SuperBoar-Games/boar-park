@@ -54,12 +54,38 @@ fi
 log "Stopping service..."
 systemctl stop "$SERVICE_NAME" || warn "Service was not running"
 
-# Create backup
-log "Creating backup..."
+# Create backups directory
+log "Creating backups..."
 mkdir -p "$BACKUP_DIR"
-BACKUP_FILE="$BACKUP_DIR/backup-$(date +%Y%m%d-%H%M%S).tar.gz"
-tar -czf "$BACKUP_FILE" -C "$(dirname "$DEPLOY_DIR")" "$(basename "$DEPLOY_DIR")" || warn "Backup failed"
-log "Backup created: $BACKUP_FILE"
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+# Backup database
+log "Backing up database..."
+if [ -f "$DEPLOY_DIR/.env" ]; then
+    # Extract database credentials from .env
+    DB_URL=$(grep "^DATABASE_URL=" "$DEPLOY_DIR/.env" | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+
+    if [ -n "$DB_URL" ]; then
+        DB_BACKUP_FILE="$BACKUP_DIR/db-backup-$TIMESTAMP.sql"
+
+        # Use pg_dump with the connection URL
+        if sudo -u postgres pg_dump "$DB_URL" > "$DB_BACKUP_FILE" 2>/dev/null; then
+            log "Database backup created: $DB_BACKUP_FILE"
+        else
+            warn "Database backup failed - continuing deployment"
+        fi
+    else
+        warn "DATABASE_URL not found in .env - skipping database backup"
+    fi
+else
+    warn ".env file not found - skipping database backup"
+fi
+
+# Backup application files
+log "Backing up application files..."
+BACKUP_FILE="$BACKUP_DIR/files-backup-$TIMESTAMP.tar.gz"
+tar -czf "$BACKUP_FILE" -C "$(dirname "$DEPLOY_DIR")" "$(basename "$DEPLOY_DIR")" || warn "File backup failed"
+log "File backup created: $BACKUP_FILE"
 
 # Clone or pull repository
 cd "$DEPLOY_DIR"

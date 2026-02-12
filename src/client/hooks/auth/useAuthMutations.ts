@@ -26,8 +26,8 @@ export function useUpdateProfileMutation() {
 
   return useMutation<UpdateProfileResponse, Error, UpdateProfileParams>({
     mutationFn: async (data) => {
-      const response = await apiClient.put('/api/auth/me', data);
-      return response.json();
+      // apiClient.put already returns parsed JSON
+      return await apiClient.put<UpdateProfileResponse>('/api/auth/me', data);
     },
     onSuccess: () => {
       // Invalidate current user query to refetch fresh data

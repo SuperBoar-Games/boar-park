@@ -55,7 +55,18 @@ async function authRequest<T>(
   }
 
   if (!response.ok) {
-    const error = new Error(`API Error: ${response.statusText}`);
+    // Try to parse error response body for detailed message
+    let errorMessage = `API Error: ${response.statusText}`;
+    try {
+      const errorData = await response.json();
+      if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    } catch {
+      // If JSON parsing fails, use statusText
+    }
+
+    const error = new Error(errorMessage);
     (error as any).status = response.status;
     throw error;
   }
