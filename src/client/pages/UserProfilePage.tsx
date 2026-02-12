@@ -1,53 +1,61 @@
 // User profile page for updating username, email, and password
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useCurrentUser } from '../hooks/auth/useAuthQueries';
+import { useUpdateProfileMutation } from '../hooks/auth/useAuthMutations';
 import { AdminLayout } from '../components/AdminLayout';
 import { Button } from '../components/Button';
 import { Icons } from '../components/Icons';
 
-const API_BASE_URL = import.meta.env.PROD ? '' : 'http://localhost:3000';
-
 export default function UserProfilePage() {
-    const { user, accessToken, logout } = useAuth();
+    const { logout } = useAuth();
+    const { data: currentUser, isLoading: userLoading } = useCurrentUser();
+    const updateProfileMutation = useUpdateProfileMutation();
     const navigate = useNavigate();
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
 
     const [formData, setFormData] = useState({
-        username: user?.username || '',
-        email: user?.email || '',
+        username: '',
+        email: '',
         currentPassword: '',
         newPassword: '',
         confirmPassword: '',
     });
 
-    const handleUpdateProfile = async (e: React.FormEvent) => {
+    // Update form data when user data is loaded
+    useEffect(() => {
+        if (currentUser) {
+            setFormData(prev => ({
+                ...prev,
+                username: currentUser.username,
+                email: currentUser.email,
+            }));
+        }
+    }, [currentUser]);
+
+    const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError('');
         setSuccess('');
-        setIsLoading(true);
+
+        // Validate password match
+        if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
+            setError('New passwords do not match');
+            return;
+        }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({
-                    username: formData.username,
-                    email: formData.email,
-                    currentPassword: formData.currentPassword,
-                    newPassword: formData.newPassword || undefined,
-                }),
+            const result = await updateProfileMutation.mutateAsync({
+                username: formData.username,
+                email: formData.email,
+                currentPassword: formData.currentPassword,
+                newPassword: formData.newPassword || undefined,
             });
 
-            const data = await response.json();
-
-            if (response.ok && data.success) {
+            if (result.success) {
                 setSuccess('Profile updated successfully');
                 setFormData({
                     username: formData.username,
@@ -57,12 +65,10 @@ export default function UserProfilePage() {
                     confirmPassword: '',
                 });
             } else {
-                setError(data.message || 'Failed to update profile');
+                setError(result.message || 'Failed to update profile');
             }
-        } catch (error) {
-            setError('Network error. Please try again.');
-        } finally {
-            setIsLoading(false);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Network error. Please try again.');
         }
     };
 
@@ -71,7 +77,15 @@ export default function UserProfilePage() {
         navigate('/');
     };
 
-    if (!user) {
+    if (userLoading) {
+        return (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--ctp-subtext0)' }}>
+                Loading profile...
+            </div>
+        );
+    }
+
+    if (!currentUser) {
         return (
             <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--ctp-subtext0)' }}>
                 Please log in to view your profile.
@@ -254,7 +268,7 @@ export default function UserProfilePage() {
                     <div style={{ display: 'flex', gap: '1rem' }}>
                         <button
                             type="submit"
-                            disabled={isLoading}
+                            disabled={updateProfileMutation.isPending}
                             style={{
                                 flex: 1,
                                 padding: '0.75rem',
@@ -263,11 +277,11 @@ export default function UserProfilePage() {
                                 border: 'none',
                                 borderRadius: '0.375rem',
                                 fontWeight: 500,
-                                cursor: isLoading ? 'not-allowed' : 'pointer',
-                                opacity: isLoading ? 0.5 : 1,
+                                cursor: updateProfileMutation.isPending ? 'not-allowed' : 'pointer',
+                                opacity: updateProfileMutation.isPending ? 0.5 : 1,
                             }}
                         >
-                            {isLoading ? 'Updating...' : 'Update Profile'}
+                            {updateProfileMutation.isPending ? 'Updating...' : 'Update Profile'}
                         </button>
                         <button
                             type="button"

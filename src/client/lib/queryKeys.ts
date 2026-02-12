@@ -30,5 +30,6 @@ export const queryKeys = {
   auth: {
     all: ['auth'] as const,
     me: () => [...queryKeys.auth.all, 'me'] as const,
+    currentUser: ['auth', 'currentUser'] as const,
   },
 } as const;

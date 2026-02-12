@@ -414,7 +414,7 @@ export async function updateUserProfileHandler(userId: number, body: any): Promi
         const user = users[0];
 
         // Verify current password
-        const passwordMatch = await verifyPassword(currentPassword, user.password_hash);
+        const passwordMatch = await verifyPassword(user.password_hash, currentPassword);
         if (!passwordMatch) {
             return jsonResponse({ success: false, message: "Invalid current password" }, 401);
         }
