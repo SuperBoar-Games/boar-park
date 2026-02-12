@@ -83,18 +83,11 @@ bun install --no-progress || error "Failed to install dependencies"
 
 # Build backend
 log "Building backend..."
-bun build src/index.ts --outdir dist || error "Failed to build backend"
+bun build src/index.ts --outdir dist --target=bun || error "Failed to build backend"
 
-# Build frontend
+# Build frontend with Vite
 log "Building frontend..."
-bun build src/client/main.tsx --outdir dist/client --minify --sourcemap || error "Failed to build frontend"
-
-# Copy frontend to serving directory
-log "Preparing static files..."
-cp index.html dist/client/index.html || true
-cp -r public/* dist/client/ || true
-# Fix PWA paths for production (dev uses ./public/ prefix, prod serves from root)
-sed -i 's|"\./public/|"/|g' dist/client/index.html || true
+bun run build:client || error "Failed to build frontend"
 
 # Fix permissions
 log "Setting file permissions..."

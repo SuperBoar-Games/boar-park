@@ -4,10 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "bun run --watch src/index.ts",
-    "dev:react": "bun --hot index.html",
+    "dev:client": "vite",
     "start": "bun run src/index.ts",
-    "build": "bun build src/index.ts --outdir dist",
-    "build:client": "bun build src/client/main.tsx --outdir dist/client --minify --sourcemap"
+    "build": "bun build src/index.ts --outdir dist --target=bun",
+    "build:client": "vite build"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.20",
@@ -23,6 +23,8 @@
     "@types/nodemailer": "^7.0.9",
     "@types/react": "^19.2.11",
     "@types/react-dom": "^19.2.3",
-    "bun-types": "latest"
+    "@vitejs/plugin-react": "^5.1.4",
+    "bun-types": "latest",
+    "vite": "^7.3.1"
   }
 }
