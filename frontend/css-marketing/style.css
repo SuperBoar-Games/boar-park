@@ -471,14 +471,17 @@ section h2 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.4rem 0.8rem;
-    border-radius: 20px;
+    height: 32px;
+    padding: 0.25rem 0.6rem;
+    border-radius: 16px;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     margin-bottom: 1rem;
-    min-width: 60px;
-    letter-spacing: 0.5px;
+    min-width: 70px;
+    max-width: 70px;
+    letter-spacing: 0.3px;
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .type-badge.hero { 
