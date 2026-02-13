@@ -113,18 +113,33 @@ export default function UsersManagementPage() {
             return;
         }
 
+        // Validate username format (no spaces, 3-32 chars, alphanumeric + underscore)
+        const usernameRegex = /^[a-zA-Z0-9_]{3,32}$/;
+        if (!usernameRegex.test(newUser.username)) {
+            setError('Username must be 3-32 characters (letters, numbers, underscore only - no spaces)');
+            return;
+        }
+
+        // Check if game is required for non-admin roles
+        const selectedRole = roles.find((r: Role) => r.id.toString() === newUser.roleId);
+        if (selectedRole && selectedRole.name.toLowerCase() !== 'admin' && !newUser.gameId) {
+            setError('Game selection is required for non-admin roles');
+            return;
+        }
+
         try {
             await createUser.mutateAsync({
                 username: newUser.username,
                 email: newUser.email,
                 roleId: parseInt(newUser.roleId),
-                gameId: newUser.gameId ? parseInt(newUser.gameId) : null,
+                gameId: newUser.gameId ? parseInt(newUser.gameId) : undefined,
             });
             setSuccess('User created successfully');
             setShowCreateModal(false);
             setNewUser({ username: '', email: '', roleId: '', gameId: '' });
-        } catch (error) {
-            setError('Failed to create user');
+        } catch (error: any) {
+            // Show specific error message from backend if available
+            setError(error?.message || 'Failed to create user');
         }
     };
 
@@ -143,6 +158,15 @@ export default function UsersManagementPage() {
             setSuccess('User disabled');
         } catch (error) {
             setError('Failed to disable user');
+        }
+    };
+
+    const handleEnableUser = async (userId: number) => {
+        try {
+            await approveUser.mutateAsync(userId);
+            setSuccess('User enabled');
+        } catch (error) {
+            setError('Failed to enable user');
         }
     };
 
@@ -171,17 +195,36 @@ export default function UsersManagementPage() {
             return;
         }
 
+        // Check if game is required for non-admin roles
+        const selectedRole = roles.find((r: Role) => r.id.toString() === roleForm.roleId);
+        if (selectedRole && selectedRole.name.toLowerCase() !== 'admin' && !roleForm.gameId) {
+            setError('Game selection is required for non-admin roles');
+            return;
+        }
+
+        // Check for duplicate role assignment
+        if (selectedUser) {
+            const isDuplicate = selectedUser.roles.some(
+                r => r.roleId.toString() === roleForm.roleId &&
+                     (r.gameId?.toString() === roleForm.gameId || (!r.gameId && !roleForm.gameId))
+            );
+            if (isDuplicate) {
+                setError('This role is already assigned to the user');
+                return;
+            }
+        }
+
         try {
             await assignRole.mutateAsync({
                 userId: roleForm.userId,
                 roleId: parseInt(roleForm.roleId),
-                gameId: roleForm.gameId ? parseInt(roleForm.gameId) : null,
+                gameId: roleForm.gameId ? parseInt(roleForm.gameId) : undefined,
             });
             setSuccess('Role assigned');
             setShowRoleModal(false);
             setRoleForm({ userId: 0, roleId: '', gameId: '' });
-        } catch (error) {
-            setError('Failed to assign role');
+        } catch (error: any) {
+            setError(error?.message || 'Failed to assign role');
         }
     };
 
@@ -263,7 +306,7 @@ export default function UsersManagementPage() {
             // Role filter
             if (
                 filters.role &&
-                !user.roles.some((r) => r.roleId.toString() === filters.role)
+                !user.roles.some((r: any) => r.roleId.toString() === filters.role)
             ) {
                 return false;
             }
@@ -271,7 +314,7 @@ export default function UsersManagementPage() {
             // Game filter
             if (
                 filters.game &&
-                !user.roles.some((r) => r.gameId?.toString() === filters.game)
+                !user.roles.some((r: any) => r.gameId?.toString() === filters.game)
             ) {
                 return false;
             }
@@ -354,18 +397,21 @@ export default function UsersManagementPage() {
                 </Button>
             }
         >
-            <div className="users-management-container">
-                {error && (
-                    <div className="modal-error" style={{ marginBottom: '1rem' }}>
-                        {error}
-                    </div>
-                )}
-                {success && (
-                    <div className="modal-success" style={{ marginBottom: '1rem' }}>
-                        {success}
-                    </div>
-                )}
+            {/* Toast Notifications */}
+            {error && (
+                <div className="toast-notification error">
+                    <span>⚠️</span>
+                    <span>{error}</span>
+                </div>
+            )}
+            {success && (
+                <div className="toast-notification success">
+                    <span>✓</span>
+                    <span>{success}</span>
+                </div>
+            )}
 
+            <div className="users-management-container">
                 {!isMobile && (
                     <div className="users-management-header">
                         <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--ctp-text)' }}>
@@ -406,6 +452,8 @@ export default function UsersManagementPage() {
                         handleAssignRole={handleAssignRole}
                         handleRemoveRole={handleRemoveRole}
                         getRoleBadgeColor={getRoleBadgeColor}
+                        success={success}
+                        error={error}
                     />
                 ) : users.length === 0 ? (
                     <div className="users-empty">
@@ -535,7 +583,7 @@ export default function UsersManagementPage() {
                                                         No roles assigned
                                                     </span>
                                                 ) : (
-                                                    user.roles.map((role, idx) => (
+                                                    user.roles.map((role: any, idx: number) => (
                                                         <div
                                                             key={idx}
                                                             className="role-badge"
@@ -567,7 +615,7 @@ export default function UsersManagementPage() {
                                                         </div>
                                                     ))
                                                 )}
-                                                {!user.roles.some(role => role.roleName.toLowerCase() === 'admin') && (
+                                                {!user.roles.some((role: any) => role.roleName.toLowerCase() === 'admin') && (
                                                     <button
                                                         onClick={() => {
                                                             setSelectedUser(user);
@@ -611,6 +659,15 @@ export default function UsersManagementPage() {
                                                             title="Disable this user"
                                                         >
                                                             {Icons.disable}
+                                                        </button>
+                                                    )}
+                                                    {user.status === 'disabled' && (
+                                                        <button
+                                                            onClick={() => handleEnableUser(user.id)}
+                                                            className="user-action-btn approve"
+                                                            title="Enable this user"
+                                                        >
+                                                            Enable
                                                         </button>
                                                     )}
                                                     <button
@@ -678,11 +735,16 @@ export default function UsersManagementPage() {
                         <button
                             onClick={() => setShowCreateModal(false)}
                             className="modal-btn modal-btn-secondary"
+                            disabled={createUser.isPending}
                         >
                             Cancel
                         </button>
-                        <button onClick={handleCreateUser} className="modal-btn modal-btn-primary">
-                            Create User
+                        <button
+                            onClick={handleCreateUser}
+                            className="modal-btn modal-btn-primary"
+                            disabled={createUser.isPending}
+                        >
+                            {createUser.isPending ? 'Creating...' : 'Create User'}
                         </button>
                     </div>
                 </Modal>
@@ -715,11 +777,16 @@ export default function UsersManagementPage() {
                         <button
                             onClick={() => setShowRoleModal(false)}
                             className="modal-btn modal-btn-secondary"
+                            disabled={assignRole.isPending}
                         >
                             Cancel
                         </button>
-                        <button onClick={handleAssignRole} className="modal-btn modal-btn-primary">
-                            Assign Role
+                        <button
+                            onClick={handleAssignRole}
+                            className="modal-btn modal-btn-primary"
+                            disabled={assignRole.isPending}
+                        >
+                            {assignRole.isPending ? 'Assigning...' : 'Assign Role'}
                         </button>
                     </div>
                 </Modal>

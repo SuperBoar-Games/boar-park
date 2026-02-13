@@ -39,21 +39,21 @@ export default function RequestResetPage() {
 
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-base p-4">
-                <div className="w-full max-w-md">
-                    <div className="bg-mantle rounded-lg shadow-lg p-8">
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-green/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-8 h-8 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="auth-container">
+                <div className="auth-wrapper">
+                    <div className="auth-card">
+                        <div className="auth-success-container">
+                            <div className="auth-success-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                             </div>
-                            <h1 className="text-2xl font-bold text-text mb-2">Check Your Email</h1>
-                            <p className="text-subtext0 mb-6">
+                            <h1 className="auth-success-title">Check Your Email</h1>
+                            <p className="auth-success-message">
                                 If an account exists with that email, we've sent a password reset link. The link will expire in 1 hour.
                             </p>
                             <Link to="/auth/login">
-                                <Button className="w-full">Back to Login</Button>
+                                <Button className="auth-submit">Back to Login</Button>
                             </Link>
                         </div>
                     </div>
@@ -63,23 +63,25 @@ export default function RequestResetPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-base p-4">
-            <div className="w-full max-w-md">
-                <div className="bg-mantle rounded-lg shadow-lg p-8">
-                    <h1 className="text-3xl font-bold text-text mb-2 text-center">Reset Password</h1>
-                    <p className="text-subtext0 text-center mb-6">
-                        Enter your email address and we'll send you a link to reset your password.
-                    </p>
+        <div className="auth-container">
+            <div className="auth-wrapper">
+                <div className="auth-card">
+                    <div className="auth-header">
+                        <h1 className="auth-title">Reset Password</h1>
+                        <p className="auth-subtitle">
+                            Enter your email address and we'll send you a link to reset your password.
+                        </p>
+                    </div>
 
                     {error && (
-                        <div className="bg-red/10 border border-red text-red rounded-lg p-3 mb-4">
+                        <div className="auth-error">
                             {error}
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label htmlFor="email" className="block text-text font-medium mb-2">
+                    <form onSubmit={handleSubmit} className="auth-form">
+                        <div className="auth-form-group">
+                            <label htmlFor="email" className="auth-label">
                                 Email Address
                             </label>
                             <input
@@ -87,7 +89,7 @@ export default function RequestResetPage() {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-2 bg-surface0 border border-surface2 rounded-lg text-text focus:outline-none focus:border-blue"
+                                className="auth-input"
                                 required
                             />
                         </div>
@@ -95,14 +97,14 @@ export default function RequestResetPage() {
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full"
+                            className="auth-submit"
                         >
                             {isLoading ? 'Sending...' : 'Send Reset Link'}
                         </Button>
                     </form>
 
-                    <div className="mt-6 text-center">
-                        <Link to="/auth/login" className="text-blue hover:text-sapphire transition-colors">
+                    <div className="auth-footer">
+                        <Link to="/auth/login" className="auth-link">
                             Back to Login
                         </Link>
                     </div>

@@ -11,24 +11,13 @@ export default function AdminDashboard() {
     return (
         <AdminLayout title={<h1>Admin Dashboard</h1>}>
             <main>
-                <h2>User Management</h2>
-                <div className="game-cards">
-                    <Link
-                        to="/admin/users"
-                        className="game-card"
-                    >
-                        <h3>👥 Users</h3>
-                        <p>Manage users, roles, and permissions</p>
-                    </Link>
-                </div>
-
-                <h2 style={{ marginTop: '3rem' }}>Games</h2>
+                <h2>Games</h2>
                 <div className="game-cards">
                     <Link
                         to="/admin/games/talkies"
                         className="game-card"
                     >
-                        <h3>🎬 Talkies</h3>
+                        <h3>Talkies</h3>
                         <p>Manage heroes, movies, and cards</p>
                     </Link>
                 </div>

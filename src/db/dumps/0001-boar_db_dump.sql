@@ -129,7 +129,7 @@ CREATE FUNCTION public.refresh_hero_stats_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    REFRESH MATERIALIZED VIEW CONCURRENTLY hero_stats;
+    REFRESH MATERIALIZED VIEW hero_stats;
     RETURN NULL;
 END;
 $$;
@@ -143,7 +143,7 @@ CREATE FUNCTION public.refresh_movie_stats_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-    REFRESH MATERIALIZED VIEW CONCURRENTLY movie_stats;
+    REFRESH MATERIALIZED VIEW movie_stats;
     RETURN NULL;
 END;
 $$;

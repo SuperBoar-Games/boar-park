@@ -16,15 +16,17 @@ export default function SetPasswordPage() {
 
     if (!token) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-base p-4">
-                <div className="w-full max-w-md">
-                    <div className="bg-mantle rounded-lg shadow-lg p-8">
-                        <h1 className="text-2xl font-bold text-text mb-2 text-center">Invalid Link</h1>
-                        <p className="text-subtext0 text-center mb-6">
-                            This link is invalid or has expired. Please contact an administrator.
-                        </p>
+            <div className="auth-container">
+                <div className="auth-wrapper">
+                    <div className="auth-card">
+                        <div className="auth-header">
+                            <h1 className="auth-title">Invalid Link</h1>
+                            <p className="auth-subtitle">
+                                This link is invalid or has expired. Please contact an administrator.
+                            </p>
+                        </div>
                         <Link to="/auth/login">
-                            <Button className="w-full">Go to Login</Button>
+                            <Button className="auth-submit">Go to Login</Button>
                         </Link>
                     </div>
                 </div>
@@ -72,17 +74,17 @@ export default function SetPasswordPage() {
 
     if (success) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-base p-4">
-                <div className="w-full max-w-md">
-                    <div className="bg-mantle rounded-lg shadow-lg p-8">
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-green/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-8 h-8 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="auth-container">
+                <div className="auth-wrapper">
+                    <div className="auth-card">
+                        <div className="auth-success-container">
+                            <div className="auth-success-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
-                            <h1 className="text-2xl font-bold text-text mb-2">Password Set!</h1>
-                            <p className="text-subtext0 mb-6">
+                            <h1 className="auth-success-title">Password Set!</h1>
+                            <p className="auth-success-message">
                                 Your password has been set successfully. You can now log in. Redirecting...
                             </p>
                         </div>
@@ -93,23 +95,25 @@ export default function SetPasswordPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-base p-4">
-            <div className="w-full max-w-md">
-                <div className="bg-mantle rounded-lg shadow-lg p-8">
-                    <h1 className="text-3xl font-bold text-text mb-2 text-center">Welcome!</h1>
-                    <p className="text-subtext0 text-center mb-6">
-                        Set your password to complete your account setup.
-                    </p>
+        <div className="auth-container">
+            <div className="auth-wrapper">
+                <div className="auth-card">
+                    <div className="auth-header">
+                        <h1 className="auth-title">Welcome!</h1>
+                        <p className="auth-subtitle">
+                            Set your password to complete your account setup.
+                        </p>
+                    </div>
 
                     {error && (
-                        <div className="bg-red/10 border border-red text-red rounded-lg p-3 mb-4">
+                        <div className="auth-error">
                             {error}
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                            <label htmlFor="password" className="block text-text font-medium mb-2">
+                    <form onSubmit={handleSubmit} className="auth-form">
+                        <div className="auth-form-group">
+                            <label htmlFor="password" className="auth-label">
                                 Password
                             </label>
                             <input
@@ -117,15 +121,15 @@ export default function SetPasswordPage() {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-2 bg-surface0 border border-surface2 rounded-lg text-text focus:outline-none focus:border-blue"
+                                className="auth-input"
                                 minLength={8}
                                 required
                             />
-                            <p className="text-xs text-subtext0 mt-1">At least 8 characters</p>
+                            <p className="auth-input-hint">At least 8 characters</p>
                         </div>
 
-                        <div>
-                            <label htmlFor="confirmPassword" className="block text-text font-medium mb-2">
+                        <div className="auth-form-group">
+                            <label htmlFor="confirmPassword" className="auth-label">
                                 Confirm Password
                             </label>
                             <input
@@ -133,7 +137,7 @@ export default function SetPasswordPage() {
                                 type="password"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full px-4 py-2 bg-surface0 border border-surface2 rounded-lg text-text focus:outline-none focus:border-blue"
+                                className="auth-input"
                                 required
                             />
                         </div>
@@ -141,7 +145,7 @@ export default function SetPasswordPage() {
                         <Button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full"
+                            className="auth-submit"
                         >
                             {isLoading ? 'Setting password...' : 'Set Password'}
                         </Button>

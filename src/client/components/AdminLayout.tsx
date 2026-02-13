@@ -89,6 +89,17 @@ export function AdminLayout({ title, actions, children }: AdminLayoutProps) {
                                                 Profile
                                             </button>
                                         )}
+                                        {user.roles?.some(r => r.roleName.toLowerCase() === 'admin') && (
+                                            <button
+                                                className="user-menu-item"
+                                                onClick={() => {
+                                                    navigate('/admin/users');
+                                                    setIsOpen(false);
+                                                }}
+                                            >
+                                                User Management
+                                            </button>
+                                        )}
                                     </div>
 
                                     <div className="user-menu-section theme-section">

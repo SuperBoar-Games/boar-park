@@ -24,7 +24,32 @@ export function useApproveUserMutation() {
     mutationFn: async (userId: number) => {
       return apiClient.post(`/api/admin/users/${userId}/approve`, {});
     },
-    onSuccess: () => {
+    onMutate: async (userId: number) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.admin.users() });
+
+      // Snapshot previous value
+      const previousUsers = queryClient.getQueryData(queryKeys.admin.users());
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(queryKeys.admin.users(), (old: any) => {
+        if (!old) return old;
+        return old.map((user: any) =>
+          user.id === userId ? { ...user, status: 'active' } : user
+        );
+      });
+
+      // Return context with snapshot
+      return { previousUsers };
+    },
+    onError: (err, userId, context: any) => {
+      // Rollback on error
+      if (context?.previousUsers) {
+        queryClient.setQueryData(queryKeys.admin.users(), context.previousUsers);
+      }
+    },
+    onSettled: () => {
+      // Refetch after mutation
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
   });
@@ -37,7 +62,32 @@ export function useDisableUserMutation() {
     mutationFn: async (userId: number) => {
       return apiClient.post(`/api/admin/users/${userId}/disable`, {});
     },
-    onSuccess: () => {
+    onMutate: async (userId: number) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.admin.users() });
+
+      // Snapshot previous value
+      const previousUsers = queryClient.getQueryData(queryKeys.admin.users());
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(queryKeys.admin.users(), (old: any) => {
+        if (!old) return old;
+        return old.map((user: any) =>
+          user.id === userId ? { ...user, status: 'disabled' } : user
+        );
+      });
+
+      // Return context with snapshot
+      return { previousUsers };
+    },
+    onError: (err, userId, context: any) => {
+      // Rollback on error
+      if (context?.previousUsers) {
+        queryClient.setQueryData(queryKeys.admin.users(), context.previousUsers);
+      }
+    },
+    onSettled: () => {
+      // Refetch after mutation
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
     },
   });
