@@ -1,10 +1,8 @@
-name: Deploy Marketing Site to Cloudflare Pages
+name: Deploy Site to Cloudflare Pages
 
 on:
   push:
-    branches: [main, dmv_task_ui]
-    paths:
-      - 'marketing/**'
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -23,6 +21,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: boar-park-marketing
-          directory: marketing
+          projectName: boar-park
+          directory: .
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
