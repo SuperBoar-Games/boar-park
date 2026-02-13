@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <!-- Stylized Boar Head -->
+  <g transform="translate(20, 10)">
+    <!-- Ears -->
+    <polygon points="30,20 10,5 40,15" fill="#8B4513"/>
+    <polygon points="70,20 90,5 60,15" fill="#8B4513"/>
+    
+    <!-- Head -->
+    <ellipse cx="50" cy="50" rx="45" ry="40" fill="#A0522D"/>
+    
+    <!-- Snout -->
+    <ellipse cx="50" cy="65" rx="25" ry="20" fill="#D2691E"/>
+    <circle cx="40" cy="60" r="5" fill="#2c1d27"/>
+    <circle cx="60" cy="60" r="5" fill="#2c1d27"/>
+    
+    <!-- Eyes -->
+    <circle cx="30" cy="45" r="6" fill="#2c1d27"/>
+    <circle cx="70" cy="45" r="6" fill="#2c1d27"/>
+    <circle cx="32" cy="43" r="2" fill="white"/>
+    <circle cx="72" cy="43" r="2" fill="white"/>
+    
+    <!-- Tusks -->
+    <path d="M25,70 Q15,85 20,95" stroke="white" stroke-width="4" fill="none"/>
+    <path d="M75,70 Q85,85 80,95" stroke="white" stroke-width="4" fill="none"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="140" y="50" font-family="Comic Neue, Arial, sans-serif" font-size="48" 
+        font-weight="bold" fill="#2c1d27">SUPER</text>
+  <text x="140" y="95" font-family="Comic Neue, Arial, sans-serif" font-size="48" 
+        font-weight="bold" fill="#ffd166" stroke="#2c1d27" stroke-width="1">BOAR</text>
+  
+  <!-- Tagline -->
+  <text x="140" y="110" font-family="Comic Neue, Arial, sans-serif" font-size="12" 
+        fill="#666">TFI Cards • Indian Cinema Collection</text>
+</svg>

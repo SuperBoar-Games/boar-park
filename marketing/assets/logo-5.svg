@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 150" width="500" height="150">
+  <!-- Minimal Logo Mark -->
+  <g transform="translate(20, 25)">
+    <!-- Hexagon Shape -->
+    <polygon points="50,5 95,30 95,75 50,100 5,75 5,30" fill="#2c1d27" stroke="#ffd166" stroke-width="4"/>
+    
+    <!-- Inner Content -->
+    <text x="50" y="55" font-size="35" text-anchor="middle" fill="#ffd166">🐗</text>
+    <text x="50" y="82" font-family="Comic Neue, Arial, sans-serif" font-size="12" 
+          text-anchor="middle" fill="#ffd166" font-weight="bold">TFI</text>
+  </g>
+  
+  <!-- Modern Typography -->
+  <text x="130" y="65" font-family="Comic Neue, Arial, sans-serif" font-size="52" 
+        font-weight="bold" fill="#2c1d27">Boar</text>
+  <text x="130" y="110" font-family="Comic Neue, Arial, sans-serif" font-size="52" 
+        font-weight="bold" fill="#2c1d27">Park</text>
+  
+  <!-- Tagline -->
+  <text x="130" y="130" font-family="Comic Neue, Arial, sans-serif" font-size="14" 
+        fill="#666" letter-spacing="2">COLLECT • TRADE • BATTLE</text>
+  
+  <!-- Decorative Line -->
+  <line x1="130" y1="75" x2="280" y2="75" stroke="#ffd166" stroke-width="4"/>
+</svg>

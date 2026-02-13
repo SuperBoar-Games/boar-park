@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Boar Park</title>
+    <link href="https://fonts.googleapis.com/css?family=Comic+Neue:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/cart.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span class="boar-logo">🐗</span>
+            <span class="brand-text">SUPERBOAR</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">← Back to Shop</a>
+        </div>
+    </nav>
+
+    <!-- Checkout Section -->
+    <section class="checkout-section">
+        <div class="container">
+            <h1>🛒 Checkout</h1>
+            <p class="checkout-subtitle">Complete your purchase</p>
+            
+            <div class="checkout-grid">
+                <!-- Order Summary -->
+                <div class="checkout-summary-card">
+                    <h3>📦 Order Summary</h3>
+                    <div id="checkout-summary">
+                        <!-- Rendered by orders.js -->
+                    </div>
+                </div>
+                
+                <!-- Checkout Form -->
+                <div class="checkout-form-card">
+                    <h3>📝 Delivery Details</h3>
+                    <form id="checkout-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Full Name *</label>
+                                <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email *</label>
+                                <input type="email" id="email" name="email" required placeholder="your@email.com">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <input type="tel" id="phone" name="phone" required placeholder="9876543210" pattern="[0-9]{10}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Delivery Address *</label>
+                            <textarea id="address" name="address" rows="3" required placeholder="Enter your full address"></textarea>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="city">City *</label>
+                                <input type="text" id="city" name="city" required placeholder="Hyderabad">
+                            </div>
+                            <div class="form-group">
+                                <label for="pincode">PIN Code *</label>
+                                <input type="text" id="pincode" name="pincode" required placeholder="500001" pattern="[0-9]{6}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group payment-methods">
+                            <label>Payment Method *</label>
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="cod" checked>
+                                    <span class="payment-icon">💵</span>
+                                    <span>Cash on Delivery</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="upi">
+                                    <span class="payment-icon">📱</span>
+                                    <span>UPI / GPay / PhonePe</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="payment" value="card">
+                                    <span class="payment-icon">💳</span>
+                                    <span>Credit / Debit Card</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn-place-order">🛍️ Place Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer checkout-footer">
+        <div class="container">
+            <p>🔒 Secure checkout • Cash on Delivery available</p>
+        </div>
+    </footer>
+
+    <script src="js/orders.js"></script>
+</body>
+</html>
