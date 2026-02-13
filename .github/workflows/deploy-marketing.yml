@@ -1,0 +1,28 @@
+name: Deploy Marketing Site to Cloudflare Pages
+
+on:
+  push:
+    branches: [main, dmv_task_ui]
+    paths:
+      - 'marketing/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: boar-park-marketing
+          directory: marketing
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
