@@ -6,7 +6,8 @@
     <title>Boar Park - Play TFI Cards | The Wild Card Game</title>
     <meta name="description" content="Play TFI Cards - the ultimate card game for Indian cinema fans. Collect heroes, villains, and movies from Telugu, Hindi, Tamil, Kannada & Malayalam cinema.">
     <link href="https://fonts.googleapis.com/css?family=Comic+Neue:400,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css-marketing/style.css">
+    <link rel="stylesheet" href="css-marketing/cart.css">
 </head>
 <body>
     <!-- Navigation -->
@@ -19,10 +20,32 @@
             <a href="#about">About</a>
             <a href="#how-to-play">How to Play</a>
             <a href="#cards">Cards</a>
+            <a href="#products">Shop</a>
+            <a href="my-orders.html">My Orders</a>
             <a href="../games/play-cards/" class="btn-primary">Play Now</a>
+            <button class="cart-toggle" onclick="toggleCart()" aria-label="Cart">
+                🛒 <span id="cart-badge" class="cart-badge">0</span>
+            </button>
         </div>
         <button class="mobile-menu-btn" aria-label="Menu">☰</button>
     </nav>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-overlay" class="cart-overlay"></div>
+    <div id="cart-sidebar" class="cart-sidebar">
+        <div class="cart-header">
+            <h3>🛒 Your Cart</h3>
+            <button class="cart-close" onclick="toggleCart()">✕</button>
+        </div>
+        <div id="cart-items" class="cart-items">
+            <!-- Cart items rendered here -->
+        </div>
+        <div class="cart-footer">
+            <div id="cart-total" class="cart-total">Total: ₹0</div>
+            <a href="checkout.html" class="btn-checkout">Proceed to Checkout →</a>
+            <button class="btn-continue" onclick="toggleCart()">Continue Shopping</button>
+        </div>
+    </div>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -32,7 +55,7 @@
             <p class="hero-subtitle">The ultimate card game for Indian cinema fans.<br>Collect, trade, and battle with your favorite stars.</p>
             <div class="hero-cta">
                 <a href="../games/play-cards/" class="btn-cta">🎮 Play TFI Cards Now</a>
-                <a href="#how-to-play" class="btn-secondary">Learn More</a>
+                <a href="#products" class="btn-secondary">🛍️ Shop Card Packs</a>
             </div>
             <div class="hero-stats">
                 <div class="stat">
@@ -197,6 +220,17 @@
         </div>
     </section>
 
+    <!-- Products Section (SHOP) -->
+    <section id="products" class="products">
+        <div class="container">
+            <h2>🛍️ Shop Card Packs</h2>
+            <p class="section-subtitle">Buy card packs to boost your collection</p>
+            <div id="products-grid">
+                <!-- Products rendered by cart.js -->
+            </div>
+        </div>
+    </section>
+
     <!-- CTA Section -->
     <section class="cta-section">
         <div class="container">
@@ -220,6 +254,12 @@
                     <p>The wildest card game experience.</p>
                 </div>
                 <div class="footer-links">
+                    <h4>Shop</h4>
+                    <a href="#products">Card Packs</a>
+                    <a href="my-orders.html">My Orders</a>
+                    <a href="track-order.html">Track Order</a>
+                </div>
+                <div class="footer-links">
                     <h4>Game</h4>
                     <a href="../games/play-cards/">Play TFI Cards</a>
                     <a href="#how-to-play">How to Play</a>
@@ -231,11 +271,6 @@
                     <a href="#">Twitter</a>
                     <a href="#">Instagram</a>
                 </div>
-                <div class="footer-links">
-                    <h4>Legal</h4>
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
-                </div>
             </div>
             <div class="footer-bottom">
                 <p>© 2026 SuperBoar Games. All rights reserved. 🐗</p>
@@ -244,6 +279,7 @@
         </div>
     </footer>
 
-    <script src="js/main.js"></script>
+    <script src="js-marketing/main.js"></script>
+    <script src="js-marketing/cart.js"></script>
 </body>
 </html>
