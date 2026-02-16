@@ -21,4 +21,5 @@ export const Icons = {
     palette: <i className="fa-solid fa-palette"></i>,
     download: <i className="fa-solid fa-download"></i>,
     disable: <i className="fa-solid fa-ban"></i>,
+    userSwitch: <i className="fa-solid fa-user-group"></i>,
 };

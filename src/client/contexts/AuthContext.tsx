@@ -1,6 +1,7 @@
 // Authentication context for managing user login state, tokens, and role-based access
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useImpersonationState } from '../hooks/roles/useRolesQueries';
 
 const API_BASE_URL = import.meta.env.PROD ? '' : 'http://localhost:3000';
 
@@ -38,6 +39,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    // Impersonation state
+    const { data: impersonationState } = useImpersonationState();
 
     // Load tokens and user from localStorage on mount
     useEffect(() => {
@@ -196,17 +199,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    // Use impersonated role if impersonation is active
+    const getEffectiveRoles = () => {
+        if (impersonationState?.is_impersonating && impersonationState?.impersonated_role_name) {
+            // Return only the impersonated role
+            return [{ roleName: impersonationState.impersonated_role_name }];
+        }
+        return user?.roles || [];
+    };
+
     const isAdmin = () => {
-        if (!user || !user.roles) return false;
-        return user.roles.some(role => role.roleName === 'admin');
+        const roles = getEffectiveRoles();
+        return roles.some(role => role.roleName === 'admin');
     };
 
     const hasRole = (roleName: string) => {
-        if (!user || !user.roles) return false;
-        return user.roles.some(role => role.roleName === roleName);
+        const roles = getEffectiveRoles();
+        return roles.some(role => role.roleName === roleName);
     };
 
-    const value: AuthContextType = {
+    const value: AuthContextType & { impersonationState?: any } = {
         user,
         accessToken,
         isAuthenticated: !!user,
@@ -217,6 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refreshAccessToken,
         isAdmin,
         hasRole,
+        impersonationState,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

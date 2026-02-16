@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
+import { usePermissionCheck } from '../../../hooks/auth/usePermissions';
 import { AdminLayout } from '../../../components/AdminLayout';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
@@ -35,6 +36,7 @@ export default function HeroDetailsPage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
+    const { canCreate, canUpdate, canDelete } = usePermissionCheck();
     const [heroName, setHeroName] = useState((location.state as any)?.heroName || `Hero #${heroId}`);
     const [viewMode, setViewMode] = useState<ViewMode>(() => {
         const saved = localStorage.getItem('hero.viewMode');
@@ -342,13 +344,17 @@ export default function HeroDetailsPage() {
                         {Icons.toggle} <span>{viewMode === 'movies' ? 'View Cards' : 'View Movies'}</span>
                     </Button>
                     {viewMode === 'movies' ? (
-                        <Button onClick={openAddMovieModal}>
-                            {Icons.plus} <span>Add Movie</span>
-                        </Button>
+                        canCreate('movies') && (
+                            <Button onClick={openAddMovieModal}>
+                                {Icons.plus} <span>Add Movie</span>
+                            </Button>
+                        )
                     ) : (
-                        <Button onClick={openAddCardModal}>
-                            {Icons.plus} <span>Add Card</span>
-                        </Button>
+                        canCreate('cards') && (
+                            <Button onClick={openAddCardModal}>
+                                {Icons.plus} <span>Add Card</span>
+                            </Button>
+                        )
                     )}
                 </div>
                 <Button variant="secondary" onClick={handleExportCSV}>
@@ -435,34 +441,40 @@ export default function HeroDetailsPage() {
                                                 <span className="locked-icon">{Icons.lock}</span>
                                             ) : (
                                                 <div className="action-buttons">
-                                                    <button
-                                                        className={`action-btn ${movie.need_review ? 'warning' : ''}`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleMovieReview(movie);
-                                                        }}
-                                                        title={movie.need_review ? 'Mark Reviewed' : 'Mark for Review'}
-                                                    >
-                                                        {movie.need_review ? Icons.flagSolid : Icons.flagRegular}
-                                                    </button>
-                                                    <button
-                                                        className="action-btn edit"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            openEditMovieModal(movie);
-                                                        }}
-                                                    >
-                                                        {Icons.edit}
-                                                    </button>
-                                                    <button
-                                                        className="action-btn delete"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleDeleteMovie(movie);
-                                                        }}
-                                                    >
-                                                        {Icons.delete}
-                                                    </button>
+                                                    {canUpdate('movies') && (
+                                                        <button
+                                                            className={`action-btn ${movie.need_review ? 'warning' : ''}`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleMovieReview(movie);
+                                                            }}
+                                                            title={movie.need_review ? 'Mark Reviewed' : 'Mark for Review'}
+                                                        >
+                                                            {movie.need_review ? Icons.flagSolid : Icons.flagRegular}
+                                                        </button>
+                                                    )}
+                                                    {canUpdate('movies') && (
+                                                        <button
+                                                            className="action-btn edit"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                openEditMovieModal(movie);
+                                                            }}
+                                                        >
+                                                            {Icons.edit}
+                                                        </button>
+                                                    )}
+                                                    {canDelete('movies') && (
+                                                        <button
+                                                            className="action-btn delete"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteMovie(movie);
+                                                            }}
+                                                        >
+                                                            {Icons.delete}
+                                                        </button>
+                                                    )}
                                                 </div>
                                             )}
                                         </td>
@@ -534,25 +546,31 @@ export default function HeroDetailsPage() {
                                                 <span className="locked-icon">{Icons.lock}</span>
                                             ) : (
                                                 <div className="action-buttons">
-                                                    <button
-                                                        className={`action-btn ${card.need_review ? 'warning' : ''}`}
-                                                        onClick={() => toggleCardReview(card)}
-                                                        title={card.need_review ? 'Mark Reviewed' : 'Mark for Review'}
-                                                    >
-                                                        {card.need_review ? Icons.flagSolid : Icons.flagRegular}
-                                                    </button>
-                                                    <button
-                                                        className="action-btn edit"
-                                                        onClick={() => openEditCardModal(card)}
-                                                    >
-                                                        {Icons.edit}
-                                                    </button>
-                                                    <button
-                                                        className="action-btn delete"
-                                                        onClick={() => handleDeleteCard(card)}
-                                                    >
-                                                        {Icons.delete}
-                                                    </button>
+                                                    {canUpdate('cards') && (
+                                                        <button
+                                                            className={`action-btn ${card.need_review ? 'warning' : ''}`}
+                                                            onClick={() => toggleCardReview(card)}
+                                                            title={card.need_review ? 'Mark Reviewed' : 'Mark for Review'}
+                                                        >
+                                                            {card.need_review ? Icons.flagSolid : Icons.flagRegular}
+                                                        </button>
+                                                    )}
+                                                    {canUpdate('cards') && (
+                                                        <button
+                                                            className="action-btn edit"
+                                                            onClick={() => openEditCardModal(card)}
+                                                        >
+                                                            {Icons.edit}
+                                                        </button>
+                                                    )}
+                                                    {canDelete('cards') && (
+                                                        <button
+                                                            className="action-btn delete"
+                                                            onClick={() => handleDeleteCard(card)}
+                                                        >
+                                                            {Icons.delete}
+                                                        </button>
+                                                    )}
                                                 </div>
                                             )}
                                         </td>

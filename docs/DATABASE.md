@@ -59,12 +59,6 @@ Migrations are located in `/db/migrations/` and follow a numbered sequence for v
 
 ### Migration Files
 
-- **0001_initial_schema.sql** - Initial database schema
-- **0001_initial_schema_with_data.sql** - Initial schema with seed data
-- **0003_remove_status_column.sql** - Removed deprecated status column
-- **0004_create_stats_materialized_views.sql** - Created materialized views for statistics
-- **0005_create_stats_triggers.sql** - Created triggers for stats updates
-- **0006_auth_schema.sql** - Authentication schema with user roles
 
 ### Running Migrations
 

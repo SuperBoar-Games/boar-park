@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
+import { usePermissionCheck } from '../../../hooks/auth/usePermissions';
 import { AdminLayout } from '../../../components/AdminLayout';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
@@ -23,6 +24,7 @@ export default function MovieDetailsPage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
+    const { canCreate, canUpdate, canDelete } = usePermissionCheck();
     const state = (location.state as any) || {};
     const movieTitle = state.movieTitle || 'Movie';
     const initialLocked = state.movieLocked || false;
@@ -213,15 +215,17 @@ export default function MovieDetailsPage() {
             }
         >
             <div className="movie-controls">
-                <button
-                    className={`lock-toggle ${movieLocked ? 'locked' : ''}`}
-                    onClick={handleToggleMovieLock}
-                    title={movieLocked ? 'Click to unlock' : 'Click to lock'}
-                >
-                    {movieLocked ? Icons.lock : Icons.unlock}
-                    <span>{movieLocked ? 'Locked' : 'Unlocked'}</span>
-                </button>
-                {!movieLocked && (
+                {canUpdate('movies') && (
+                    <button
+                        className={`lock-toggle ${movieLocked ? 'locked' : ''}`}
+                        onClick={handleToggleMovieLock}
+                        title={movieLocked ? 'Click to unlock' : 'Click to lock'}
+                    >
+                        {movieLocked ? Icons.lock : Icons.unlock}
+                        <span>{movieLocked ? 'Locked' : 'Unlocked'}</span>
+                    </button>
+                )}
+                {!movieLocked && canCreate('cards') && (
                     <Button onClick={openAddCardModal}>
                         {Icons.plus} <span>Add Card</span>
                     </Button>
@@ -245,27 +249,33 @@ export default function MovieDetailsPage() {
                                 </div>
                                 {!movieLocked && (
                                     <div className="card-actions">
-                                        <button
-                                            onClick={() => handleToggleCardReview(card)}
-                                            className={`action-btn ${card.need_review ? 'warning' : ''}`}
-                                            title={card.need_review ? 'Mark as reviewed' : 'Mark for review'}
-                                        >
-                                            {card.need_review ? Icons.flagSolid : Icons.flagRegular}
-                                        </button>
-                                        <button
-                                            onClick={() => openEditCardModal(card)}
-                                            className="action-btn edit"
-                                            title="Edit"
-                                        >
-                                            {Icons.edit}
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteCard(card)}
-                                            className="action-btn delete"
-                                            title="Delete"
-                                        >
-                                            {Icons.delete}
-                                        </button>
+                                        {canUpdate('cards') && (
+                                            <button
+                                                onClick={() => handleToggleCardReview(card)}
+                                                className={`action-btn ${card.need_review ? 'warning' : ''}`}
+                                                title={card.need_review ? 'Mark as reviewed' : 'Mark for review'}
+                                            >
+                                                {card.need_review ? Icons.flagSolid : Icons.flagRegular}
+                                            </button>
+                                        )}
+                                        {canUpdate('cards') && (
+                                            <button
+                                                onClick={() => openEditCardModal(card)}
+                                                className="action-btn edit"
+                                                title="Edit"
+                                            >
+                                                {Icons.edit}
+                                            </button>
+                                        )}
+                                        {canDelete('cards') && (
+                                            <button
+                                                onClick={() => handleDeleteCard(card)}
+                                                className="action-btn delete"
+                                                title="Delete"
+                                            >
+                                                {Icons.delete}
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>

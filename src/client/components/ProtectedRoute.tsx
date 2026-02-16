@@ -1,19 +1,29 @@
-// Route wrapper that requires authentication and optional admin role or specific role
+// Route wrapper that requires authentication and optional admin role, specific role, or permissions
 
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissionCheck } from '../hooks/auth/usePermissions';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
     requireAdmin?: boolean;
     requireRole?: string;
+    requirePermission?: string; // Single permission (e.g., 'heroes:read')
+    requireAnyPermission?: string[]; // At least one of these permissions
 }
 
-export function ProtectedRoute({ children, requireAdmin = false, requireRole }: ProtectedRouteProps) {
+export function ProtectedRoute({
+    children,
+    requireAdmin = false,
+    requireRole,
+    requirePermission,
+    requireAnyPermission
+}: ProtectedRouteProps) {
     const { isAuthenticated, isLoading, user, isAdmin: checkIsAdmin, hasRole } = useAuth();
+    const { hasPermission, hasAnyPermission: checkAnyPermission, isLoading: permissionsLoading } = usePermissionCheck();
 
-    if (isLoading) {
+    if (isLoading || permissionsLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-base">
                 <div className="text-text">Loading...</div>
@@ -25,26 +35,24 @@ export function ProtectedRoute({ children, requireAdmin = false, requireRole }: 
         return <Navigate to="/auth/login" replace />;
     }
 
+    // Check admin requirement
     if (requireAdmin && !checkIsAdmin()) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-base">
-                <div className="bg-mantle rounded-lg shadow-lg p-8 max-w-md">
-                    <h1 className="text-2xl font-bold text-text mb-2">Access Denied</h1>
-                    <p className="text-subtext0">You don't have permission to access this page.</p>
-                </div>
-            </div>
-        );
+        return <Navigate to="/admin" replace />;
     }
 
+    // Check role requirement
     if (requireRole && !hasRole(requireRole)) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-base">
-                <div className="bg-mantle rounded-lg shadow-lg p-8 max-w-md">
-                    <h1 className="text-2xl font-bold text-text mb-2">Access Denied</h1>
-                    <p className="text-subtext0">You don't have the required role to access this page.</p>
-                </div>
-            </div>
-        );
+        return <Navigate to="/admin" replace />;
+    }
+
+    // Check single permission requirement
+    if (requirePermission && !hasPermission(requirePermission)) {
+        return <Navigate to="/admin" replace />;
+    }
+
+    // Check any permission requirement
+    if (requireAnyPermission && !checkAnyPermission(requireAnyPermission)) {
+        return <Navigate to="/admin" replace />;
     }
 
     return <>{children}</>;

@@ -1,7 +1,7 @@
 // Admin users management page with CRUD, filtering, sorting, and role assignment
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import { AdminLayout } from '../../components/AdminLayout';
 import { Button } from '../../components/Button';
@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { Dropdown } from '../../components/Dropdown';
 import { Icons } from '../../components/Icons';
 import { UsersManagementMobile } from './UsersManagementMobile';
+import { RolesPermissionsTab } from '../../components/roles/RolesPermissionsTab';
 import { useUsersQuery, useRolesQuery, useGamesQuery } from '../../hooks/admin/useAdminQueries';
 import {
   useCreateUserMutation,
@@ -93,6 +94,17 @@ export default function UsersManagementPage() {
 
     // Mobile detection
     const isMobile = useIsMobile();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Tab state - persisted via URL
+    const tabFromUrl = searchParams.get('tab') as 'users' | 'roles' | null;
+    const [activeTab, setActiveTab] = useState<'users' | 'roles'>(tabFromUrl || 'users');
+
+    // Update URL when tab changes
+    const handleTabChange = (tab: 'users' | 'roles') => {
+        setActiveTab(tab);
+        setSearchParams({ tab });
+    };
 
     // Auto-dismiss success/error messages after 4 seconds
     useEffect(() => {
@@ -412,16 +424,37 @@ export default function UsersManagementPage() {
             )}
 
             <div className="users-management-container">
-                {!isMobile && (
-                    <div className="users-management-header">
-                        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--ctp-text)' }}>
-                            All Users
-                        </h2>
-                        <Button onClick={() => setShowCreateModal(true)}>
-                            + Create User
-                        </Button>
-                    </div>
-                )}
+                {/* Tabs Navigation */}
+                <div className="management-tabs">
+                    <button
+                        type="button"
+                        onClick={() => handleTabChange('users')}
+                        className={`tab-button ${activeTab === 'users' ? 'active' : ''}`}
+                    >
+                        Users
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => handleTabChange('roles')}
+                        className={`tab-button ${activeTab === 'roles' ? 'active' : ''}`}
+                    >
+                        Roles & Permissions
+                    </button>
+                </div>
+
+                {/* Users Tab Content */}
+                {activeTab === 'users' && (
+                    <>
+                        {!isMobile && (
+                            <div className="users-management-header">
+                                <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: 'var(--ctp-text)' }}>
+                                    All Users
+                                </h2>
+                                <Button onClick={() => setShowCreateModal(true)}>
+                                    + Create User
+                                </Button>
+                            </div>
+                        )}
 
                 {isMobile ? (
                     <UsersManagementMobile
@@ -812,6 +845,11 @@ export default function UsersManagementPage() {
                     onCancel={handleCancelRemoveRole}
                     isDangerous
                 />
+                    </>
+                )}
+
+                {/* Roles & Permissions Tab Content */}
+                {activeTab === 'roles' && <RolesPermissionsTab />}
             </div>
         </AdminLayout>
     );

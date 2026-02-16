@@ -6,7 +6,7 @@ import { queryKeys } from '../../lib/queryKeys';
 
 export function useUsersQuery() {
   return useQuery({
-    queryKey: queryKeys.admin.users(),
+    queryKey: queryKeys.admin.users.all,
     queryFn: async () => {
       const response = await apiClient.get<{ success: boolean; data: any[] }>(
         '/api/admin/users'

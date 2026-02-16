@@ -20,8 +20,10 @@ export const queryKeys = {
   // Admin
   admin: {
     all: ['admin'] as const,
-    users: () => [...queryKeys.admin.all, 'users'] as const,
-    user: (userId: number) => [...queryKeys.admin.users(), userId] as const,
+    users: {
+      all: ['admin', 'users'] as const,
+      detail: (userId: number) => ['admin', 'users', userId] as const,
+    },
     roles: () => [...queryKeys.admin.all, 'roles'] as const,
     games: () => [...queryKeys.admin.all, 'games'] as const,
   },
@@ -31,5 +33,23 @@ export const queryKeys = {
     all: ['auth'] as const,
     me: () => [...queryKeys.auth.all, 'me'] as const,
     currentUser: ['auth', 'currentUser'] as const,
+    permissions: ['auth', 'permissions'] as const,
+  },
+
+  // Roles & Permissions
+  roles: {
+    all: ['roles'] as const,
+    permissions: {
+      all: ['roles', 'permissions'] as const,
+      detail: (permissionId: number) => ['roles', 'permissions', permissionId] as const,
+    },
+    roles: {
+      all: ['roles', 'system-roles'] as const,
+      detail: (roleId: number) => ['roles', 'system-roles', roleId] as const,
+    },
+    rolesWithPermissions: ['roles', 'system-roles-with-permissions'] as const,
+    usersWithRoles: ['roles', 'users-with-roles'] as const,
+    userPermissions: (userId: number) => ['roles', 'user-permissions', userId] as const,
+    impersonationState: ['roles', 'impersonation-state'] as const,
   },
 } as const;

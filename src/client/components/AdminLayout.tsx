@@ -3,6 +3,7 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissionCheck } from '../hooks/auth/usePermissions';
 import { useTheme } from './ThemeProvider';
 
 interface AdminLayoutProps {
@@ -13,6 +14,7 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ title, actions, children }: AdminLayoutProps) {
     const { user, logout } = useAuth();
+    const { hasUserManagementAccess } = usePermissionCheck();
     const { theme, setTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
@@ -89,7 +91,7 @@ export function AdminLayout({ title, actions, children }: AdminLayoutProps) {
                                                 Profile
                                             </button>
                                         )}
-                                        {user.roles?.some(r => r.roleName.toLowerCase() === 'admin') && (
+                                        {hasUserManagementAccess() && (
                                             <button
                                                 className="user-menu-item"
                                                 onClick={() => {

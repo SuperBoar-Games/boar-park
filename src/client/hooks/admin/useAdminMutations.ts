@@ -12,7 +12,7 @@ export function useCreateUserMutation() {
       return apiClient.post('/api/admin/users', data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all });
     },
   });
 }
@@ -26,13 +26,13 @@ export function useApproveUserMutation() {
     },
     onMutate: async (userId: number) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: queryKeys.admin.users() });
+      await queryClient.cancelQueries({ queryKey: queryKeys.admin.users.all });
 
       // Snapshot previous value
-      const previousUsers = queryClient.getQueryData(queryKeys.admin.users());
+      const previousUsers = queryClient.getQueryData(queryKeys.admin.users.all);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(queryKeys.admin.users(), (old: any) => {
+      queryClient.setQueryData(queryKeys.admin.users.all, (old: any) => {
         if (!old) return old;
         return old.map((user: any) =>
           user.id === userId ? { ...user, status: 'active' } : user
@@ -45,12 +45,12 @@ export function useApproveUserMutation() {
     onError: (err, userId, context: any) => {
       // Rollback on error
       if (context?.previousUsers) {
-        queryClient.setQueryData(queryKeys.admin.users(), context.previousUsers);
+        queryClient.setQueryData(queryKeys.admin.users.all, context.previousUsers);
       }
     },
     onSettled: () => {
       // Refetch after mutation
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all });
     },
   });
 }
@@ -64,13 +64,13 @@ export function useDisableUserMutation() {
     },
     onMutate: async (userId: number) => {
       // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: queryKeys.admin.users() });
+      await queryClient.cancelQueries({ queryKey: queryKeys.admin.users.all });
 
       // Snapshot previous value
-      const previousUsers = queryClient.getQueryData(queryKeys.admin.users());
+      const previousUsers = queryClient.getQueryData(queryKeys.admin.users.all);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(queryKeys.admin.users(), (old: any) => {
+      queryClient.setQueryData(queryKeys.admin.users.all, (old: any) => {
         if (!old) return old;
         return old.map((user: any) =>
           user.id === userId ? { ...user, status: 'disabled' } : user
@@ -83,12 +83,12 @@ export function useDisableUserMutation() {
     onError: (err, userId, context: any) => {
       // Rollback on error
       if (context?.previousUsers) {
-        queryClient.setQueryData(queryKeys.admin.users(), context.previousUsers);
+        queryClient.setQueryData(queryKeys.admin.users.all, context.previousUsers);
       }
     },
     onSettled: () => {
       // Refetch after mutation
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all });
     },
   });
 }
@@ -101,7 +101,7 @@ export function useDeleteUserMutation() {
       return apiClient.delete(`/api/admin/users/${userId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all });
     },
   });
 }
@@ -114,7 +114,7 @@ export function useAssignRoleMutation() {
       return apiClient.post('/api/admin/assign-role', data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all });
     },
   });
 }
@@ -127,7 +127,7 @@ export function useRemoveRoleMutation() {
       return apiClient.post('/api/admin/remove-role', data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all });
     },
   });
 }

@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
+import { usePermissionCheck } from '../../../hooks/auth/usePermissions';
 import { AdminLayout } from '../../../components/AdminLayout';
 import { Button } from '../../../components/Button';
 import { Modal } from '../../../components/Modal';
@@ -22,6 +23,7 @@ type SortKey = 'name' | 'industry' | 'total_movies' | 'pending_movies' | 'total_
 export default function TalkiesGamePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { canCreate, canUpdate, canDelete } = usePermissionCheck();
   const { data: heroes = [], isLoading, error } = useHeroesQuery();
   const createHero = useCreateHeroMutation();
   const updateHero = useUpdateHeroMutation();
@@ -158,9 +160,11 @@ export default function TalkiesGamePage() {
         <Button variant="secondary" onClick={clearFilters}>
           {Icons.filter} <span>Clear Filters</span>
         </Button>
-        <Button onClick={openAddModal}>
-          {Icons.plus} <span>Add Hero</span>
-        </Button>
+        {canCreate('heroes') && (
+          <Button onClick={openAddModal}>
+            {Icons.plus} <span>Add Hero</span>
+          </Button>
+        )}
       </div>
 
       <div className="table-wrapper">
@@ -222,24 +226,28 @@ export default function TalkiesGamePage() {
                   <td className="text-center">{hero.total_cards || 0}</td>
                   <td>
                     <div className="action-buttons">
-                      <button
-                        className="action-btn edit"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openEditModal(hero);
-                        }}
-                      >
-                        {Icons.edit}
-                      </button>
-                      <button
-                        className="action-btn delete"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(hero);
-                        }}
-                      >
-                        {Icons.delete}
-                      </button>
+                      {canUpdate('heroes') && (
+                        <button
+                          className="action-btn edit"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditModal(hero);
+                          }}
+                        >
+                          {Icons.edit}
+                        </button>
+                      )}
+                      {canDelete('heroes') && (
+                        <button
+                          className="action-btn delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(hero);
+                          }}
+                        >
+                          {Icons.delete}
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

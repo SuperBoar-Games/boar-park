@@ -23,6 +23,7 @@ import SignupPage from './pages/auth/SignupPage';
 import RequestResetPage from './pages/auth/RequestResetPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import SetPasswordPage from './pages/auth/SetPasswordPage';
+import { ImpersonationExitButton } from './components/ImpersonationExitButton';
 
 function AppContent() {
     const { refreshAccessToken } = useAuth();
@@ -37,6 +38,7 @@ function AppContent() {
 
     return (
         <Router>
+            <ImpersonationExitButton />
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/profile" element={<UserProfilePage />} />
@@ -52,7 +54,7 @@ function AppContent() {
                 <Route
                     path="/admin"
                     element={
-                        <ProtectedRoute requireAdmin>
+                        <ProtectedRoute>
                             <AdminDashboard />
                         </ProtectedRoute>
                     }
@@ -60,7 +62,14 @@ function AppContent() {
                 <Route
                     path="/admin/users"
                     element={
-                        <ProtectedRoute requireAdmin>
+                        <ProtectedRoute
+                            requireAnyPermission={[
+                                'user_management:read', 'user_management:create', 'user_management:update', 'user_management:delete',
+                                'users:read', 'users:create', 'users:update', 'users:delete',
+                                'roles:read', 'roles:create', 'roles:update', 'roles:delete',
+                                'permissions:read', 'permissions:create', 'permissions:update', 'permissions:delete'
+                            ]}
+                        >
                             <UsersManagementPage />
                         </ProtectedRoute>
                     }
@@ -68,7 +77,15 @@ function AppContent() {
                 <Route
                     path="/admin/games/talkies"
                     element={
-                        <ProtectedRoute requireAdmin>
+                        <ProtectedRoute
+                            requireAnyPermission={[
+                                'talkies:read', 'talkies:create', 'talkies:update', 'talkies:delete',
+                                'heroes:read', 'heroes:create', 'heroes:update', 'heroes:delete',
+                                'movies:read', 'movies:create', 'movies:update', 'movies:delete',
+                                'cards:read', 'cards:create', 'cards:update', 'cards:delete',
+                                'tags:read', 'tags:create', 'tags:update', 'tags:delete'
+                            ]}
+                        >
                             <TalkiesGamePage />
                         </ProtectedRoute>
                     }
@@ -76,7 +93,11 @@ function AppContent() {
                 <Route
                     path="/admin/games/talkies/hero/:heroId"
                     element={
-                        <ProtectedRoute requireAdmin>
+                        <ProtectedRoute
+                            requireAnyPermission={[
+                                'talkies:read', 'heroes:read', 'movies:read', 'cards:read', 'tags:read'
+                            ]}
+                        >
                             <HeroDetailsPage />
                         </ProtectedRoute>
                     }
@@ -84,7 +105,11 @@ function AppContent() {
                 <Route
                     path="/admin/games/talkies/hero/:heroId/movie/:movieId"
                     element={
-                        <ProtectedRoute requireAdmin>
+                        <ProtectedRoute
+                            requireAnyPermission={[
+                                'talkies:read', 'movies:read', 'cards:read', 'tags:read'
+                            ]}
+                        >
                             <MovieDetailsPage />
                         </ProtectedRoute>
                     }
@@ -102,12 +127,12 @@ function AppContent() {
 function App() {
     return (
         <ThemeProvider>
-            <AuthProvider>
-                <QueryClientProvider client={queryClient}>
+            <QueryClientProvider client={queryClient}>
+                <AuthProvider>
                     <AppContent />
                     {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-                </QueryClientProvider>
-            </AuthProvider>
+                </AuthProvider>
+            </QueryClientProvider>
         </ThemeProvider>
     );
 }

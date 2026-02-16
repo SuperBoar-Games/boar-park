@@ -5,6 +5,7 @@ import { Icons } from '../Icons';
 import { Button } from '../Button';
 import { Modal } from '../Modal';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { usePermissionCheck } from '../../hooks/auth/usePermissions';
 import { useTagsQuery } from '../../hooks/talkies/useTalkiesQueries';
 import {
   useCreateTagMutation,
@@ -23,6 +24,7 @@ interface TagFormData {
 
 export function TagsSection({ heroId }: TagsSectionProps) {
     // Fetch tags for this hero
+    const { canCreate, canUpdate, canDelete } = usePermissionCheck();
     const { data: tags = [] } = useTagsQuery(heroId);
     const createTag = useCreateTagMutation();
     const updateTag = useUpdateTagMutation();
@@ -139,9 +141,11 @@ export function TagsSection({ heroId }: TagsSectionProps) {
                 <Button variant="secondary" onClick={clearFilters}>
                     {Icons.filter} <span>Clear Filters</span>
                 </Button>
-                <Button variant="primary" onClick={openAddModal}>
-                    {Icons.plus} <span>Add Tag</span>
-                </Button>
+                {canCreate('tags') && (
+                    <Button variant="primary" onClick={openAddModal}>
+                        {Icons.plus} <span>Add Tag</span>
+                    </Button>
+                )}
             </div>
 
             <div className="table-wrapper">
@@ -202,12 +206,16 @@ export function TagsSection({ heroId }: TagsSectionProps) {
                                     <td className="text-center">{tag.card_count || 0}</td>
                                     <td>
                                         <div className="action-buttons">
-                                            <button className="action-btn edit" onClick={() => openEditModal(tag)}>
-                                                {Icons.edit}
-                                            </button>
-                                            <button className="action-btn delete" onClick={() => handleDelete(tag)}>
-                                                {Icons.delete}
-                                            </button>
+                                            {canUpdate('tags') && (
+                                                <button className="action-btn edit" onClick={() => openEditModal(tag)}>
+                                                    {Icons.edit}
+                                                </button>
+                                            )}
+                                            {canDelete('tags') && (
+                                                <button className="action-btn delete" onClick={() => handleDelete(tag)}>
+                                                    {Icons.delete}
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

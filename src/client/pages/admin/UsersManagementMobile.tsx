@@ -162,48 +162,46 @@ export function UsersManagementMobile({
                                 </span>
                             </div>
 
-                            {user.roles.length > 0 && (
-                                <div className="mobile-roles-section">
-                                    <div className="mobile-roles-list">
-                                        {user.roles.map((role, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="mobile-role-badge"
-                                                style={{ backgroundColor: getRoleBadgeColor(role.roleName) }}
-                                            >
-                                                <span className="mobile-role-name">{role.roleName}</span>
-                                                {role.gameName && (
-                                                    <span className="mobile-role-game">
-                                                        ({role.gameName})
-                                                    </span>
-                                                )}
-                                                <button
-                                                    onClick={() =>
-                                                        handleRemoveRole(user.id, role.roleId, role.gameId, role.roleName)
-                                                    }
-                                                    className="mobile-role-remove"
-                                                    title="Remove role"
-                                                >
-                                                    ×
-                                                </button>
-                                            </div>
-                                        ))}
-                                        {!user.roles.some(role => role.roleName.toLowerCase() === 'admin') && (
+                            <div className="mobile-roles-section">
+                                <div className="mobile-roles-list">
+                                    {user.roles.map((role, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="mobile-role-badge"
+                                            style={{ backgroundColor: getRoleBadgeColor(role.roleName) }}
+                                        >
+                                            <span className="mobile-role-name">{role.roleName}</span>
+                                            {role.gameName && (
+                                                <span className="mobile-role-game">
+                                                    ({role.gameName})
+                                                </span>
+                                            )}
                                             <button
-                                                onClick={() => {
-                                                    setSelectedUser(user);
-                                                    setRoleForm({ userId: user.id, roleId: '', gameId: '' });
-                                                    setShowRoleModal(true);
-                                                }}
-                                                className="mobile-role-add-btn"
-                                                title="Add role"
+                                                onClick={() =>
+                                                    handleRemoveRole(user.id, role.roleId, role.gameId, role.roleName)
+                                                }
+                                                className="mobile-role-remove"
+                                                title="Remove role"
                                             >
-                                                {Icons.plus}
+                                                ×
                                             </button>
-                                        )}
-                                    </div>
+                                        </div>
+                                    ))}
+                                    {!user.roles.some(role => role.roleName.toLowerCase() === 'admin') && (
+                                        <button
+                                            onClick={() => {
+                                                setSelectedUser(user);
+                                                setRoleForm({ userId: user.id, roleId: '', gameId: '' });
+                                                setShowRoleModal(true);
+                                            }}
+                                            className="mobile-role-add-btn"
+                                            title="Add role"
+                                        >
+                                            {Icons.plus}
+                                        </button>
+                                    )}
                                 </div>
-                            )}
+                            </div>
 
                             <div className="mobile-actions-section">
                                 {user.status === 'pending' && (

@@ -39,7 +39,8 @@ import {
     resetPasswordHandler,
     setPasswordHandler,
     getCurrentUserHandler,
-    updateUserProfileHandler
+    updateUserProfileHandler,
+    getCurrentUserPermissionsHandler
 } from "./handlers/auth.handler";
 import {
     getAllUsersHandler,
@@ -57,6 +58,29 @@ import {
     getUserRolesHandler,
     sendResetEmailHandler
 } from "./handlers/admin.handler";
+import {
+    getAllPermissionsHandler,
+    getPermissionByIdHandler,
+    createPermissionHandler,
+    updatePermissionHandler,
+    deletePermissionHandler,
+    getAllRolesHandler as getAllSystemRolesHandler,
+    getRoleByIdHandler,
+    createRoleHandler,
+    updateRoleHandler,
+    deleteRoleHandler,
+    assignPermissionsToRoleHandler,
+    removePermissionFromRoleHandler,
+    getAllUsersWithRolesHandler,
+    updateUserRoleHandler,
+    getUserPermissionsHandler
+} from "./handlers/roles.handler";
+import {
+    startImpersonation,
+    stopImpersonation,
+    getImpersonationState,
+    extractSessionId
+} from "./auth/impersonation.middleware";
 import { authenticate, isAdmin, unauthorizedResponse, forbiddenResponse } from "./auth/middleware";
 import { getGameIdFromSlug, canViewGame, canEditGame, getGamesForUser } from "./auth/game-permissions";
 
@@ -144,6 +168,16 @@ Bun.serve({
             }
             const body = await request.json();
             return await updateUserProfileHandler(user.userId, body);
+        }
+
+        // Get current user's permissions (with impersonation support)
+        if (url.pathname === "/api/auth/me/permissions" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) {
+                return unauthorizedResponse();
+            }
+            const sessionId = extractSessionId(request);
+            return await getCurrentUserPermissionsHandler(user.userId, sessionId);
         }
 
         // ========== ADMIN ROUTES ==========
@@ -283,6 +317,185 @@ Bun.serve({
             }
             const body = await request.json();
             return await removeRoleHandler(body);
+        }
+
+        // ========== ROLES & PERMISSIONS ROUTES ==========
+
+        // Permissions CRUD
+        if (url.pathname === "/api/admin/permissions" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await getAllPermissionsHandler();
+        }
+
+        if (url.pathname === "/api/admin/permissions" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            return await createPermissionHandler(body);
+        }
+
+        const permissionIdMatch = url.pathname.match(/^\/api\/admin\/permissions\/(\d+)$/);
+        if (permissionIdMatch) {
+            const permissionId = permissionIdMatch[1];
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+
+            if (method === "GET") {
+                return await getPermissionByIdHandler(permissionId);
+            }
+            if (method === "PUT") {
+                const body = await request.json();
+                return await updatePermissionHandler(permissionId, body);
+            }
+            if (method === "DELETE") {
+                return await deletePermissionHandler(permissionId);
+            }
+        }
+
+        // System Roles CRUD
+        if (url.pathname === "/api/admin/system-roles" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const includePermissions = url.searchParams.get("includePermissions") === "true";
+            return await getAllSystemRolesHandler(includePermissions);
+        }
+
+        if (url.pathname === "/api/admin/system-roles" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            return await createRoleHandler(body);
+        }
+
+        const systemRoleIdMatch = url.pathname.match(/^\/api\/admin\/system-roles\/(\d+)$/);
+        if (systemRoleIdMatch) {
+            const roleId = systemRoleIdMatch[1];
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+
+            if (method === "GET") {
+                const includePermissions = url.searchParams.get("includePermissions") === "true";
+                return await getRoleByIdHandler(roleId, includePermissions);
+            }
+            if (method === "PUT") {
+                const body = await request.json();
+                return await updateRoleHandler(roleId, body);
+            }
+            if (method === "DELETE") {
+                return await deleteRoleHandler(roleId);
+            }
+        }
+
+        // Role-Permission Assignment
+        const rolePermissionsMatch = url.pathname.match(/^\/api\/admin\/system-roles\/(\d+)\/permissions$/);
+        if (rolePermissionsMatch && method === "PUT") {
+            const roleId = rolePermissionsMatch[1];
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            return await assignPermissionsToRoleHandler(roleId, body);
+        }
+
+        const removePermissionMatch = url.pathname.match(/^\/api\/admin\/system-roles\/(\d+)\/permissions\/(\d+)$/);
+        if (removePermissionMatch && method === "DELETE") {
+            const [, roleId, permissionId] = removePermissionMatch;
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await removePermissionFromRoleHandler(roleId, permissionId);
+        }
+
+        // User Role Management
+        if (url.pathname === "/api/admin/users-with-roles" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await getAllUsersWithRolesHandler();
+        }
+
+        const userRoleUpdateMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/role$/);
+        if (userRoleUpdateMatch && method === "PUT") {
+            const userId = userRoleUpdateMatch[1];
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            return await updateUserRoleHandler(userId, body.roleId);
+        }
+
+        // User Permissions
+        const userPermissionsMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/permissions$/);
+        if (userPermissionsMatch && method === "GET") {
+            const userId = userPermissionsMatch[1];
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await getUserPermissionsHandler(userId);
+        }
+
+        // ========== IMPERSONATION ROUTES (VIEW AS) ==========
+
+        // Start impersonation (admin only)
+        if (url.pathname === "/api/admin/impersonate/start" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            const sessionId = extractSessionId(request);
+            if (!sessionId) {
+                return unauthorizedResponse("Session ID not found");
+            }
+            return await startImpersonation(user, body.roleId, sessionId);
+        }
+
+        // Stop impersonation (admin only)
+        if (url.pathname === "/api/admin/impersonate/stop" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const sessionId = extractSessionId(request);
+            if (!sessionId) {
+                return unauthorizedResponse("Session ID not found");
+            }
+            return await stopImpersonation(sessionId);
+        }
+
+        // Get impersonation state (admin only)
+        if (url.pathname === "/api/admin/impersonate/state" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const sessionId = extractSessionId(request);
+            if (!sessionId) {
+                return unauthorizedResponse("Session ID not found");
+            }
+            const state = await getImpersonationState(sessionId);
+            return new Response(JSON.stringify({ success: true, data: state }), {
+                status: 200,
+                headers: { "Content-Type": "application/json", ...corsHeaders }
+            });
         }
 
         // ========== GAMES ==========

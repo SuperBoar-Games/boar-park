@@ -397,6 +397,52 @@ export async function getCurrentUserHandler(userId: number): Promise<Response> {
 /**
  * Update current user profile
  */
+/**
+ * Get current user's permissions (with impersonation support)
+ */
+export async function getCurrentUserPermissionsHandler(userId: number, sessionId: string | null = null): Promise<Response> {
+    try {
+        // Get user's role_id
+        const users = await sql.unsafe(GET_USER_BY_ID_QUERY, [userId]);
+        if (users.length === 0) {
+            return jsonResponse({ success: false, message: "User not found" }, 404);
+        }
+
+        let roleId = users[0].role_id;
+
+        // Check if user is impersonating (admins only)
+        if (sessionId) {
+            const { getEffectiveRoleId } = await import("../auth/impersonation.middleware");
+            const effectiveRoleId = getEffectiveRoleId(sessionId, roleId);
+            if (effectiveRoleId !== roleId) {
+                // User is impersonating, use the impersonated role
+                roleId = effectiveRoleId;
+            }
+        }
+
+        // If no role assigned, return empty permissions
+        if (!roleId) {
+            return jsonResponse({ success: true, data: [] }, 200);
+        }
+
+        // Fetch permissions for this role
+        const permissions = await sql.unsafe(
+            `SELECT DISTINCT p.name
+             FROM permissions p
+             INNER JOIN role_permissions rp ON p.id = rp.permission_id
+             WHERE rp.role_id = $1`,
+            [roleId]
+        );
+
+        const permissionNames = permissions.map((row: any) => row.name);
+
+        return jsonResponse({ success: true, data: permissionNames }, 200);
+    } catch (error) {
+        console.error("Error fetching user permissions:", error);
+        return jsonResponse({ success: false, message: "Failed to fetch permissions" }, 500);
+    }
+}
+
 export async function updateUserProfileHandler(userId: number, body: any): Promise<Response> {
     const { username, email, currentPassword, newPassword } = body;
 
