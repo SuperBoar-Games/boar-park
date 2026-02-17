@@ -79,6 +79,10 @@ if [ -f .env ]; then
         --if-exists \
         --create \
         > "$DB_BACKUP_FILE" 2>/dev/null; then
+
+        # Fix: Add \connect statement after CREATE DATABASE
+        sed -i "/^CREATE DATABASE $PGDATABASE/a\\\connect $PGDATABASE" "$DB_BACKUP_FILE"
+
         log "Database backup created: $DB_BACKUP_FILE ($(du -h "$DB_BACKUP_FILE" | cut -f1))"
     else
         error "Database backup failed - aborting deployment"
@@ -109,13 +113,24 @@ fi
 
 log "Current commit: $(git rev-parse --short HEAD)"
 
+# Run database migrations BEFORE building
+log "Running database migrations..."
+if [ -f "$DEPLOY_DIR/scripts/run-migrations.sh" ]; then
+    if ! "$DEPLOY_DIR/scripts/run-migrations.sh"; then
+        error "Migration failed! Restore backup with: sudo -u postgres psql -f $DB_BACKUP_FILE"
+    fi
+    log "Migrations completed successfully"
+else
+    warn "Migration script not found at scripts/run-migrations.sh - skipping migrations"
+fi
+
 # Install dependencies
 log "Installing dependencies..."
 bun install --no-progress || error "Failed to install dependencies"
 
 # Build backend
 log "Building backend..."
-bun build src/index.ts --outdir dist --target=bun || error "Failed to build backend"
+bun run build || error "Failed to build backend"
 
 # Build frontend with Vite
 log "Building frontend..."
@@ -125,17 +140,6 @@ bun run build:client || error "Failed to build frontend"
 log "Setting file permissions..."
 chown -R boar-park:boar-park "$DEPLOY_DIR" || warn "Failed to set ownership"
 chmod +x "$DEPLOY_DIR/dist/index.js" || true
-
-# Run database migrations
-log "Running database migrations..."
-if [ -f "$DEPLOY_DIR/scripts/run-migrations.sh" ]; then
-    if ! "$DEPLOY_DIR/scripts/run-migrations.sh"; then
-        error "Migration failed! Restore backup: PGPASSWORD=\"\$PGPASSWORD\" psql -h $PGHOST -U $PGUSER -d postgres -f $DB_BACKUP_FILE"
-    fi
-    log "Migrations completed successfully"
-else
-    warn "Migration script not found at scripts/run-migrations.sh - skipping migrations"
-fi
 
 # Start the service
 log "Starting service..."
@@ -150,6 +154,13 @@ if [ "$HEALTH_CHECK" = "200" ]; then
 else
     error "Health check failed (HTTP $HEALTH_CHECK). Check logs: journalctl -u $SERVICE_NAME -n 50"
 fi
+
+# Clean up old backups (keep last 10)
+log "Cleaning up old backups..."
+cd "$BACKUP_DIR"
+ls -t db-backup-*.sql 2>/dev/null | tail -n +11 | xargs -r rm -f
+ls -t files-backup-*.tar.gz 2>/dev/null | tail -n +11 | xargs -r rm -f
+log "Backup cleanup complete (keeping last 10)"
 
 log "✅ Deployment completed successfully!"
 log "Service status:"

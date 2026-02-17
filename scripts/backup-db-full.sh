@@ -35,6 +35,9 @@ PGPASSWORD="$PGPASSWORD" pg_dump \
     --create \
     > "$BACKUP_FILE"
 
+# Fix: Add \connect statement after CREATE DATABASE
+sed -i "/^CREATE DATABASE $PGDATABASE/a\\\connect $PGDATABASE" "$BACKUP_FILE"
+
 echo "✓ Full backup created successfully!"
 echo ""
 echo "File: $BACKUP_FILE"

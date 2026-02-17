@@ -39,6 +39,10 @@ PGPASSWORD="$PGPASSWORD" pg_dump \
     --exclude-table-data=user_game_roles \
     > "$BACKUP_FILE"
 
+# Fix: Add \connect statement after CREATE DATABASE
+# pg_dump --create doesn't include this, causing tables to be created in wrong database
+sed -i "/^CREATE DATABASE $PGDATABASE/a\\\connect $PGDATABASE" "$BACKUP_FILE"
+
 echo "✓ Database dump created successfully!"
 echo ""
 echo "File: $BACKUP_FILE"
