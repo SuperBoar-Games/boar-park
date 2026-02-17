@@ -395,11 +395,15 @@ scp bkps/deploy_bkps/boar_park_schema_*.sql user@vps:/var/www/boar-park/
 
 **On VPS:**
 ```bash
-# As boar-park user
+# Navigate to app directory
 cd /var/www/boar-park
 
-# Import the dump
-./scripts/import-db-dump.sh boar_park_schema_20260217_192208.sql
+# Import the dump (uses sudo to run as postgres superuser)
+# Script will prompt for confirmation before dropping/recreating database
+sudo ./scripts/import-db-dump.sh bkps/deploy_bkps/boar_park_schema_20260217_192208.sql
+
+# Switch to boar-park user for remaining commands
+sudo -u boar-park -H bash
 
 # Create admin user (since user data was excluded)
 ./scripts/create-admin-user.sh

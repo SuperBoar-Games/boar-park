@@ -19,31 +19,12 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-DROP DATABASE IF EXISTS boar_db;
+DROP DATABASE IF EXISTS boar_park_prod;
 --
--- Name: boar_db; Type: DATABASE; Schema: -; Owner: postgres
+-- Name: boar_park_prod; Type: DATABASE; Schema: -; Owner: postgres
 --
 
-CREATE DATABASE boar_db WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'C.UTF-8';
-
-
-ALTER DATABASE boar_db OWNER TO postgres;
-
-\unrestrict PIrgSJSI6cVGA60HmXlr8fG7DbFuTPQX7Aju3XD4H4vsy9iCbyVN5cXZLcV2a2E
-\connect boar_db
-\restrict PIrgSJSI6cVGA60HmXlr8fG7DbFuTPQX7Aju3XD4H4vsy9iCbyVN5cXZLcV2a2E
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
+CREATE DATABASE boar_park_prod WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'C.UTF-8';
 
 --
 -- Name: refresh_all_stats(); Type: FUNCTION; Schema: public; Owner: postgres

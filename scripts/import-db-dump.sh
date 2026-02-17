@@ -53,20 +53,23 @@ fi
 echo ""
 echo "Importing database..."
 
-# Import the dump
-PGPASSWORD="$PGPASSWORD" psql \
-    -h "$PGHOST" \
-    -p "$PGPORT" \
-    -U "$PGUSER" \
-    -d postgres \
-    -f "$DUMP_FILE"
+# Import the dump using postgres superuser
+# The dump contains DROP DATABASE and CREATE DATABASE which require superuser privileges
+sudo -u postgres psql -f "$DUMP_FILE"
 
-echo ""
-echo "✓ Database imported successfully!"
+if [ $? -eq 0 ]; then
+    echo ""
+    echo "✓ Database imported successfully!"
+else
+    echo ""
+    echo "✗ Import failed!"
+    exit 1
+fi
+
 echo ""
 echo "Next steps:"
 echo "  1. Create admin user:"
-echo "     bun run src/scripts/create-admin.ts"
+echo "     ./scripts/create-admin-user.sh"
 echo ""
 echo "  2. Verify data:"
 echo "     psql -d $PGDATABASE -c 'SELECT COUNT(*) FROM heroes;'"
