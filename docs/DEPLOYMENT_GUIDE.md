@@ -185,15 +185,10 @@ cd /var/www/boar-park
 bun install
 
 # Build backend
-echo "Building backend..."
-bun build src/index.ts --outdir dist
+bun run build
 
 # Build frontend
-echo "Building frontend..."
-bun build src/client/main.tsx --outdir dist/client --minify --sourcemap
-
-# Copy index.html to dist/client
-cp index.html dist/client/index.html
+bun run build:client
 
 # Verify build
 ls -la dist/
@@ -382,7 +377,7 @@ cd /var/www/boar-park
 ./scripts/run-migrations.sh
 
 # Create admin user
-bun run src/scripts/create-admin.ts
+./scripts/create-admin-user.sh
 ```
 
 ### Option B: Import from Development
@@ -407,11 +402,11 @@ cd /var/www/boar-park
 ./scripts/import-db-dump.sh boar_park_schema_20260217_192208.sql
 
 # Create admin user (since user data was excluded)
-bun run src/scripts/create-admin.ts
+./scripts/create-admin-user.sh
 
 # Verify data
-psql -d boar_db -c 'SELECT COUNT(*) FROM heroes;'
-psql -d boar_db -c 'SELECT COUNT(*) FROM movies;'
+psql -d $PGDATABASE -c 'SELECT COUNT(*) FROM heroes;'
+psql -d $PGDATABASE -c 'SELECT COUNT(*) FROM movies;'
 ```
 
 ---
@@ -565,8 +560,8 @@ sudo /var/www/boar-park/deployment/deploy.sh production main
 cd /var/www/boar-park
 sudo git pull origin main
 sudo bun install
-sudo bun build src/index.ts --outdir dist
-sudo bun build src/client/main.tsx --outdir dist/client --minify --sourcemap
+sudo bun run build
+sudo bun run build:client
 sudo systemctl restart boar-park
 ```
 

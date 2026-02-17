@@ -42,7 +42,7 @@ cd /var/www/boar-park
 ./scripts/run-migrations.sh
 
 # 6. Create admin user
-bun run src/scripts/create-admin.ts
+./scripts/create-admin-user.sh
 ```
 
 ### Option B: Import from Development Backup
@@ -65,7 +65,7 @@ cd /var/www/boar-park
 ./scripts/import-db-dump.sh boar_park_schema_20260217_192208.sql
 
 # Create admin user (user data was excluded from dump)
-bun run src/scripts/create-admin.ts
+./scripts/create-admin-user.sh
 ```
 
 ### Option C: Legacy Dump File (Deprecated)
