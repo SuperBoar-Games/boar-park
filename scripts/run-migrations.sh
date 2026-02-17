@@ -26,8 +26,9 @@ echo ""
 
 # Check if migrations directory exists
 if [ ! -d "$MIGRATIONS_DIR" ]; then
-    echo "Error: Migrations directory not found: $MIGRATIONS_DIR"
-    exit 1
+    echo "⊘ Migrations directory not found: $MIGRATIONS_DIR"
+    echo "⊘ No migrations to run"
+    exit 0
 fi
 
 # Create migrations tracking table if it doesn't exist
