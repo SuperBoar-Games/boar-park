@@ -92,7 +92,11 @@ const PROJECT_ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 Bun.serve({
     port: PORT,
     async fetch(request: Request) {
-        const url = new URL(request.url);
+        // Handle relative URLs from reverse proxy
+        const urlString = request.url.startsWith('http')
+            ? request.url
+            : `http://localhost:${PORT}${request.url}`;
+        const url = new URL(urlString);
         const method = request.method;
 
         // CORS headers for development
