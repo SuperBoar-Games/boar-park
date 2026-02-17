@@ -94,8 +94,8 @@ BEGIN
 
     -- Assign admin role if system_roles table exists
     IF admin_role_id IS NOT NULL THEN
-        INSERT INTO user_game_roles (user_id, role_id, game_id, created_at)
-        VALUES (user_id, admin_role_id, NULL, NOW())
+        INSERT INTO user_game_roles (user_id, role_id, game_id)
+        VALUES (user_id, admin_role_id, NULL)
         ON CONFLICT DO NOTHING;
     END IF;
 END \$\$;

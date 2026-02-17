@@ -409,8 +409,8 @@ sudo -u boar-park -H bash
 ./scripts/create-admin-user.sh
 
 # Verify data
-psql -d $PGDATABASE -c 'SELECT COUNT(*) FROM heroes;'
-psql -d $PGDATABASE -c 'SELECT COUNT(*) FROM movies;'
+PGPASSWORD="$PGPASSWORD" psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" -c 'SELECT COUNT(*) FROM heroes;'
+PGPASSWORD="$PGPASSWORD" psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" -c 'SELECT COUNT(*) FROM movies;'
 ```
 
 ---

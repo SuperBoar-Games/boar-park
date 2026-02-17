@@ -103,7 +103,7 @@ RETURNING id;
 
 -- Assign admin role (assuming user_id = 1)
 INSERT INTO user_game_roles (user_id, game_id, role_id)
-SELECT 1, NULL, id FROM roles WHERE name = 'admin';
+SELECT 1, NULL, id FROM system_roles WHERE name = 'admin';
 EOF
 ```
 
@@ -114,7 +114,7 @@ sudo -u postgres psql -d boardb -c "
 SELECT u.id, u.username, u.email, u.status, r.name as role_name
 FROM users u
 JOIN user_game_roles ugr ON u.id = ugr.user_id
-JOIN roles r ON ugr.role_id = r.id;
+JOIN system_roles r ON ugr.role_id = r.id;
 "
 
 # List all tables

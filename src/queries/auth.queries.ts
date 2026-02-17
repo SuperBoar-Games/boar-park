@@ -44,7 +44,7 @@ export const GET_USER_WITH_ROLES_QUERY = `
         ) as roles
     FROM users u
     LEFT JOIN user_game_roles ugr ON u.id = ugr.user_id
-    LEFT JOIN roles r ON ugr.role_id = r.id
+    LEFT JOIN system_roles r ON ugr.role_id = r.id
     LEFT JOIN games g ON ugr.game_id = g.id
     WHERE u.id = $1
     GROUP BY u.id
@@ -113,11 +113,11 @@ export const DELETE_USER_PASSWORD_RESETS_QUERY = `
 // Role queries
 
 export const GET_ALL_ROLES_QUERY = `
-    SELECT id, name FROM roles ORDER BY id
+    SELECT id, name FROM system_roles ORDER BY id
 `;
 
 export const GET_ROLE_BY_NAME_QUERY = `
-    SELECT id, name FROM roles WHERE name = $1
+    SELECT id, name FROM system_roles WHERE name = $1
 `;
 
 // User-Game-Role queries
@@ -137,7 +137,7 @@ export const REMOVE_USER_ROLE_QUERY = `
 export const GET_USER_ROLES_QUERY = `
     SELECT ugr.id, ugr.game_id, g.name as game_name, ugr.role_id, r.name as role_name
     FROM user_game_roles ugr
-    JOIN roles r ON ugr.role_id = r.id
+    JOIN system_roles r ON ugr.role_id = r.id
     LEFT JOIN games g ON ugr.game_id = g.id
     WHERE ugr.user_id = $1
 `;
@@ -170,7 +170,7 @@ export const GET_ALL_USERS_QUERY = `
         ) as roles
     FROM users u
     LEFT JOIN user_game_roles ugr ON u.id = ugr.user_id
-    LEFT JOIN roles r ON ugr.role_id = r.id
+    LEFT JOIN system_roles r ON ugr.role_id = r.id
     LEFT JOIN games g ON ugr.game_id = g.id
     GROUP BY u.id
     ORDER BY u.created_at DESC

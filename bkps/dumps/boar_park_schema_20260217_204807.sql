@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict PIrgSJSI6cVGA60HmXlr8fG7DbFuTPQX7Aju3XD4H4vsy9iCbyVN5cXZLcV2a2E
+\restrict KZrEnBFJ9LcGzdJQbrzrK9VstzABlDASe3FBKHFm9b1D6wFcx8MBsK2fFLp2B2I
 
 -- Dumped from database version 18.1
 -- Dumped by pg_dump version 18.1
@@ -21,13 +21,32 @@ SET row_security = off;
 
 DROP DATABASE IF EXISTS boar_park_prod;
 --
--- Name: boar_park_prod; Type: DATABASE; Schema: -; Owner: postgres
+-- Name: boar_park_prod; Type: DATABASE; Schema: -; Owner: boar_park_user
 --
 
 CREATE DATABASE boar_park_prod WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'C.UTF-8';
 
+
+ALTER DATABASE boar_park_prod OWNER TO boar_park_user;
+
+\unrestrict KZrEnBFJ9LcGzdJQbrzrK9VstzABlDASe3FBKHFm9b1D6wFcx8MBsK2fFLp2B2I
+\connect boar_park_prod
+\restrict KZrEnBFJ9LcGzdJQbrzrK9VstzABlDASe3FBKHFm9b1D6wFcx8MBsK2fFLp2B2I
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
 --
--- Name: refresh_all_stats(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: refresh_all_stats(); Type: FUNCTION; Schema: public; Owner: boar_park_user
 --
 
 CREATE FUNCTION public.refresh_all_stats() RETURNS void
@@ -41,10 +60,10 @@ END;
 $$;
 
 
-ALTER FUNCTION public.refresh_all_stats() OWNER TO postgres;
+ALTER FUNCTION public.refresh_all_stats() OWNER TO boar_park_user;
 
 --
--- Name: refresh_hero_stats_trigger(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: refresh_hero_stats_trigger(); Type: FUNCTION; Schema: public; Owner: boar_park_user
 --
 
 CREATE FUNCTION public.refresh_hero_stats_trigger() RETURNS trigger
@@ -57,10 +76,10 @@ END;
 $$;
 
 
-ALTER FUNCTION public.refresh_hero_stats_trigger() OWNER TO postgres;
+ALTER FUNCTION public.refresh_hero_stats_trigger() OWNER TO boar_park_user;
 
 --
--- Name: refresh_movie_stats_trigger(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: refresh_movie_stats_trigger(); Type: FUNCTION; Schema: public; Owner: boar_park_user
 --
 
 CREATE FUNCTION public.refresh_movie_stats_trigger() RETURNS trigger
@@ -73,14 +92,14 @@ END;
 $$;
 
 
-ALTER FUNCTION public.refresh_movie_stats_trigger() OWNER TO postgres;
+ALTER FUNCTION public.refresh_movie_stats_trigger() OWNER TO boar_park_user;
 
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- Name: card_tags; Type: TABLE; Schema: public; Owner: postgres
+-- Name: card_tags; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.card_tags (
@@ -89,10 +108,10 @@ CREATE TABLE public.card_tags (
 );
 
 
-ALTER TABLE public.card_tags OWNER TO postgres;
+ALTER TABLE public.card_tags OWNER TO boar_park_user;
 
 --
--- Name: cards; Type: TABLE; Schema: public; Owner: postgres
+-- Name: cards; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.cards (
@@ -111,10 +130,10 @@ CREATE TABLE public.cards (
 );
 
 
-ALTER TABLE public.cards OWNER TO postgres;
+ALTER TABLE public.cards OWNER TO boar_park_user;
 
 --
--- Name: cards_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: cards_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.cards_id_seq
@@ -125,17 +144,17 @@ CREATE SEQUENCE public.cards_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.cards_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.cards_id_seq OWNER TO boar_park_user;
 
 --
--- Name: cards_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: cards_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.cards_id_seq OWNED BY public.cards.id;
 
 
 --
--- Name: games; Type: TABLE; Schema: public; Owner: postgres
+-- Name: games; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.games (
@@ -149,10 +168,10 @@ CREATE TABLE public.games (
 );
 
 
-ALTER TABLE public.games OWNER TO postgres;
+ALTER TABLE public.games OWNER TO boar_park_user;
 
 --
--- Name: games_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: games_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.games_id_seq
@@ -163,17 +182,17 @@ CREATE SEQUENCE public.games_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.games_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.games_id_seq OWNER TO boar_park_user;
 
 --
--- Name: games_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: games_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.games_id_seq OWNED BY public.games.id;
 
 
 --
--- Name: heroes; Type: TABLE; Schema: public; Owner: postgres
+-- Name: heroes; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.heroes (
@@ -186,10 +205,10 @@ CREATE TABLE public.heroes (
 );
 
 
-ALTER TABLE public.heroes OWNER TO postgres;
+ALTER TABLE public.heroes OWNER TO boar_park_user;
 
 --
--- Name: movies; Type: TABLE; Schema: public; Owner: postgres
+-- Name: movies; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.movies (
@@ -203,10 +222,10 @@ CREATE TABLE public.movies (
 );
 
 
-ALTER TABLE public.movies OWNER TO postgres;
+ALTER TABLE public.movies OWNER TO boar_park_user;
 
 --
--- Name: movie_stats; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: movie_stats; Type: MATERIALIZED VIEW; Schema: public; Owner: boar_park_user
 --
 
 CREATE MATERIALIZED VIEW public.movie_stats AS
@@ -237,10 +256,10 @@ CREATE MATERIALIZED VIEW public.movie_stats AS
   WITH NO DATA;
 
 
-ALTER MATERIALIZED VIEW public.movie_stats OWNER TO postgres;
+ALTER MATERIALIZED VIEW public.movie_stats OWNER TO boar_park_user;
 
 --
--- Name: hero_stats; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: hero_stats; Type: MATERIALIZED VIEW; Schema: public; Owner: boar_park_user
 --
 
 CREATE MATERIALIZED VIEW public.hero_stats AS
@@ -268,10 +287,10 @@ CREATE MATERIALIZED VIEW public.hero_stats AS
   WITH NO DATA;
 
 
-ALTER MATERIALIZED VIEW public.hero_stats OWNER TO postgres;
+ALTER MATERIALIZED VIEW public.hero_stats OWNER TO boar_park_user;
 
 --
--- Name: heroes_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: heroes_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.heroes_id_seq
@@ -282,17 +301,17 @@ CREATE SEQUENCE public.heroes_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.heroes_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.heroes_id_seq OWNER TO boar_park_user;
 
 --
--- Name: heroes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: heroes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.heroes_id_seq OWNED BY public.heroes.id;
 
 
 --
--- Name: movies_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: movies_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.movies_id_seq
@@ -303,17 +322,17 @@ CREATE SEQUENCE public.movies_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.movies_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.movies_id_seq OWNER TO boar_park_user;
 
 --
--- Name: movies_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: movies_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.movies_id_seq OWNED BY public.movies.id;
 
 
 --
--- Name: password_resets; Type: TABLE; Schema: public; Owner: postgres
+-- Name: password_resets; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.password_resets (
@@ -326,10 +345,10 @@ CREATE TABLE public.password_resets (
 );
 
 
-ALTER TABLE public.password_resets OWNER TO postgres;
+ALTER TABLE public.password_resets OWNER TO boar_park_user;
 
 --
--- Name: password_resets_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: password_resets_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.password_resets_id_seq
@@ -341,17 +360,17 @@ CREATE SEQUENCE public.password_resets_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.password_resets_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.password_resets_id_seq OWNER TO boar_park_user;
 
 --
--- Name: password_resets_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: password_resets_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.password_resets_id_seq OWNED BY public.password_resets.id;
 
 
 --
--- Name: permissions; Type: TABLE; Schema: public; Owner: postgres
+-- Name: permissions; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.permissions (
@@ -362,17 +381,17 @@ CREATE TABLE public.permissions (
 );
 
 
-ALTER TABLE public.permissions OWNER TO postgres;
+ALTER TABLE public.permissions OWNER TO boar_park_user;
 
 --
--- Name: TABLE permissions; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: TABLE permissions; Type: COMMENT; Schema: public; Owner: boar_park_user
 --
 
 COMMENT ON TABLE public.permissions IS 'Resource-based permissions (e.g., users:create, games:read)';
 
 
 --
--- Name: permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.permissions_id_seq
@@ -384,17 +403,17 @@ CREATE SEQUENCE public.permissions_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.permissions_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.permissions_id_seq OWNER TO boar_park_user;
 
 --
--- Name: permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.permissions_id_seq OWNED BY public.permissions.id;
 
 
 --
--- Name: refresh_tokens; Type: TABLE; Schema: public; Owner: postgres
+-- Name: refresh_tokens; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.refresh_tokens (
@@ -406,10 +425,10 @@ CREATE TABLE public.refresh_tokens (
 );
 
 
-ALTER TABLE public.refresh_tokens OWNER TO postgres;
+ALTER TABLE public.refresh_tokens OWNER TO boar_park_user;
 
 --
--- Name: refresh_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: refresh_tokens_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.refresh_tokens_id_seq
@@ -421,17 +440,17 @@ CREATE SEQUENCE public.refresh_tokens_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.refresh_tokens_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.refresh_tokens_id_seq OWNER TO boar_park_user;
 
 --
--- Name: refresh_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: refresh_tokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.refresh_tokens_id_seq OWNED BY public.refresh_tokens.id;
 
 
 --
--- Name: role_permissions; Type: TABLE; Schema: public; Owner: postgres
+-- Name: role_permissions; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.role_permissions (
@@ -442,17 +461,17 @@ CREATE TABLE public.role_permissions (
 );
 
 
-ALTER TABLE public.role_permissions OWNER TO postgres;
+ALTER TABLE public.role_permissions OWNER TO boar_park_user;
 
 --
--- Name: TABLE role_permissions; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: TABLE role_permissions; Type: COMMENT; Schema: public; Owner: boar_park_user
 --
 
 COMMENT ON TABLE public.role_permissions IS 'Many-to-many mapping between roles and permissions';
 
 
 --
--- Name: role_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: role_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.role_permissions_id_seq
@@ -464,51 +483,17 @@ CREATE SEQUENCE public.role_permissions_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.role_permissions_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.role_permissions_id_seq OWNER TO boar_park_user;
 
 --
--- Name: role_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: role_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.role_permissions_id_seq OWNED BY public.role_permissions.id;
 
 
 --
--- Name: roles; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.roles (
-    id integer NOT NULL,
-    name character varying(32) NOT NULL
-);
-
-
-ALTER TABLE public.roles OWNER TO postgres;
-
---
--- Name: roles_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.roles_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.roles_id_seq OWNER TO postgres;
-
---
--- Name: roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.roles_id_seq OWNED BY public.roles.id;
-
-
---
--- Name: system_roles; Type: TABLE; Schema: public; Owner: postgres
+-- Name: system_roles; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.system_roles (
@@ -520,17 +505,17 @@ CREATE TABLE public.system_roles (
 );
 
 
-ALTER TABLE public.system_roles OWNER TO postgres;
+ALTER TABLE public.system_roles OWNER TO boar_park_user;
 
 --
--- Name: TABLE system_roles; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: TABLE system_roles; Type: COMMENT; Schema: public; Owner: boar_park_user
 --
 
 COMMENT ON TABLE public.system_roles IS 'System roles that users can be assigned to';
 
 
 --
--- Name: system_roles_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: system_roles_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.system_roles_id_seq
@@ -542,17 +527,17 @@ CREATE SEQUENCE public.system_roles_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.system_roles_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.system_roles_id_seq OWNER TO boar_park_user;
 
 --
--- Name: system_roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: system_roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.system_roles_id_seq OWNED BY public.system_roles.id;
 
 
 --
--- Name: tags; Type: TABLE; Schema: public; Owner: postgres
+-- Name: tags; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.tags (
@@ -561,10 +546,10 @@ CREATE TABLE public.tags (
 );
 
 
-ALTER TABLE public.tags OWNER TO postgres;
+ALTER TABLE public.tags OWNER TO boar_park_user;
 
 --
--- Name: tag_stats; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- Name: tag_stats; Type: MATERIALIZED VIEW; Schema: public; Owner: boar_park_user
 --
 
 CREATE MATERIALIZED VIEW public.tag_stats AS
@@ -579,10 +564,10 @@ CREATE MATERIALIZED VIEW public.tag_stats AS
   WITH NO DATA;
 
 
-ALTER MATERIALIZED VIEW public.tag_stats OWNER TO postgres;
+ALTER MATERIALIZED VIEW public.tag_stats OWNER TO boar_park_user;
 
 --
--- Name: tags_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: tags_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.tags_id_seq
@@ -593,17 +578,17 @@ CREATE SEQUENCE public.tags_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.tags_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.tags_id_seq OWNER TO boar_park_user;
 
 --
--- Name: tags_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: tags_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.tags_id_seq OWNED BY public.tags.id;
 
 
 --
--- Name: user_game_roles; Type: TABLE; Schema: public; Owner: postgres
+-- Name: user_game_roles; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.user_game_roles (
@@ -614,10 +599,10 @@ CREATE TABLE public.user_game_roles (
 );
 
 
-ALTER TABLE public.user_game_roles OWNER TO postgres;
+ALTER TABLE public.user_game_roles OWNER TO boar_park_user;
 
 --
--- Name: user_game_roles_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: user_game_roles_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.user_game_roles_id_seq
@@ -629,17 +614,17 @@ CREATE SEQUENCE public.user_game_roles_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.user_game_roles_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.user_game_roles_id_seq OWNER TO boar_park_user;
 
 --
--- Name: user_game_roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: user_game_roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.user_game_roles_id_seq OWNED BY public.user_game_roles.id;
 
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: postgres
+-- Name: users; Type: TABLE; Schema: public; Owner: boar_park_user
 --
 
 CREATE TABLE public.users (
@@ -655,17 +640,17 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO postgres;
+ALTER TABLE public.users OWNER TO boar_park_user;
 
 --
--- Name: COLUMN users.role_id; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN users.role_id; Type: COMMENT; Schema: public; Owner: boar_park_user
 --
 
 COMMENT ON COLUMN public.users.role_id IS 'User''s assigned role (NULL = no role assigned)';
 
 
 --
--- Name: user_permissions; Type: VIEW; Schema: public; Owner: postgres
+-- Name: user_permissions; Type: VIEW; Schema: public; Owner: boar_park_user
 --
 
 CREATE VIEW public.user_permissions AS
@@ -682,17 +667,17 @@ CREATE VIEW public.user_permissions AS
      LEFT JOIN public.permissions p ON ((rp.permission_id = p.id)));
 
 
-ALTER VIEW public.user_permissions OWNER TO postgres;
+ALTER VIEW public.user_permissions OWNER TO boar_park_user;
 
 --
--- Name: VIEW user_permissions; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: VIEW user_permissions; Type: COMMENT; Schema: public; Owner: boar_park_user
 --
 
 COMMENT ON VIEW public.user_permissions IS 'Denormalized view of user permissions for easy querying';
 
 
 --
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: boar_park_user
 --
 
 CREATE SEQUENCE public.users_id_seq
@@ -704,108 +689,101 @@ CREATE SEQUENCE public.users_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE public.users_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.users_id_seq OWNER TO boar_park_user;
 
 --
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: boar_park_user
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- Name: cards id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: cards id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.cards ALTER COLUMN id SET DEFAULT nextval('public.cards_id_seq'::regclass);
 
 
 --
--- Name: games id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: games id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.games ALTER COLUMN id SET DEFAULT nextval('public.games_id_seq'::regclass);
 
 
 --
--- Name: heroes id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: heroes id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.heroes ALTER COLUMN id SET DEFAULT nextval('public.heroes_id_seq'::regclass);
 
 
 --
--- Name: movies id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: movies id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.movies ALTER COLUMN id SET DEFAULT nextval('public.movies_id_seq'::regclass);
 
 
 --
--- Name: password_resets id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: password_resets id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.password_resets ALTER COLUMN id SET DEFAULT nextval('public.password_resets_id_seq'::regclass);
 
 
 --
--- Name: permissions id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: permissions id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.permissions ALTER COLUMN id SET DEFAULT nextval('public.permissions_id_seq'::regclass);
 
 
 --
--- Name: refresh_tokens id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: refresh_tokens id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.refresh_tokens ALTER COLUMN id SET DEFAULT nextval('public.refresh_tokens_id_seq'::regclass);
 
 
 --
--- Name: role_permissions id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: role_permissions id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.role_permissions ALTER COLUMN id SET DEFAULT nextval('public.role_permissions_id_seq'::regclass);
 
 
 --
--- Name: roles id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_id_seq'::regclass);
-
-
---
--- Name: system_roles id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: system_roles id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.system_roles ALTER COLUMN id SET DEFAULT nextval('public.system_roles_id_seq'::regclass);
 
 
 --
--- Name: tags id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: tags id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.tags ALTER COLUMN id SET DEFAULT nextval('public.tags_id_seq'::regclass);
 
 
 --
--- Name: user_game_roles id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: user_game_roles id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.user_game_roles ALTER COLUMN id SET DEFAULT nextval('public.user_game_roles_id_seq'::regclass);
 
 
 --
--- Name: users id; Type: DEFAULT; Schema: public; Owner: postgres
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
 
 
 --
--- Data for Name: card_tags; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: card_tags; Type: TABLE DATA; Schema: public; Owner: boar_park_user
 --
 
 COPY public.card_tags (card_id, tag_id) FROM stdin;
@@ -903,23 +881,23 @@ COPY public.card_tags (card_id, tag_id) FROM stdin;
 
 
 --
--- Data for Name: cards; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: cards; Type: TABLE DATA; Schema: public; Owner: boar_park_user
 --
 
 COPY public.cards (id, movie_id, hero_id, name, type, call_sign, ability_text, ability_text2, need_review, last_update_dt, last_update_user) FROM stdin;
 1	1	1	Raja	HERO	\N	Swaps cards and place with another player of choice	\N	f	2025-04-03 16:12:33+02	admin
-2	1	1	Yama	VILLAIN		Reverses a previous action casted on you.	With Yama Pasham, eliminate a player	f	2025-04-03 16:12:33+02	admin
+2	1	1	Yama	VILLAIN		Reverses a previous action casted on you.	With Yama Pasham, eliminate a player	f	2025-04-03 16:12:33+02	vamsi.kalagaturu@proton.me
 3	1	1	Sathi (Ali)	SR1	You beating me, I cheating you	Helps any Hero in stealing additional card from the opponent	\N	f	2025-04-03 16:12:33+02	admin
 4	1	1	Chitragupta (Brahmi)	SR2	\N	See the hand of another player	\N	f	2025-04-03 16:12:33+02	admin
 5	1	1	Yama Pasham	WC	\N	Snatch one card from another player	\N	f	2025-04-03 16:12:33+02	admin
 6	1	1	Locket	WC	\N	Saves cards from any player for one round	\N	f	2025-04-03 16:12:33+02	admin
 7	2	1	Aadi Kesava Reddy	HERO	Amma thodu addanga narikesta	Slash the hands of any player by half (force them to discard half their cards)	\N	f	2025-04-03 16:12:33+02	admin
-8	2	1	Nagi Reddy	VILLAIN	Na bhumi lo guppedu matti theesina peeka korikestha	Crunch away two cards from the last opponent who took your cards	\N	t	2025-04-03 16:12:33+02	admin
+8	2	1	Nagi Reddy	VILLAIN	Na bhumi lo guppedu matti theesina peeka korikestha	Crunch away two cards from the last opponent who took your cards	\N	t	2025-04-03 16:12:33+02	vamsi.kalagaturu@proton.me
 9	2	1	Veeranna Babai	SR1	\N	Protects the player through death – you can keep one card when about to be eliminated	\N	f	2025-04-03 16:12:33+02	admin
 10	2	1	College Principal	SR2	\N	Ask everyone to say "Good Morning" to you. If they don't comply, take one card from each as a penalty	\N	f	2025-04-03 16:12:33+02	admin
 11	2	1	Naatu Bomb	WC	\N	Bomb the opponents. shuffle and redistribute their cards	\N	f	2025-04-03 16:12:33+02	admin
-12	3	1	Devara	HERO	Erra samudram potethaala	Sail on the Red Sea to steal 2 cards into your hand	\N	t	2025-04-03 16:12:33+02	admin
-13	3	1	Bhaira	VILLAIN	\N	Smuggle 1 card via the Red Sea, except from Devara	\N	t	2025-04-03 16:12:33+02	admin
+12	3	1	Devara	HERO	Erra samudram potethaala	Sail on the Red Sea to steal 2 cards into your hand	\N	t	2025-04-03 16:12:33+02	vamsi.kalagaturu@proton.me
+13	3	1	Bhaira	VILLAIN	\N	Smuggle 1 card via the Red Sea, except from Devara	\N	t	2025-04-03 16:12:33+02	vamsi.kalagaturu@proton.me
 14	3	1	Vara	SR1	\N	Stops anyone from using the Red Sea to smuggle goods from you	\N	f	2025-04-03 16:12:33+02	admin
 15	3	1	Singappa	SR2	Ee aata nadavalante… meeku mundu Devara katha theliyali.	Ask any opponent to tell Devara's story or discard half of their hand	\N	f	2025-04-03 16:12:33+02	admin
 16	3	1	Aayudhalu	WC	\N	Collect all Wild Cards from players via the Red Sea and safeguard them for a round	\N	f	2025-04-03 16:12:33+02	admin
@@ -938,7 +916,7 @@ COPY public.cards (id, movie_id, hero_id, name, type, call_sign, ability_text, a
 29	6	1	Aadi IPS	VILLAIN	\N	Peek into the cards of the left and right players and make one drop a card	\N	f	2025-04-03 16:12:33+02	admin
 30	6	1	Revenge Nageshwara Rao	SR2	\N	Force all players (except you) to swap 1 card with the player to their left	\N	f	2025-04-03 16:12:33+02	admin
 31	6	1	Inception Chair	WC	\N	Slide into dreams until you sing "Le Le Le… Levamantava" or Skip 2 rounds (you can still be targeted)	\N	f	2025-04-03 16:12:33+02	admin
-32	7	1	Veera Raghava	HERO		Ask any player to surrender 2 cards or drop 4 cards 	With Aravinda, Neutralizes opponents' actions without violence and convinces them to drop 1 card	f	2025-04-03 16:12:33+02	admin
+32	7	1	Veera Raghava	HERO		Ask any player to surrender 2 cards or drop 4 cards 	With Aravinda, Neutralizes opponents' actions without violence and convinces them to drop 1 card	f	2025-04-03 16:12:33+02	vamsi.kalagaturu@proton.me
 33	7	1	Basi Reddy	VILLAIN	5rs Faction	Can force any player with more than 5 cards to drop 5 cards or get eliminated	\N	f	2025-04-03 16:12:33+02	admin
 34	7	1	Jeji	SR1	Yudham rakunda aaputhade.. aadu goppa. Aade goppa.	Cancel out any action cast on you	\N	f	2025-04-03 16:12:33+02	admin
 35	7	1	Aravinda	SR2	Thaggithe thappenti.	Dont cast any action for this round on any player	\N	f	2025-04-03 16:12:33+02	admin
@@ -951,51 +929,51 @@ COPY public.cards (id, movie_id, hero_id, name, type, call_sign, ability_text, a
 42	9	1	Daya	HERO	Dandayatra, idi daya gadi dandayatra	Ask bribes from all players (one card each) or they should skip one round casting action.	\N	f	2025-04-03 16:12:33+02	admin
 43	9	1	Waltair Vasu	VILLAIN	East or west, friendship is the best	If eliminated, take any two random cards from the player who eliminated you, except Daya	\N	f	2025-04-03 16:12:33+02	admin
 44	9	1	Narayana Murthy	SR1	Ippatikippudu tsunami vachi andar kottukupothe baguntadi	Shuffle everyone's cards and redistribute	\N	f	2025-04-03 16:12:33+02	admin
-45	9	1	Saanvi	SR2	Na babies ni evaro kidnap chesaru. Vethiki pettandi.	Ask someone to find your lost babies (give you two cards)	\N	t	2025-04-03 16:12:33+02	admin
+45	9	1	Saanvi	SR2	Na babies ni evaro kidnap chesaru. Vethiki pettandi.	Ask someone to find your lost babies (give you two cards)	\N	t	2025-04-03 16:12:33+02	vamsi.kalagaturu@proton.me
 46	9	1	Ego	WC	Na ego na chuttu Wi-Fi la untundi.	Cast the action of any Character Card on all players	\N	f	2025-04-03 16:12:33+02	admin
-47	10	1	Chari	HERO	\N	Acts as Narasimha. Can steal 1 card from an opponent	\N	t	2025-04-03 16:12:33+02	admin
+47	10	1	Chari	HERO	\N	Acts as Narasimha. Can steal 1 card from an opponent	\N	t	2025-04-03 16:12:33+02	vamsi.kalagaturu@proton.me
 48	10	1	Baba Bhai	VILLAIN	\N	When asked to drop cards, hides them instead for 2 rounds	\N	f	2025-04-03 16:12:33+02	admin
 49	10	1	Bhattu	SR1	\N	Brings in the whole Agraharam and sabotages an action by any Hero card in a round except for Chari	\N	f	2025-04-03 16:12:33+02	admin
-50	10	1	Bhasha Bhai	SR2		Becomes invisible for one round 	Follows Bhattu from any player and cancels their action for the round	f	2025-04-03 16:12:33+02	admin
+50	10	1	Bhasha Bhai	SR2		Becomes invisible for one round 	Follows Bhattu from any player and cancels their action for the round	f	2025-04-03 16:12:33+02	vamsi.kalagaturu@proton.me
 51	10	1	Thelidu! Gurthu Ledhu! Marchipoya!	WC	\N	Helps forget to drop one card when asked to discard cards	\N	f	2025-04-03 16:12:33+02	admin
-52	11	2	People Killer	HERO	Disaster	Your game ends in one move	alert("hello");	f	2025-04-07 22:59:34+02	admin
-54	12	3	Bhallala Deva	VILLAIN	100 adugula vigraham, 100 pranalaina bali korada....	Take 1 cards from each player to build his idol.	Pairs with Sivagami	f	2025-04-13 13:15:12+02	admin
-57	12	3	Simhasanam	WC	Mahishmati Saamraajyam, Aswaakam Ajeeyam!!	Pairs with any Hero or Villain and swap hands with  next player.		f	2025-04-13 13:15:12+02	admin
-58	13	3	Bujji	HERO	volvo bus running lo undaga, adham badhalu kotteskoni eppudanna bayataki velpotha anukunnava!!	Take a card from previous player and ask the next player to drop one card.	Pairs with Sivanna	f	2025-04-13 13:17:00+02	admin
-59	13	3	Machi reddy	VILLAIN	naku rules, sections cheppodhu	Reverse the game direction		f	2025-04-13 13:17:00+02	admin
-60	13	3	Shivanna	SR1	nuvve na second setup.. ninnu veyyadanike vacha	Choose one player. They cannot play any Action cards on you until your next turn.	Pairs with Bujji. If you were attacked earlier this round, choose one of those players and swap hands with them.	f	2025-04-13 13:17:00+02	admin
-61	13	3	Sathi	SR2	chitti ni, bujji ni kalapadame na lakshyam	Can only be used if you have Chitti/Bujji. Discard Sathi and take Bujji/Chitti from the acitve players.		f	2025-04-13 13:17:00+02	admin
-62	13	3	Chitti	WC	Bujji ni thappa evarini love cheyanu	Guess a player who has Bujji. If you are correct, take Bujji card. If you are wrong, discard this card.	Pair with bujji, you are safe from one attack untill your next turn.	f	2025-04-13 13:17:00+02	admin
-63	14	3	Prabha	HERO	Nandini meedha pichi premani katha la cheppanu	Draw 2 cards per player and you deal the cards for two rounds		f	2025-04-13 13:18:00+02	admin
-64	14	3	Rishi	VILLAIN	So.. Shall we start the game?	Challenge the next player to say a dialogue from Darling. If they fail, they must discard a Villain or SR card.		f	2025-04-13 13:18:00+02	admin
-65	14	3	Nandini	SR1	vadu nannu loose annade	Take 2 cards from the next player		f	2025-04-13 13:18:00+02	admin
-66	14	3	Babai	SR2	Em babu tinnara...!	Each player who has a Darling card draws 1 card from the deck, including you.		f	2025-04-13 13:18:00+02	admin
-67	14	3	Bond babu	WC	nenu half ticket, black tickets tho aadanu!	Challenge the next player to mimic Nandhini. If they fail, say the call sign and don't play for a turn.		f	2025-04-13 13:18:00+02	admin
-68	15	3	Jai	HERO	Ippati varaku oka lekka, ippati nundi oka lekka	Challenge the next player with a Prabhas trivia. The winner takes 3 cards from the loser and the loser must tuck in their shirt and continue playing.		f	2025-04-13 13:18:53+02	admin
-69	15	3	Uma	VILLAIN	Cheppara Cheppuu...!!!!	select a player and every player  must attack the same player for the round		f	2025-04-13 13:18:53+02	admin
-70	15	3	Deva	SR1	Em paapam chesthee puttav ra....!!!!	say this dialogue to any player and skip their attack once!		f	2025-04-13 13:18:53+02	admin
-71	15	3	Veera Pratap	SR2	Manchi Manchi kattu batlu	everyone should give one card to their next player		f	2025-04-13 13:18:53+02	admin
-72	15	3	Na Family Safe!!!	WC		you are immune to one attack for a round		f	2025-04-13 13:18:53+02	admin
-73	16	3	Deva	HERO	Please, I kindly request	Take control of the game; draw cards until you have 7.		f	2025-04-13 13:19:41+02	admin
-74	16	3	Varadha raja mannar	SR1		Phone call your deva and ask them for a promise, to get immunity for a round. If they are not doing drop two cards.	Pairs with Nibandhana	f	2025-04-13 13:19:41+02	admin
-77	16	3	Nibandhana	WC		Varadha may use Nibadhana to start a vote to choose a player. The player with most votes discards 3 cards.		f	2025-04-13 13:19:41+02	admin
-78	17	3	Billa	HERO	Trust no one, kill anyone, be only one	Every player drops a card unless they have ACP KrishnaMurthy	You can stop Devil's action	f	2025-04-13 13:20:40+02	admin
-79	17	3	Devil	VILLAIN	Good for me bad for you / E deal varake ra ne avasaram	Smuggle 2 cards from pile. only billa can stop. if caught, devil card goes to them.		f	2025-04-13 13:20:40+02	admin
-80	17	3	ACP krishnamurthy	SR1	Nuvvu Billa ga maaradaniki ide correct time!	Swap place with previous player	Pairs with Ranga	f	2025-04-13 13:20:40+02	admin
+52	11	2	People Killer	HERO	Disaster	Your game ends in one move	alert("hello");	f	2025-04-07 22:59:34+02	vamsi.kalagaturu@proton.me
+54	12	3	Bhallala Deva	VILLAIN	100 adugula vigraham, 100 pranalaina bali korada....	Take 1 cards from each player to build his idol.	Pairs with Sivagami	f	2025-04-13 13:15:12+02	shajid24mughal@gmail.com
+57	12	3	Simhasanam	WC	Mahishmati Saamraajyam, Aswaakam Ajeeyam!!	Pairs with any Hero or Villain and swap hands with  next player.		f	2025-04-13 13:15:12+02	vamsi.kalagaturu@proton.me
+58	13	3	Bujji	HERO	volvo bus running lo undaga, adham badhalu kotteskoni eppudanna bayataki velpotha anukunnava!!	Take a card from previous player and ask the next player to drop one card.	Pairs with Sivanna	f	2025-04-13 13:17:00+02	mallikarjuna.bnk@protonmail.com
+59	13	3	Machi reddy	VILLAIN	naku rules, sections cheppodhu	Reverse the game direction		f	2025-04-13 13:17:00+02	mallikarjuna.bnk@protonmail.com
+60	13	3	Shivanna	SR1	nuvve na second setup.. ninnu veyyadanike vacha	Choose one player. They cannot play any Action cards on you until your next turn.	Pairs with Bujji. If you were attacked earlier this round, choose one of those players and swap hands with them.	f	2025-04-13 13:17:00+02	mallikarjuna.bnk@protonmail.com
+61	13	3	Sathi	SR2	chitti ni, bujji ni kalapadame na lakshyam	Can only be used if you have Chitti/Bujji. Discard Sathi and take Bujji/Chitti from the acitve players.		f	2025-04-13 13:17:00+02	mallikarjuna.bnk@protonmail.com
+62	13	3	Chitti	WC	Bujji ni thappa evarini love cheyanu	Guess a player who has Bujji. If you are correct, take Bujji card. If you are wrong, discard this card.	Pair with bujji, you are safe from one attack untill your next turn.	f	2025-04-13 13:17:00+02	mallikarjuna.bnk@protonmail.com
+63	14	3	Prabha	HERO	Nandini meedha pichi premani katha la cheppanu	Draw 2 cards per player and you deal the cards for two rounds		f	2025-04-13 13:18:00+02	mallikarjuna.bnk@protonmail.com
+64	14	3	Rishi	VILLAIN	So.. Shall we start the game?	Challenge the next player to say a dialogue from Darling. If they fail, they must discard a Villain or SR card.		f	2025-04-13 13:18:00+02	mallikarjuna.bnk@protonmail.com
+65	14	3	Nandini	SR1	vadu nannu loose annade	Take 2 cards from the next player		f	2025-04-13 13:18:00+02	mallikarjuna.bnk@protonmail.com
+66	14	3	Babai	SR2	Em babu tinnara...!	Each player who has a Darling card draws 1 card from the deck, including you.		f	2025-04-13 13:18:00+02	mallikarjuna.bnk@protonmail.com
+67	14	3	Bond babu	WC	nenu half ticket, black tickets tho aadanu!	Challenge the next player to mimic Nandhini. If they fail, say the call sign and don't play for a turn.		f	2025-04-13 13:18:00+02	mallikarjuna.bnk@protonmail.com
+68	15	3	Jai	HERO	Ippati varaku oka lekka, ippati nundi oka lekka	Challenge the next player with a Prabhas trivia. The winner takes 3 cards from the loser and the loser must tuck in their shirt and continue playing.		f	2025-04-13 13:18:53+02	mallikarjuna.bnk@protonmail.com
+69	15	3	Uma	VILLAIN	Cheppara Cheppuu...!!!!	select a player and every player  must attack the same player for the round		f	2025-04-13 13:18:53+02	mallikarjuna.bnk@protonmail.com
+70	15	3	Deva	SR1	Em paapam chesthee puttav ra....!!!!	say this dialogue to any player and skip their attack once!		f	2025-04-13 13:18:53+02	mallikarjuna.bnk@protonmail.com
+71	15	3	Veera Pratap	SR2	Manchi Manchi kattu batlu	everyone should give one card to their next player		f	2025-04-13 13:18:53+02	mallikarjuna.bnk@protonmail.com
+72	15	3	Na Family Safe!!!	WC		you are immune to one attack for a round		f	2025-04-13 13:18:53+02	mallikarjuna.bnk@protonmail.com
+73	16	3	Deva	HERO	Please, I kindly request	Take control of the game; draw cards until you have 7.		f	2025-04-13 13:19:41+02	mallikarjuna.bnk@protonmail.com
+74	16	3	Varadha raja mannar	SR1		Phone call your deva and ask them for a promise, to get immunity for a round. If they are not doing drop two cards.	Pairs with Nibandhana	f	2025-04-13 13:19:41+02	vamsi.kalagaturu@proton.me
+77	16	3	Nibandhana	WC		Varadha may use Nibadhana to start a vote to choose a player. The player with most votes discards 3 cards.		f	2025-04-13 13:19:41+02	mallikarjuna.bnk@protonmail.com
+78	17	3	Billa	HERO	Trust no one, kill anyone, be only one	Every player drops a card unless they have ACP KrishnaMurthy	You can stop Devil's action	f	2025-04-13 13:20:40+02	mallikarjuna.bnk@protonmail.com
+79	17	3	Devil	VILLAIN	Good for me bad for you / E deal varake ra ne avasaram	Smuggle 2 cards from pile. only billa can stop. if caught, devil card goes to them.		f	2025-04-13 13:20:40+02	vamsi.kalagaturu@proton.me
+80	17	3	ACP krishnamurthy	SR1	Nuvvu Billa ga maaradaniki ide correct time!	Swap place with previous player	Pairs with Ranga	f	2025-04-13 13:20:40+02	mallikarjuna.bnk@protonmail.com
 75	16	3	Radha rama mannar	SR2	call for cease fire	No one looses hero card for one round		f	2026-02-04 22:08:37.117871+01	admin
 56	12	3	Sivagami	SR2	Idhi naa maata, naa maate shaasanam	Reset: Gather cards from players, shuffle, and redeal all cards equally.	With Bhallala Deva, Steal cards that Amarendra Baahubali rightfully gained in current round.	f	2026-02-10 19:44:31.68499+01	admin
-81	17	3	Maya	SR2		Guess who has Billa card and they drop one card. If they have Ranga card instead, all other players drops one card.		f	2025-04-13 13:20:40+02	admin
-82	17	3	Ranga	WC	I will be back(act as billa)	Grab Billa card when someone is using it and drop this card	With ACP Krishnamurthy - Act as Billa and Steal two cards from next player	f	2025-04-13 13:20:40+02	admin
-83	19	3	Bhairava	HERO	Eesari full ga prepare ayyi vacha	Collect 2 cards as bounty from any player	Pairs with Bujji	f	2025-04-13 13:21:46+02	admin
-84	19	3	Supreme Yaskin	VILLAIN	Oka kotha prapancham rabotondi	Swap next player cards with deck cards.	Pairs with Serum	f	2025-04-13 13:21:46+02	admin
-85	19	3	Ashwathama	SR1	Amma ni kaapadatam kosam chivari daaka poratam	Unless there is only one opponent, you do not have to discard this card if it is the only card in your hand.		f	2025-04-13 13:21:46+02	admin
-86	19	3	Bujji	SR2	Get Ready Bhairava	Take Bhairava anywhere he asks for. Shift to any position in the player circle		f	2025-04-13 13:21:46+02	admin
-88	20	3	Saaho	HERO	stadium lo six kottevaadike oka range untadi.	draw cards until you have 5 cards.	pairs with David	f	2025-04-13 13:22:18+02	admin
-89	20	3	Devraj	VILLAIN		Next player drops one card.	pairs with black box	f	2025-04-13 13:22:18+02	admin
-90	20	3	David	SR1		Hack into the top cards of the deck equal to the number of active players. Rearrange them in any order and place them back on top.		f	2025-04-13 13:22:18+02	admin
-91	20	3	Vishwank Roy	SR2		If any player played Saaho this round, discard this card. After that player's turn ends, take the Saaho card.	You have no attacks, just drop the card and watch the action.	f	2025-04-13 13:22:18+02	admin
-92	20	3	Blackbox	WC	I will be a fucking billionaire	has the luxury to sit back and relax for two rounds	if Devraj gets hold of this, he can draw cards until your hand is full.	f	2025-04-13 13:22:18+02	admin
-93	22	4	Gautham Nanda	HERO	Rich (nak e station kavali)	If you have this card, you can discard any two unwanted cards and draw two new cards from the pile	Everyone is a servant for one round	f	2025-04-13 13:26:12+02	admin
+81	17	3	Maya	SR2		Guess who has Billa card and they drop one card. If they have Ranga card instead, all other players drops one card.		f	2025-04-13 13:20:40+02	mallikarjuna.bnk@protonmail.com
+82	17	3	Ranga	WC	I will be back(act as billa)	Grab Billa card when someone is using it and drop this card	With ACP Krishnamurthy - Act as Billa and Steal two cards from next player	f	2025-04-13 13:20:40+02	mallikarjuna.bnk@protonmail.com
+83	19	3	Bhairava	HERO	Eesari full ga prepare ayyi vacha	Collect 2 cards as bounty from any player	Pairs with Bujji	f	2025-04-13 13:21:46+02	mallikarjuna.bnk@protonmail.com
+84	19	3	Supreme Yaskin	VILLAIN	Oka kotha prapancham rabotondi	Swap next player cards with deck cards.	Pairs with Serum	f	2025-04-13 13:21:46+02	mallikarjuna.bnk@protonmail.com
+85	19	3	Ashwathama	SR1	Amma ni kaapadatam kosam chivari daaka poratam	Unless there is only one opponent, you do not have to discard this card if it is the only card in your hand.		f	2025-04-13 13:21:46+02	mallikarjuna.bnk@protonmail.com
+86	19	3	Bujji	SR2	Get Ready Bhairava	Take Bhairava anywhere he asks for. Shift to any position in the player circle		f	2025-04-13 13:21:46+02	mallikarjuna.bnk@protonmail.com
+88	20	3	Saaho	HERO	stadium lo six kottevaadike oka range untadi.	draw cards until you have 5 cards.	pairs with David	f	2025-04-13 13:22:18+02	mallikarjuna.bnk@protonmail.com
+89	20	3	Devraj	VILLAIN		Next player drops one card.	pairs with black box	f	2025-04-13 13:22:18+02	mallikarjuna.bnk@protonmail.com
+90	20	3	David	SR1		Hack into the top cards of the deck equal to the number of active players. Rearrange them in any order and place them back on top.		f	2025-04-13 13:22:18+02	mallikarjuna.bnk@protonmail.com
+91	20	3	Vishwank Roy	SR2		If any player played Saaho this round, discard this card. After that player's turn ends, take the Saaho card.	You have no attacks, just drop the card and watch the action.	f	2025-04-13 13:22:18+02	mallikarjuna.bnk@protonmail.com
+92	20	3	Blackbox	WC	I will be a fucking billionaire	has the luxury to sit back and relax for two rounds	if Devraj gets hold of this, he can draw cards until your hand is full.	f	2025-04-13 13:22:18+02	mallikarjuna.bnk@protonmail.com
+93	22	4	Gautham Nanda	HERO	Rich (nak e station kavali)	If you have this card, you can discard any two unwanted cards and draw two new cards from the pile	Everyone is a servant for one round	f	2025-04-13 13:26:12+02	mallikarjuna.bnk@protonmail.com
 94	22	4	Siddappa	VILLAIN	\N	Steal one card from the opponents' hand, use it if you can, or drop the card	\N	f	2025-04-13 13:26:12+02	admin
 95	22	4	Sunanda	SR1	\N	You can get back the card you discarded in the previous game; if not, draw a new card from the deck	\N	f	2025-04-13 13:26:12+02	admin
 96	22	4	Baddam Bhaskar	SR2	\N	The player can swap to get one card from any player, but must sacrifice one extra card for that	\N	f	2025-04-13 13:26:12+02	admin
@@ -1039,32 +1017,32 @@ COPY public.cards (id, movie_id, hero_id, name, type, call_sign, ability_text, a
 135	31	4	Pallavi	SR1	\N	Protects the SR cards for one round	\N	f	2025-04-13 13:30:18+02	admin
 136	31	4	Nanda Gopal (Lawyer)	SR2	\N	Player with this card can pull any card from the opponent	\N	f	2025-04-13 13:30:18+02	admin
 137	31	4	Courtroom Drama	WC	\N	Forces all players to reveal one of their cards, allowing you to choose any card to eliminate (even Salaar card, making it possible to remove powerful heroes)	\N	f	2025-04-13 13:30:18+02	admin
-138	18	3	Chatrapathi	HERO	okka adugu..okkka adugu...!!!	Challenge the next player to a Chatrapathi dialogue battle; the winner takes 2 cards from the loser.	Pairs with Appalanaidu.	f	2025-04-14 13:12:44+02	admin
-139	18	3	Ashok	VILLAIN	Rendu chavulu jaragali... vasakolla	Sneak two cards from next player		f	2025-04-14 13:13:58+02	admin
-140	18	3	Appala Naidu	SR1	Raajakeeyam, rowdyism okkati kaadu ra rey	Reverse the game direction	Pairs with chatrapathi:\nRedirect any incoming attack back to the player who played it on you.	f	2025-04-14 13:15:01+02	admin
-141	18	3	Mahesh Nanda	SR2	No No control yourself...!!!	Any player with highest num of cards should drop a card		f	2025-04-14 13:15:57+02	admin
-143	21	3	Venkat	HERO	sailu kosam 10 sarlu chaavadaniki nen ready! Nuvvu ready aah?	Challenge two players to enact the Gali Gannarao–Sunil episode; the act must be approved by the other players, or they must drop two cards each.		f	2025-04-14 13:22:46+02	admin
-144	21	3	Bhadranna	VILLAIN	vaadu hero avvakoodadhu...	Swap all your cards with the opponent having the highest number of cards.		f	2025-04-14 13:23:32+02	admin
-145	21	3	Lola Ranga Rao	SR1	naaku nee face nachaledu	Next player cannot cast cards for the next two turns, but other players may still cast actions on them		f	2025-04-14 13:24:16+02	admin
-147	32	7	Harsha/Kalabhairava	HERO	Okokkarini kaadhu Sher Khan Vanda Mandhini okesari rammanu	Harsha: Has Ability to take 2 cards from the deck	Kala Bhairava: Can Slash 2 cards of the opponent 	t	2025-04-19 22:55:54+02	admin
-148	32	7	Randhev Billa	VILLAIN	Naku Dhakkanidhi inkevariki Dhakkanivvanu	If the opponent has the INDU card, Can snatch the card from them		f	2025-04-19 23:14:01+02	admin
-149	33	6	Bantu	HERO		Save the Hand for one round and with ARK card he can get half of the cards from the deck (extra cards)		f	2025-04-26 18:30:15+02	admin
-150	33	6	Appala Naidu	VILLAIN		Can kidnap (take a card from any one player)		f	2025-04-26 18:30:46+02	admin
-151	33	6	Valmiki	SR1		Swaps a single card with the opponent		f	2025-04-26 18:31:09+02	admin
-152	33	6	ARK (Thatha)	SR2		Player with this card can can break half of the players hand and ask them to take remaining half from the deck		f	2025-04-26 18:31:33+02	admin
-153	33	6	Nurse Sulochana	WC		Player with card can see the other cards if swap happens (any round)		f	2025-04-26 18:31:55+02	admin
-154	34	6	 Lucky	HERO		Connect with any SR and ask the opponent to drop villain card or take a any SR from opponent to connect		f	2025-04-26 18:32:53+02	admin
-155	34	6	Maddali Shiva Reddy	VILLAIN	you are finished!! / Maddali shiva reddy	will blackmail one opponent to drop two cards or give an option to the opponents to pluck one card from others		f	2025-04-26 18:33:35+02	admin
-156	34	6	Spandana	SR1	 Inside feeling	No use just hold the card and feel inside		f	2025-04-26 18:34:07+02	admin
-157	34	6	Kill bill pandey	SR2	Bariloki dimpodhu brutal ipotha 	With any hero card + kill bill card - ask the opponent villain card to drop but has to sacrifice kill bill card		f	2025-04-26 18:34:59+02	admin
-158	34	6	Devudddaa!!! / Connect ipoyav	WC		Able to get one card from the used cards - connect avvali		f	2025-04-26 18:35:24+02	admin
-159	35	6	Ravindra Narayan	HERO	Class lo Evadaina Samadhanam Chepthadu kani Game Lo Cheppevaade...	Take a look at any of your opponent's deck secretly and pick any one card		f	2025-04-29 20:10:47+02	admin
-160	35	6	Bittu	VILLAIN	Manaki Telsina pani free ga cheyakudadhu, Manaki raani pani try cheyakudadhu	NA		f	2025-04-29 20:17:57+02	admin
-161	35	6	DIG Sitaram	SR1	veediki konchem povvulni ammayilani choopinchandra mari voilent ga unnadu	everyone gives you a heroine card to you		f	2025-04-29 20:19:17+02	admin
-163	19	3	Serum	WC	Vasthunnay, vasthunnay, jagannatha ratha chakralu vasthunnay.	Regain the lost number of cards in the previous round from the deck	pairs with Yaskin, eliminate any one player.	f	2026-01-04 12:51:37+01	admin
-164	16	3	Rudhra Raja Mannar	VILLAIN		Each player places 1 card face down. Shuffle these cards to create a new deck for the next round		f	2026-01-04 15:11:43+01	admin
-166	21	3	Varsham	WC	NA	Ask any player to call for rain. If it doesn't rain, they lose one card.		f	2026-01-05 18:05:30+01	admin
-167	18	3	Chembuu!!	WC		Replicate chembuu scene and get immunity for 2 rounds.(Must have at least two cards to use the ability)		f	2026-01-06 07:25:18+01	admin
+138	18	3	Chatrapathi	HERO	okka adugu..okkka adugu...!!!	Challenge the next player to a Chatrapathi dialogue battle; the winner takes 2 cards from the loser.	Pairs with Appalanaidu.	f	2025-04-14 13:12:44+02	mallikarjuna.bnk@protonmail.com
+139	18	3	Ashok	VILLAIN	Rendu chavulu jaragali... vasakolla	Sneak two cards from next player		f	2025-04-14 13:13:58+02	vamsi.kalagaturu@proton.me
+140	18	3	Appala Naidu	SR1	Raajakeeyam, rowdyism okkati kaadu ra rey	Reverse the game direction	Pairs with chatrapathi:\nRedirect any incoming attack back to the player who played it on you.	f	2025-04-14 13:15:01+02	mallikarjuna.bnk@protonmail.com
+141	18	3	Mahesh Nanda	SR2	No No control yourself...!!!	Any player with highest num of cards should drop a card		f	2025-04-14 13:15:57+02	mallikarjuna.bnk@protonmail.com
+143	21	3	Venkat	HERO	sailu kosam 10 sarlu chaavadaniki nen ready! Nuvvu ready aah?	Challenge two players to enact the Gali Gannarao–Sunil episode; the act must be approved by the other players, or they must drop two cards each.		f	2025-04-14 13:22:46+02	vamsi.kalagaturu@proton.me
+144	21	3	Bhadranna	VILLAIN	vaadu hero avvakoodadhu...	Swap all your cards with the opponent having the highest number of cards.		f	2025-04-14 13:23:32+02	mallikarjuna.bnk@protonmail.com
+145	21	3	Lola Ranga Rao	SR1	naaku nee face nachaledu	Next player cannot cast cards for the next two turns, but other players may still cast actions on them		f	2025-04-14 13:24:16+02	mallikarjuna.bnk@protonmail.com
+147	32	7	Harsha/Kalabhairava	HERO	Okokkarini kaadhu Sher Khan Vanda Mandhini okesari rammanu	Harsha: Has Ability to take 2 cards from the deck	Kala Bhairava: Can Slash 2 cards of the opponent 	t	2025-04-19 22:55:54+02	vamsi.kalagaturu@proton.me
+148	32	7	Randhev Billa	VILLAIN	Naku Dhakkanidhi inkevariki Dhakkanivvanu	If the opponent has the INDU card, Can snatch the card from them		f	2025-04-19 23:14:01+02	vishalb4222@gmail.com
+149	33	6	Bantu	HERO		Save the Hand for one round and with ARK card he can get half of the cards from the deck (extra cards)		f	2025-04-26 18:30:15+02	mallikarjuna.bnk@protonmail.com
+150	33	6	Appala Naidu	VILLAIN		Can kidnap (take a card from any one player)		f	2025-04-26 18:30:46+02	mallikarjuna.bnk@protonmail.com
+151	33	6	Valmiki	SR1		Swaps a single card with the opponent		f	2025-04-26 18:31:09+02	mallikarjuna.bnk@protonmail.com
+152	33	6	ARK (Thatha)	SR2		Player with this card can can break half of the players hand and ask them to take remaining half from the deck		f	2025-04-26 18:31:33+02	mallikarjuna.bnk@protonmail.com
+153	33	6	Nurse Sulochana	WC		Player with card can see the other cards if swap happens (any round)		f	2025-04-26 18:31:55+02	mallikarjuna.bnk@protonmail.com
+154	34	6	 Lucky	HERO		Connect with any SR and ask the opponent to drop villain card or take a any SR from opponent to connect		f	2025-04-26 18:32:53+02	mallikarjuna.bnk@protonmail.com
+155	34	6	Maddali Shiva Reddy	VILLAIN	you are finished!! / Maddali shiva reddy	will blackmail one opponent to drop two cards or give an option to the opponents to pluck one card from others		f	2025-04-26 18:33:35+02	mallikarjuna.bnk@protonmail.com
+156	34	6	Spandana	SR1	 Inside feeling	No use just hold the card and feel inside		f	2025-04-26 18:34:07+02	mallikarjuna.bnk@protonmail.com
+157	34	6	Kill bill pandey	SR2	Bariloki dimpodhu brutal ipotha 	With any hero card + kill bill card - ask the opponent villain card to drop but has to sacrifice kill bill card		f	2025-04-26 18:34:59+02	mallikarjuna.bnk@protonmail.com
+158	34	6	Devudddaa!!! / Connect ipoyav	WC		Able to get one card from the used cards - connect avvali		f	2025-04-26 18:35:24+02	mallikarjuna.bnk@protonmail.com
+159	35	6	Ravindra Narayan	HERO	Class lo Evadaina Samadhanam Chepthadu kani Game Lo Cheppevaade...	Take a look at any of your opponent's deck secretly and pick any one card		f	2025-04-29 20:10:47+02	dasararajurohith@gmail.com
+160	35	6	Bittu	VILLAIN	Manaki Telsina pani free ga cheyakudadhu, Manaki raani pani try cheyakudadhu	NA		f	2025-04-29 20:17:57+02	dasararajurohith@gmail.com
+161	35	6	DIG Sitaram	SR1	veediki konchem povvulni ammayilani choopinchandra mari voilent ga unnadu	everyone gives you a heroine card to you		f	2025-04-29 20:19:17+02	dasararajurohith@gmail.com
+163	19	3	Serum	WC	Vasthunnay, vasthunnay, jagannatha ratha chakralu vasthunnay.	Regain the lost number of cards in the previous round from the deck	pairs with Yaskin, eliminate any one player.	f	2026-01-04 12:51:37+01	mallikarjuna.bnk@protonmail.com
+164	16	3	Rudhra Raja Mannar	VILLAIN		Each player places 1 card face down. Shuffle these cards to create a new deck for the next round		f	2026-01-04 15:11:43+01	mallikarjuna.bnk@protonmail.com
+166	21	3	Varsham	WC	NA	Ask any player to call for rain. If it doesn't rain, they lose one card.		f	2026-01-05 18:05:30+01	mallikarjuna.bnk@protonmail.com
+167	18	3	Chembuu!!	WC		Replicate chembuu scene and get immunity for 2 rounds.(Must have at least two cards to use the ability)		f	2026-01-06 07:25:18+01	mallikarjuna.bnk@protonmail.com
 55	12	3	Kattappa	SR1	Simhasananiki kattu baanisani	With Sivagami. When Baahubali is played this round, reveal Sivagami and Kattappa to capture him.	With Amarendra Bahubali to dodge elimination by retaining kattappa and dropping Bahubali card.	f	2026-02-04 22:27:14.59325+01	admin
 146	21	3	Gun, The Jagan	SR2	vethuku vethakali vethikithe dorakandantu emi undadu...	Swap any two cards in your hand with two cards from the deck.		f	2026-02-04 22:08:41.491976+01	admin
 53	12	3	Amarendra Baahubali	HERO	Jai Mahishmathi	Take two cards from next player of your choice	pairs with kattappa	f	2026-02-10 19:48:17.034142+01	admin
@@ -1073,7 +1051,7 @@ COPY public.cards (id, movie_id, hero_id, name, type, call_sign, ability_text, a
 
 
 --
--- Data for Name: games; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: games; Type: TABLE DATA; Schema: public; Owner: boar_park_user
 --
 
 COPY public.games (id, name, slug, type, last_update_dt, last_update_user) FROM stdin;
@@ -1082,23 +1060,23 @@ COPY public.games (id, name, slug, type, last_update_dt, last_update_user) FROM 
 
 
 --
--- Data for Name: heroes; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: heroes; Type: TABLE DATA; Schema: public; Owner: boar_park_user
 --
 
 COPY public.heroes (id, name, industry, game_id, last_update_dt, last_update_user) FROM stdin;
 1	Jr NTR	TELUGU	1	2025-04-03 16:12:33+02	admin
 3	Prabhas	TELUGU	1	2025-04-13 13:08:51+02	admin
 4	Pawan Kalyan	TELUGU	1	2025-04-13 13:23:30+02	admin
-5	Nani	TELUGU	1	2025-04-13 13:40:43+02	admin
-6	Allu Arjunnn	TELUGU	1	2025-04-13 13:40:54+02	admin
-7	Ram Charan	TELUGU	1	2025-04-13 13:41:10+02	admin
-8	Mahesh Babu	TELUGU	1	2025-04-13 13:41:33+02	admin
-2	Jack (for testing)	TELUGU	1	2026-02-03 22:28:14.591013+01	admin
+5	Nani	TELUGU	1	2025-04-13 13:40:43+02	vamsi.kalagaturu@proton.me
+6	Allu Arjunnn	TELUGU	1	2025-04-13 13:40:54+02	vamsi.kalagaturu@proton.me
+7	Ram Charan	TELUGU	1	2025-04-13 13:41:10+02	vamsi.kalagaturu@proton.me
+8	Mahesh Babu	TELUGU	1	2025-04-13 13:41:33+02	vamsi.kalagaturu@proton.me
+2	Jack (for testing)	TELUGU	1	2026-02-03 22:28:14.591013+01	admin@example.com
 \.
 
 
 --
--- Data for Name: movies; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: movies; Type: TABLE DATA; Schema: public; Owner: boar_park_user
 --
 
 COPY public.movies (id, hero_id, title, need_review, last_update_dt, last_update_user, locked) FROM stdin;
@@ -1112,15 +1090,15 @@ COPY public.movies (id, hero_id, title, need_review, last_update_dt, last_update
 8	1	Jai Lava Kusa	f	2025-04-03 16:12:33+02	admin	f
 9	1	Temper	f	2025-04-03 16:12:33+02	admin	f
 10	1	Adhurs	f	2025-04-03 16:12:33+02	admin	f
-11	2	Kannappa - The Snow Tester	f	2025-04-07 22:55:54+02	admin	f
-13	3	Bujjigadu	f	2025-04-13 13:11:55+02	admin	t
-14	3	Darling	f	2025-04-13 13:11:55+02	admin	t
-15	3	Mirchi	f	2025-04-13 13:11:55+02	admin	t
-16	3	Salaar	f	2025-04-13 13:11:55+02	admin	t
-17	3	Billa	f	2025-04-13 13:11:55+02	admin	t
-18	3	Chatrapathi	f	2025-04-13 13:11:55+02	admin	t
-19	3	Kalki 2898 AD	f	2025-04-13 13:11:55+02	admin	t
-21	3	Varsham	f	2025-04-13 13:11:55+02	admin	t
+11	2	Kannappa - The Snow Tester	f	2025-04-07 22:55:54+02	vamsi.kalagaturu@proton.me	f
+13	3	Bujjigadu	f	2025-04-13 13:11:55+02	vamsi.kalagaturu@proton.me	t
+14	3	Darling	f	2025-04-13 13:11:55+02	vamsi.kalagaturu@proton.me	t
+15	3	Mirchi	f	2025-04-13 13:11:55+02	vamsi.kalagaturu@proton.me	t
+16	3	Salaar	f	2025-04-13 13:11:55+02	vamsi.kalagaturu@proton.me	t
+17	3	Billa	f	2025-04-13 13:11:55+02	vamsi.kalagaturu@proton.me	t
+18	3	Chatrapathi	f	2025-04-13 13:11:55+02	vamsi.kalagaturu@proton.me	t
+19	3	Kalki 2898 AD	f	2025-04-13 13:11:55+02	vamsi.kalagaturu@proton.me	t
+21	3	Varsham	f	2025-04-13 13:11:55+02	vamsi.kalagaturu@proton.me	t
 23	4	Badri	f	2025-04-13 13:24:13+02	admin	f
 24	4	Balu	f	2025-04-13 13:24:13+02	admin	f
 25	4	Bheemla Nayak	f	2025-04-13 13:24:13+02	admin	f
@@ -1130,10 +1108,10 @@ COPY public.movies (id, hero_id, title, need_review, last_update_dt, last_update
 29	4	Panjaa	f	2025-04-13 13:24:13+02	admin	f
 30	4	Thammudu	f	2025-04-13 13:24:13+02	admin	f
 31	4	Vakeel Saab	f	2025-04-13 13:24:13+02	admin	f
-32	7	Magadheera	f	2025-04-19 20:06:58+02	admin	f
-34	6	Race Gurram	f	2025-04-26 18:32:32+02	admin	f
-35	6	Julayi	f	2025-04-29 19:54:02+02	admin	f
-20	3	Saaho	f	2026-02-03 23:50:23.51972+01	admin	t
+32	7	Magadheera	f	2025-04-19 20:06:58+02	vishalb4222@gmail.com	f
+34	6	Race Gurram	f	2025-04-26 18:32:32+02	mallikarjuna.bnk@protonmail.com	f
+35	6	Julayi	f	2025-04-29 19:54:02+02	dasararajurohith@gmail.com	f
+20	3	Saaho	f	2026-02-03 23:50:23.51972+01	admin@example.com	t
 12	3	Baahubali	f	2026-02-11 19:56:07.553703+01	admin	t
 22	4	Attarintiki Daredi	f	2026-02-12 22:55:54.733338+01	admin	f
 33	6	Ala Vaikuntapuramlo	f	2026-02-16 18:38:38.312656+01	admin	t
@@ -1141,7 +1119,7 @@ COPY public.movies (id, hero_id, title, need_review, last_update_dt, last_update
 
 
 --
--- Data for Name: permissions; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: permissions; Type: TABLE DATA; Schema: public; Owner: boar_park_user
 --
 
 COPY public.permissions (id, name, description, created_at) FROM stdin;
@@ -1189,7 +1167,7 @@ COPY public.permissions (id, name, description, created_at) FROM stdin;
 
 
 --
--- Data for Name: role_permissions; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: role_permissions; Type: TABLE DATA; Schema: public; Owner: boar_park_user
 --
 
 COPY public.role_permissions (id, role_id, permission_id, created_at) FROM stdin;
@@ -1268,20 +1246,11 @@ COPY public.role_permissions (id, role_id, permission_id, created_at) FROM stdin
 
 
 --
--- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: boar_park_user
 --
 
-COPY public.roles (id, name) FROM stdin;
-1	admin
-2	editor
-3	designer
-4	reviewer
-5	viewer
-\.
-
-
 --
--- Data for Name: system_roles; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: system_roles; Type: TABLE DATA; Schema: public; Owner: boar_park_user
 --
 
 COPY public.system_roles (id, name, description, created_at, updated_at) FROM stdin;
@@ -1292,7 +1261,7 @@ COPY public.system_roles (id, name, description, created_at, updated_at) FROM st
 
 
 --
--- Data for Name: tags; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: tags; Type: TABLE DATA; Schema: public; Owner: boar_park_user
 --
 
 COPY public.tags (id, name) FROM stdin;
@@ -1310,98 +1279,91 @@ COPY public.tags (id, name) FROM stdin;
 
 
 --
--- Name: cards_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: cards_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
 --
 
 SELECT pg_catalog.setval('public.cards_id_seq', 171, true);
 
 
 --
--- Name: games_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: games_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
 --
 
 SELECT pg_catalog.setval('public.games_id_seq', 1, true);
 
 
 --
--- Name: heroes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: heroes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
 --
 
 SELECT pg_catalog.setval('public.heroes_id_seq', 13, true);
 
 
 --
--- Name: movies_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: movies_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
 --
 
 SELECT pg_catalog.setval('public.movies_id_seq', 37, true);
 
 
 --
--- Name: password_resets_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: password_resets_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
 --
 
-SELECT pg_catalog.setval('public.password_resets_id_seq', 7, true);
+SELECT pg_catalog.setval('public.password_resets_id_seq', 1, false);
 
 
 --
--- Name: permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
 --
 
 SELECT pg_catalog.setval('public.permissions_id_seq', 72, true);
 
 
 --
--- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: refresh_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
 --
 
-SELECT pg_catalog.setval('public.refresh_tokens_id_seq', 8, true);
+SELECT pg_catalog.setval('public.refresh_tokens_id_seq', 1, false);
 
 
 --
--- Name: role_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: role_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
 --
 
 SELECT pg_catalog.setval('public.role_permissions_id_seq', 256, true);
 
 
 --
--- Name: roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: system_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
 --
 
-SELECT pg_catalog.setval('public.roles_id_seq', 5, true);
-
-
---
--- Name: system_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.system_roles_id_seq', 6, true);
+SELECT pg_catalog.setval('public.system_roles_id_seq', 3, true);
 
 
 --
--- Name: tags_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: tags_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
 --
 
 SELECT pg_catalog.setval('public.tags_id_seq', 14, true);
 
 
 --
--- Name: user_game_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+-- Name: user_game_roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
 --
 
-SELECT pg_catalog.setval('public.user_game_roles_id_seq', 9, true);
-
-
---
--- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.users_id_seq', 8, true);
+SELECT pg_catalog.setval('public.user_game_roles_id_seq', 1, false);
 
 
 --
--- Name: card_tags card_tags_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: boar_park_user
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 1, false);
+
+
+--
+-- Name: card_tags card_tags_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.card_tags
@@ -1409,7 +1371,7 @@ ALTER TABLE ONLY public.card_tags
 
 
 --
--- Name: cards cards_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cards cards_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.cards
@@ -1417,7 +1379,7 @@ ALTER TABLE ONLY public.cards
 
 
 --
--- Name: games games_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: games games_name_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.games
@@ -1425,7 +1387,7 @@ ALTER TABLE ONLY public.games
 
 
 --
--- Name: games games_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: games games_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.games
@@ -1433,7 +1395,7 @@ ALTER TABLE ONLY public.games
 
 
 --
--- Name: games games_slug_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: games games_slug_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.games
@@ -1441,7 +1403,7 @@ ALTER TABLE ONLY public.games
 
 
 --
--- Name: heroes heroes_game_id_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: heroes heroes_game_id_name_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.heroes
@@ -1449,7 +1411,7 @@ ALTER TABLE ONLY public.heroes
 
 
 --
--- Name: heroes heroes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: heroes heroes_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.heroes
@@ -1457,7 +1419,7 @@ ALTER TABLE ONLY public.heroes
 
 
 --
--- Name: movies movies_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: movies movies_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.movies
@@ -1465,7 +1427,7 @@ ALTER TABLE ONLY public.movies
 
 
 --
--- Name: password_resets password_resets_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: password_resets password_resets_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.password_resets
@@ -1473,7 +1435,7 @@ ALTER TABLE ONLY public.password_resets
 
 
 --
--- Name: password_resets password_resets_token_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: password_resets password_resets_token_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.password_resets
@@ -1481,7 +1443,7 @@ ALTER TABLE ONLY public.password_resets
 
 
 --
--- Name: permissions permissions_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: permissions permissions_name_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.permissions
@@ -1489,7 +1451,7 @@ ALTER TABLE ONLY public.permissions
 
 
 --
--- Name: permissions permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: permissions permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.permissions
@@ -1497,7 +1459,7 @@ ALTER TABLE ONLY public.permissions
 
 
 --
--- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: refresh_tokens refresh_tokens_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.refresh_tokens
@@ -1505,7 +1467,7 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
--- Name: refresh_tokens refresh_tokens_token_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: refresh_tokens refresh_tokens_token_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.refresh_tokens
@@ -1513,7 +1475,7 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
--- Name: role_permissions role_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: role_permissions role_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.role_permissions
@@ -1521,7 +1483,7 @@ ALTER TABLE ONLY public.role_permissions
 
 
 --
--- Name: role_permissions role_permissions_role_id_permission_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: role_permissions role_permissions_role_id_permission_id_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.role_permissions
@@ -1529,23 +1491,7 @@ ALTER TABLE ONLY public.role_permissions
 
 
 --
--- Name: roles roles_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.roles
-    ADD CONSTRAINT roles_name_key UNIQUE (name);
-
-
---
--- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.roles
-    ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
-
-
---
--- Name: system_roles system_roles_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: system_roles system_roles_name_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.system_roles
@@ -1553,7 +1499,7 @@ ALTER TABLE ONLY public.system_roles
 
 
 --
--- Name: system_roles system_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: system_roles system_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.system_roles
@@ -1561,7 +1507,7 @@ ALTER TABLE ONLY public.system_roles
 
 
 --
--- Name: tags tags_name_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: tags tags_name_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.tags
@@ -1569,7 +1515,7 @@ ALTER TABLE ONLY public.tags
 
 
 --
--- Name: tags tags_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: tags tags_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.tags
@@ -1577,7 +1523,7 @@ ALTER TABLE ONLY public.tags
 
 
 --
--- Name: user_game_roles user_game_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_game_roles user_game_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.user_game_roles
@@ -1585,7 +1531,7 @@ ALTER TABLE ONLY public.user_game_roles
 
 
 --
--- Name: user_game_roles user_game_roles_user_id_game_id_role_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_game_roles user_game_roles_user_id_game_id_role_id_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.user_game_roles
@@ -1593,7 +1539,7 @@ ALTER TABLE ONLY public.user_game_roles
 
 
 --
--- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.users
@@ -1601,7 +1547,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.users
@@ -1609,7 +1555,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.users
@@ -1617,154 +1563,154 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: idx_card_tags_card_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_card_tags_card_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_card_tags_card_id ON public.card_tags USING btree (card_id);
 
 
 --
--- Name: idx_card_tags_tag_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_card_tags_tag_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_card_tags_tag_id ON public.card_tags USING btree (tag_id);
 
 
 --
--- Name: idx_cards_hero_movie_name; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_cards_hero_movie_name; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE UNIQUE INDEX idx_cards_hero_movie_name ON public.cards USING btree (hero_id, movie_id, name);
 
 
 --
--- Name: idx_hero_stats_game_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_hero_stats_game_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_hero_stats_game_id ON public.hero_stats USING btree (game_id);
 
 
 --
--- Name: idx_hero_stats_hero_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_hero_stats_hero_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE UNIQUE INDEX idx_hero_stats_hero_id ON public.hero_stats USING btree (hero_id);
 
 
 --
--- Name: idx_hero_stats_industry; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_hero_stats_industry; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_hero_stats_industry ON public.hero_stats USING btree (industry);
 
 
 --
--- Name: idx_heroes_game_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_heroes_game_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_heroes_game_id ON public.heroes USING btree (game_id);
 
 
 --
--- Name: idx_movie_stats_done; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_movie_stats_done; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_movie_stats_done ON public.movie_stats USING btree (done);
 
 
 --
--- Name: idx_movie_stats_hero_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_movie_stats_hero_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_movie_stats_hero_id ON public.movie_stats USING btree (hero_id);
 
 
 --
--- Name: idx_movie_stats_movie_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_movie_stats_movie_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE UNIQUE INDEX idx_movie_stats_movie_id ON public.movie_stats USING btree (movie_id);
 
 
 --
--- Name: idx_movies_hero_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_movies_hero_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_movies_hero_id ON public.movies USING btree (hero_id);
 
 
 --
--- Name: idx_movies_hero_title; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_movies_hero_title; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE UNIQUE INDEX idx_movies_hero_title ON public.movies USING btree (hero_id, title);
 
 
 --
--- Name: idx_role_permissions_permission_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_role_permissions_permission_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_role_permissions_permission_id ON public.role_permissions USING btree (permission_id);
 
 
 --
--- Name: idx_role_permissions_role_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_role_permissions_role_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_role_permissions_role_id ON public.role_permissions USING btree (role_id);
 
 
 --
--- Name: idx_tag_stats_card_count; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_tag_stats_card_count; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_tag_stats_card_count ON public.tag_stats USING btree (card_count DESC);
 
 
 --
--- Name: idx_tag_stats_tag_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_tag_stats_tag_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE UNIQUE INDEX idx_tag_stats_tag_id ON public.tag_stats USING btree (tag_id);
 
 
 --
--- Name: idx_users_role_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_users_role_id; Type: INDEX; Schema: public; Owner: boar_park_user
 --
 
 CREATE INDEX idx_users_role_id ON public.users USING btree (role_id);
 
 
 --
--- Name: heroes trigger_refresh_hero_stats_on_hero_change; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: heroes trigger_refresh_hero_stats_on_hero_change; Type: TRIGGER; Schema: public; Owner: boar_park_user
 --
 
 CREATE TRIGGER trigger_refresh_hero_stats_on_hero_change AFTER INSERT OR DELETE OR UPDATE ON public.heroes FOR EACH STATEMENT EXECUTE FUNCTION public.refresh_hero_stats_trigger();
 
 
 --
--- Name: movies trigger_refresh_hero_stats_on_movie_change; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: movies trigger_refresh_hero_stats_on_movie_change; Type: TRIGGER; Schema: public; Owner: boar_park_user
 --
 
 CREATE TRIGGER trigger_refresh_hero_stats_on_movie_change AFTER INSERT OR DELETE OR UPDATE ON public.movies FOR EACH STATEMENT EXECUTE FUNCTION public.refresh_hero_stats_trigger();
 
 
 --
--- Name: cards trigger_refresh_movie_stats_on_card_change; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: cards trigger_refresh_movie_stats_on_card_change; Type: TRIGGER; Schema: public; Owner: boar_park_user
 --
 
 CREATE TRIGGER trigger_refresh_movie_stats_on_card_change AFTER INSERT OR DELETE OR UPDATE ON public.cards FOR EACH STATEMENT EXECUTE FUNCTION public.refresh_movie_stats_trigger();
 
 
 --
--- Name: movies trigger_refresh_movie_stats_on_movie_change; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: movies trigger_refresh_movie_stats_on_movie_change; Type: TRIGGER; Schema: public; Owner: boar_park_user
 --
 
 CREATE TRIGGER trigger_refresh_movie_stats_on_movie_change AFTER INSERT OR DELETE OR UPDATE ON public.movies FOR EACH STATEMENT EXECUTE FUNCTION public.refresh_movie_stats_trigger();
 
 
 --
--- Name: card_tags card_tags_card_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: card_tags card_tags_card_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.card_tags
@@ -1772,7 +1718,7 @@ ALTER TABLE ONLY public.card_tags
 
 
 --
--- Name: card_tags card_tags_tag_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: card_tags card_tags_tag_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.card_tags
@@ -1780,7 +1726,7 @@ ALTER TABLE ONLY public.card_tags
 
 
 --
--- Name: cards cards_hero_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cards cards_hero_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.cards
@@ -1788,7 +1734,7 @@ ALTER TABLE ONLY public.cards
 
 
 --
--- Name: cards cards_movie_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: cards cards_movie_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.cards
@@ -1796,7 +1742,7 @@ ALTER TABLE ONLY public.cards
 
 
 --
--- Name: heroes heroes_game_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: heroes heroes_game_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.heroes
@@ -1804,7 +1750,7 @@ ALTER TABLE ONLY public.heroes
 
 
 --
--- Name: movies movies_hero_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: movies movies_hero_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.movies
@@ -1812,7 +1758,7 @@ ALTER TABLE ONLY public.movies
 
 
 --
--- Name: password_resets password_resets_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: password_resets password_resets_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.password_resets
@@ -1820,7 +1766,7 @@ ALTER TABLE ONLY public.password_resets
 
 
 --
--- Name: refresh_tokens refresh_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: refresh_tokens refresh_tokens_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.refresh_tokens
@@ -1828,7 +1774,7 @@ ALTER TABLE ONLY public.refresh_tokens
 
 
 --
--- Name: role_permissions role_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: role_permissions role_permissions_permission_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.role_permissions
@@ -1836,7 +1782,7 @@ ALTER TABLE ONLY public.role_permissions
 
 
 --
--- Name: role_permissions role_permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: role_permissions role_permissions_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.role_permissions
@@ -1844,7 +1790,7 @@ ALTER TABLE ONLY public.role_permissions
 
 
 --
--- Name: user_game_roles user_game_roles_game_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_game_roles user_game_roles_game_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.user_game_roles
@@ -1852,7 +1798,7 @@ ALTER TABLE ONLY public.user_game_roles
 
 
 --
--- Name: user_game_roles user_game_roles_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_game_roles user_game_roles_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.user_game_roles
@@ -1860,7 +1806,7 @@ ALTER TABLE ONLY public.user_game_roles
 
 
 --
--- Name: user_game_roles user_game_roles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_game_roles user_game_roles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.user_game_roles
@@ -1868,7 +1814,7 @@ ALTER TABLE ONLY public.user_game_roles
 
 
 --
--- Name: users users_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: users users_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boar_park_user
 --
 
 ALTER TABLE ONLY public.users
@@ -1876,21 +1822,21 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: movie_stats; Type: MATERIALIZED VIEW DATA; Schema: public; Owner: postgres
+-- Name: movie_stats; Type: MATERIALIZED VIEW DATA; Schema: public; Owner: boar_park_user
 --
 
 REFRESH MATERIALIZED VIEW public.movie_stats;
 
 
 --
--- Name: hero_stats; Type: MATERIALIZED VIEW DATA; Schema: public; Owner: postgres
+-- Name: hero_stats; Type: MATERIALIZED VIEW DATA; Schema: public; Owner: boar_park_user
 --
 
 REFRESH MATERIALIZED VIEW public.hero_stats;
 
 
 --
--- Name: tag_stats; Type: MATERIALIZED VIEW DATA; Schema: public; Owner: postgres
+-- Name: tag_stats; Type: MATERIALIZED VIEW DATA; Schema: public; Owner: boar_park_user
 --
 
 REFRESH MATERIALIZED VIEW public.tag_stats;
@@ -1900,5 +1846,5 @@ REFRESH MATERIALIZED VIEW public.tag_stats;
 -- PostgreSQL database dump complete
 --
 
-\unrestrict PIrgSJSI6cVGA60HmXlr8fG7DbFuTPQX7Aju3XD4H4vsy9iCbyVN5cXZLcV2a2E
+\unrestrict KZrEnBFJ9LcGzdJQbrzrK9VstzABlDASe3FBKHFm9b1D6wFcx8MBsK2fFLp2B2I
 
