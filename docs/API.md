@@ -601,6 +601,171 @@ This document lists all API endpoints available in the Boar Park application, in
 
 ---
 
+## Admin - RBAC System
+
+### GET /api/admin/roles?include_permissions=true
+
+**Access:** Admin only
+**Description:** Get all system roles. Include permissions if query param set.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": number,
+      "name": "string",
+      "description": "string",
+      "created_at": "string",
+      "permissions": [
+        {
+          "id": number,
+          "name": "string",
+          "description": "string"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### POST /api/admin/roles
+
+**Access:** Admin only
+**Description:** Create new role.
+
+**Request Body:**
+```json
+{
+  "name": "string (2-50 chars, lowercase, underscore)",
+  "description": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": number,
+    "name": "string",
+    "description": "string",
+    "created_at": "string"
+  }
+}
+```
+
+---
+
+### PATCH /api/admin/roles/:id
+
+**Access:** Admin only
+**Description:** Update role metadata (name, description).
+
+**Request Body:**
+```json
+{
+  "name": "string (optional)",
+  "description": "string (optional)"
+}
+```
+
+---
+
+### DELETE /api/admin/roles/:id
+
+**Access:** Admin only
+**Description:** Delete role (removes from all users).
+
+---
+
+### GET /api/admin/permissions
+
+**Access:** Admin only
+**Description:** Get all available permissions.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": number,
+      "name": "string (format: resource:action)",
+      "description": "string"
+    }
+  ]
+}
+```
+
+---
+
+### PUT /api/admin/roles/:id/permissions
+
+**Access:** Admin only
+**Description:** Assign permissions to role (replaces all existing).
+
+**Request Body:**
+```json
+{
+  "permissionIds": [1, 2, 3]
+}
+```
+
+---
+
+### POST /api/admin/impersonate/:roleId
+
+**Access:** Admin only
+**Description:** Start impersonating role (session-based).
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Now viewing as role: role_name"
+}
+```
+
+---
+
+### POST /api/admin/stop-impersonation
+
+**Access:** Admin only
+**Description:** Stop impersonating role.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Stopped impersonating"
+}
+```
+
+---
+
+### GET /api/admin/impersonation-state
+
+**Access:** Admin only
+**Description:** Get current impersonation status.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "is_impersonating": boolean,
+    "impersonated_role_id": number | null,
+    "impersonated_role_name": "string | null"
+  }
+}
+```
+
+---
+
 ## Games
 
 #### GET /api/games

@@ -2,130 +2,120 @@
 
 ## Overview
 
-Boar Park uses **PostgreSQL** as its primary database. The database is managed through migrations and includes support for complex queries, transactions, and data seeding.
+PostgreSQL database with migrations, transactions, and automated backups.
 
-## Database Structure
+## Schema
 
-### Core Tables
+### Users & Auth
+- **users**: id, username, email, password_hash, status, is_verified, role_id, created_at, updated_at
+- **refresh_tokens**: id, user_id, token, expires_at, created_at
+- **password_resets**: id, user_id, token, expires_at, created_at
 
-#### Users
-- `id` (integer, primary key)
-- `username` (string, unique)
-- `email` (string, unique)
-- `password_hash` (string)
-- `status` (enum: 'pending', 'active', 'disabled')
-- `is_verified` (boolean)
-- `created_at` (timestamp)
-- `updated_at` (timestamp)
+### Games
+- **games**: id, slug, name, description, created_at
+- **heroes**: id, game_id, name, industry, total_movies, image_url, created_at, updated_at
+- **movies**: id, hero_id, title, release_year, is_locked, created_at, updated_at
+- **cards**: id, movie_id, image_url, difficulty, user, created_at, updated_at
+- **tags**: id, name, game_id, created_at
+- **card_tags**: card_id, tag_id
 
-#### Games
-- `id` (integer, primary key)
-- `slug` (string, unique)
-- `name` (string)
-- `description` (text)
-- `created_at` (timestamp)
+### RBAC System
+- **system_roles**: id, name, description, created_at
+- **permissions**: id, name, description
+- **role_permissions**: role_id, permission_id
+- **user_game_roles**: id, user_id, role_id, game_id, created_at
+- **roles**: id, game_id, name, description, created_at (legacy)
 
-#### Heroes/Cards
-- `id` (integer, primary key)
-- `game_id` (integer, foreign key)
-- `name` (string)
-- `rarity` (string)
-- `created_at` (timestamp)
+## Connection
 
-#### Movies
-- `id` (integer, primary key)
-- `game_id` (integer, foreign key)
-- `title` (string)
-- `description` (text)
-- `is_locked` (boolean)
-- `created_at` (timestamp)
-
-#### Roles
-- `id` (integer, primary key)
-- `name` (string, unique)
-- `description` (text)
-- `created_at` (timestamp)
-
-#### User Roles (Junction Table)
-- `id` (integer, primary key)
-- `user_id` (integer, foreign key)
-- `role_id` (integer, foreign key)
-- `game_id` (integer, foreign key, nullable)
-- `created_at` (timestamp)
+```env
+PGHOST=localhost
+PGPORT=5432
+PGUSER=postgres
+PGPASSWORD=your-password
+PGDATABASE=boar_db
+```
 
 ## Migrations
 
-Migrations are located in `/db/migrations/` and follow a numbered sequence for versioning.
-
-### Migration Files
-
-
-### Running Migrations
-
-Migrations are managed by the application startup process. To manually run a migration:
+Tracked in `schema_migrations` table. Files in `src/db/migrations/`.
 
 ```bash
-# Using Bun
-bun run db/migrations/[migration_file].sql
+# Run all pending migrations
+./scripts/run-migrations.sh
 ```
+
+Creates `schema_migrations` table if not exists, runs migrations in order, skips executed ones.
+
+## Backups
+
+### Development to VPS (No sensitive data)
+```bash
+./scripts/create-db-dump.sh
+```
+Includes: game data, roles, permissions
+Excludes: users, tokens, passwords
+
+### Production (Full backup)
+```bash
+./scripts/backup-db-full.sh
+```
+Includes: everything
+
+### Restore
+```bash
+./scripts/import-db-dump.sh backup_file.sql
+```
+
+### Auto-backup on deploy
+Deployment script creates full backup in `/var/backups/boar-park/` before every deployment.
+
+### Daily automated backups
+Setup systemd timer for daily backups (2 AM):
+```bash
+sudo cp deployment/boar-park-backup.{service,timer} /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now boar-park-backup.timer
+```
+
+Features: keeps 7 backups, removes yesterday's if no changes.
 
 ## Database Utilities
 
-Database utilities are located in `/db/utils.ts` and provide helper functions for common operations.
-
-### Available Functions
-
-#### `query<T>(sqlString: string, params: any[]): Promise<T[]>`
-Execute a raw SQL query and return results as an array.
+Location: `src/db/utils.ts`
 
 ```typescript
-import { query } from '../db/utils';
-
+// Query multiple rows
 const users = await query('SELECT * FROM users WHERE status = $1', ['active']);
-```
 
-#### `queryOne<T>(sqlString: string, params: any[]): Promise<T | null>`
-Execute a query and return the first result or null.
-
-```typescript
+// Query single row
 const user = await queryOne('SELECT * FROM users WHERE id = $1', [userId]);
-```
 
-#### `transaction<T>(callback: () => Promise<T>): Promise<T>`
-Execute operations within a database transaction.
-
-```typescript
-const result = await transaction(async () => {
-    // Multiple queries within a transaction
-    await query('UPDATE users SET status = $1 WHERE id = $2', ['active', userId]);
-    await query('INSERT INTO logs ...');
-    return result;
+// Transaction
+await transaction(async () => {
+  await query('UPDATE users SET status = $1 WHERE id = $2', ['active', userId]);
+  await query('INSERT INTO logs ...');
 });
+
+// Native Bun binding
+const results = await exec('SELECT * FROM users WHERE email = ?', email);
 ```
 
-#### `exec<T>(sqlString: string, ...params: any[]): Promise<T[]>`
-Execute a query using Bun's native parameter binding (more efficient for complex queries).
+## Quick Commands
 
-```typescript
-const results = await exec('SELECT * FROM users WHERE email = ?', userEmail);
+```bash
+# List tables
+psql -d boar_db -c "\dt"
+
+# Count records
+psql -d boar_db -c "SELECT COUNT(*) FROM heroes;"
+
+# Verify connection
+psql -h localhost -U postgres -d boar_db -c "SELECT 1;"
+
+# Manual backup
+pg_dump -h localhost -U postgres -d boar_db --clean --if-exists --create > backup.sql
+
+# Manual restore
+psql -h localhost -U postgres -d postgres -f backup.sql
 ```
-
-## Schema Files
-
-The `/db/schema/` directory contains schema definitions:
-
-- **schema.sql** - Current database schema definition
-
-## Seeds
-
-Database seeds are located in `/db/seeds/` for initial data population.
-
-## Connection Configuration
-
-Database connection is managed through environment variables:
-
-```env
-DATABASE_URL=postgresql://user:password@localhost:5432/boar_park_db
-```
-
-

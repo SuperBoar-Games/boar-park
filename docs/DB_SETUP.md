@@ -5,23 +5,82 @@ Quick reference for setting up the PostgreSQL database on VPS.
 ## Prerequisites
 - PostgreSQL installed
 - Bun runtime installed
-- Dump file: `src/db/dumps/0001-boar_db_dump.sql`
+- `.env` file configured with database credentials
 
-## Complete Setup
+## Setup Options
 
-### 1. Drop and Create Database
+### Option A: Fresh Database (Recommended for Production)
+
+Create a fresh database and run migrations:
+
 ```bash
-# Drop existing database
-sudo -u postgres psql -c "DROP DATABASE IF EXISTS boardb;"
+# 1. Create database
+sudo -u postgres psql -c "CREATE DATABASE boar_db;"
 
-# Create fresh database
-sudo -u postgres psql -c "CREATE DATABASE boardb;"
+# 2. Create database user
+sudo -u postgres psql -c "CREATE USER boar_park_user WITH PASSWORD 'your-strong-password';"
+
+# 3. Grant privileges
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE boar_db TO boar_park_user;"
+
+# 4. Update .env file with credentials
+nano /var/www/boar-park/.env
 ```
 
-### 2. Import Dump File
+Add to `.env`:
+```env
+PGHOST=localhost
+PGPORT=5432
+PGUSER=boar_park_user
+PGPASSWORD=your-strong-password
+PGDATABASE=boar_db
+```
+
 ```bash
+# 5. Run migrations
+cd /var/www/boar-park
+./scripts/run-migrations.sh
+
+# 6. Create admin user
+bun run src/scripts/create-admin.ts
+```
+
+### Option B: Import from Development Backup
+
+Import a database dump from your development environment:
+
+**On Development Machine:**
+```bash
+# Create dump (excludes sensitive user data)
+./scripts/create-db-dump.sh
+
+# Upload to VPS
+scp bkps/deploy_bkps/boar_park_schema_*.sql user@vps:/var/www/boar-park/
+```
+
+**On VPS:**
+```bash
+# Import the dump
+cd /var/www/boar-park
+./scripts/import-db-dump.sh boar_park_schema_20260217_192208.sql
+
+# Create admin user (user data was excluded from dump)
+bun run src/scripts/create-admin.ts
+```
+
+### Option C: Legacy Dump File (Deprecated)
+
+If you have an old dump file:
+
+```bash
+# Drop existing database
+sudo -u postgres psql -c "DROP DATABASE IF EXISTS boar_db;"
+
+# Create fresh database
+sudo -u postgres psql -c "CREATE DATABASE boar_db;"
+
 # Import schema and data
-sudo -u postgres psql -d boardb -f src/db/dumps/0001-boar_db_dump.sql
+sudo -u postgres psql -d boar_db -f src/db/dumps/0001-boar_db_dump.sql
 ```
 
 ### 3. Set Database Password

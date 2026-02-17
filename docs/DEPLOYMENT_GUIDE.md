@@ -368,13 +368,68 @@ sudo journalctl -u boar-park -f
 
 ---
 
-## Step 11: Setup Automated Deployments
+## Step 11: Initial Database Setup
 
-Make the deployment script executable for future updates.
+### Option A: Fresh Database (No Data)
+
+If starting fresh without existing data:
 
 ```bash
-# Make deploy script executable
+# As boar-park user
+cd /var/www/boar-park
+
+# Run migrations
+./scripts/run-migrations.sh
+
+# Create admin user
+bun run src/scripts/create-admin.ts
+```
+
+### Option B: Import from Development
+
+If migrating data from development to VPS:
+
+**On Development Machine:**
+```bash
+# Create database dump (excludes sensitive user data)
+./scripts/create-db-dump.sh
+
+# Upload to VPS
+scp bkps/deploy_bkps/boar_park_schema_*.sql user@vps:/var/www/boar-park/
+```
+
+**On VPS:**
+```bash
+# As boar-park user
+cd /var/www/boar-park
+
+# Import the dump
+./scripts/import-db-dump.sh boar_park_schema_20260217_192208.sql
+
+# Create admin user (since user data was excluded)
+bun run src/scripts/create-admin.ts
+
+# Verify data
+psql -d boar_db -c 'SELECT COUNT(*) FROM heroes;'
+psql -d boar_db -c 'SELECT COUNT(*) FROM movies;'
+```
+
+---
+
+## Step 12: Setup Automated Deployments
+
+The deployment script automatically creates backups, runs migrations, and updates the application.
+
+### Features:
+✓ **Automatic database backup** before deployment
+✓ **Migration safety** - aborts deployment if migrations fail
+✓ **Automatic rollback** instructions if something goes wrong
+✓ **Old backup cleanup** - keeps last 10 backups
+
+```bash
+# Make deploy script and migration script executable
 sudo chmod +x /var/www/boar-park/deployment/deploy.sh
+sudo chmod +x /var/www/boar-park/scripts/run-migrations.sh
 
 # Future deployments (from any directory):
 sudo /var/www/boar-park/deployment/deploy.sh production main
@@ -387,47 +442,87 @@ source ~/.bashrc
 sudo boar-deploy
 ```
 
+### What the deployment script does:
+
+1. **Creates timestamped database backup** in `/var/backups/boar-park/`
+2. **Backs up application files** (tar.gz)
+3. **Runs pending migrations** - aborts if any fail
+4. **Pulls latest code** from git
+5. **Installs dependencies** with bun
+6. **Builds backend** and **frontend**
+7. **Restarts systemd service**
+8. **Performs health check**
+9. **Cleans up old backups** (keeps last 10)
+
+### If deployment fails:
+
+The script will show restoration instructions:
+```bash
+# Restore database backup
+PGPASSWORD="$PGPASSWORD" psql -h localhost -U boar_park_user -d postgres -f /var/backups/boar-park/db-backup-TIMESTAMP.sql
+```
+
 ---
 
 ## Ongoing Maintenance
 
 ### Database Backups
 
-Create automated backups:
+#### Automated Daily Backups (Recommended)
+
+Setup systemd timer for daily backups at 2 AM:
 
 ```bash
-# Create backup script
-sudo nano /usr/local/bin/backup-boar-park.sh
+# Copy service files
+sudo cp /var/www/boar-park/deployment/boar-park-backup.service /etc/systemd/system/
+sudo cp /var/www/boar-park/deployment/boar-park-backup.timer /etc/systemd/system/
+
+# Reload systemd
+sudo systemctl daemon-reload
+
+# Enable and start timer
+sudo systemctl enable boar-park-backup.timer
+sudo systemctl start boar-park-backup.timer
+
+# Check timer status
+sudo systemctl status boar-park-backup.timer
+sudo systemctl list-timers boar-park-backup.timer
 ```
+
+**Features:**
+- Runs daily at 2:00 AM
+- Keeps last 7 backups
+- Compares with yesterday's backup
+- Removes yesterday's if identical (no changes)
+- Stores in `/var/backups/boar-park/daily/`
+
+**Test backup manually:**
+```bash
+sudo systemctl start boar-park-backup.service
+sudo journalctl -u boar-park-backup.service -n 20
+```
+
+**View backup logs:**
+```bash
+sudo tail -f /var/log/boar-park-backup.log
+```
+
+#### Manual Backups
 
 ```bash
-#!/bin/bash
-BACKUP_DIR="/var/backups/boar-park"
-DB_NAME="boar_park_prod"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/db_backup_$TIMESTAMP.sql.gz"
+# Full backup (includes all data)
+cd /var/www/boar-park
+./scripts/backup-db-full.sh
 
-pg_dump -U boar_park_user -d $DB_NAME | gzip > "$BACKUP_FILE"
-chmod 600 "$BACKUP_FILE"
-
-# Keep only last 30 days of backups
-find "$BACKUP_DIR" -name "db_backup_*.sql.gz" -mtime +30 -delete
-
-echo "Backup completed: $BACKUP_FILE"
+# Dev backup (excludes sensitive data)
+./scripts/create-db-dump.sh
 ```
 
-```bash
-# Make executable
-sudo chmod +x /usr/local/bin/backup-boar-park.sh
+#### Backup Locations
 
-# Add to crontab (daily at 2 AM)
-sudo crontab -e
-```
-
-Add this line:
-```
-0 2 * * * /usr/local/bin/backup-boar-park.sh >> /var/log/boar-park-backup.log 2>&1
-```
+- **Daily automated**: `/var/backups/boar-park/daily/daily_backup_YYYYMMDD.sql`
+- **Deployment**: `/var/backups/boar-park/db-backup-TIMESTAMP.sql`
+- **Manual**: `bkps/deploy_bkps/full_backup_TIMESTAMP.sql`
 
 ### View Application Logs
 

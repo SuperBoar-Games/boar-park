@@ -61,24 +61,30 @@ TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
 # Backup database
 log "Backing up database..."
-if [ -f "$DEPLOY_DIR/.env" ]; then
-    # Extract database credentials from .env
-    DB_URL=$(grep "^DATABASE_URL=" "$DEPLOY_DIR/.env" | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+cd "$DEPLOY_DIR"
 
-    if [ -n "$DB_URL" ]; then
-        DB_BACKUP_FILE="$BACKUP_DIR/db-backup-$TIMESTAMP.sql"
+# Load environment variables
+if [ -f .env ]; then
+    export $(cat .env | grep -E '^(PGHOST|PGPORT|PGUSER|PGPASSWORD|PGDATABASE)=' | xargs)
 
-        # Use pg_dump with the connection URL
-        if sudo -u postgres pg_dump "$DB_URL" > "$DB_BACKUP_FILE" 2>/dev/null; then
-            log "Database backup created: $DB_BACKUP_FILE"
-        else
-            warn "Database backup failed - continuing deployment"
-        fi
+    DB_BACKUP_FILE="$BACKUP_DIR/db-backup-$TIMESTAMP.sql"
+
+    # Create full database backup
+    if PGPASSWORD="$PGPASSWORD" pg_dump \
+        -h "$PGHOST" \
+        -p "$PGPORT" \
+        -U "$PGUSER" \
+        -d "$PGDATABASE" \
+        --clean \
+        --if-exists \
+        --create \
+        > "$DB_BACKUP_FILE" 2>/dev/null; then
+        log "Database backup created: $DB_BACKUP_FILE ($(du -h "$DB_BACKUP_FILE" | cut -f1))"
     else
-        warn "DATABASE_URL not found in .env - skipping database backup"
+        error "Database backup failed - aborting deployment"
     fi
 else
-    warn ".env file not found - skipping database backup"
+    error ".env file not found - cannot proceed"
 fi
 
 # Backup application files
@@ -120,10 +126,15 @@ log "Setting file permissions..."
 chown -R boar-park:boar-park "$DEPLOY_DIR" || warn "Failed to set ownership"
 chmod +x "$DEPLOY_DIR/dist/index.js" || true
 
-# Run database migrations if migrations script exists
-if [ -f "$DEPLOY_DIR/db/migrate.ts" ] || [ -f "$DEPLOY_DIR/scripts/migrate.ts" ]; then
-    log "Running database migrations..."
-    bun run scripts/migrate.ts || warn "Migration script not found or failed"
+# Run database migrations
+log "Running database migrations..."
+if [ -f "$DEPLOY_DIR/scripts/run-migrations.sh" ]; then
+    if ! "$DEPLOY_DIR/scripts/run-migrations.sh"; then
+        error "Migration failed! Restore backup: PGPASSWORD=\"\$PGPASSWORD\" psql -h $PGHOST -U $PGUSER -d postgres -f $DB_BACKUP_FILE"
+    fi
+    log "Migrations completed successfully"
+else
+    warn "Migration script not found at scripts/run-migrations.sh - skipping migrations"
 fi
 
 # Start the service
