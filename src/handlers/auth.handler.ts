@@ -420,18 +420,19 @@ export async function getCurrentUserPermissionsHandler(userId: number, sessionId
             }
         }
 
-        // If no role assigned, return empty permissions
-        if (!roleId) {
-            return jsonResponse({ success: true, data: [] }, 200);
-        }
-
-        // Fetch permissions for this role
+        // Fetch permissions from BOTH global role and game-specific roles
         const permissions = await sql.unsafe(
             `SELECT DISTINCT p.name
              FROM permissions p
              INNER JOIN role_permissions rp ON p.id = rp.permission_id
-             WHERE rp.role_id = $1`,
-            [roleId]
+             WHERE rp.role_id IN (
+                -- Global role (users.role_id)
+                SELECT $1 WHERE $1 IS NOT NULL
+                UNION
+                -- Game-specific roles (user_game_roles)
+                SELECT role_id FROM user_game_roles WHERE user_id = $2
+             )`,
+            [roleId, userId]
         );
 
         const permissionNames = permissions.map((row: any) => row.name);

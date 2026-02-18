@@ -181,12 +181,23 @@ export const GET_USER_PERMISSIONS_QUERY = `
 
 export const CHECK_USER_PERMISSION_QUERY = `
   SELECT EXISTS (
+    -- Check global role (users.role_id)
     SELECT 1
     FROM users u
     INNER JOIN system_roles sr ON u.role_id = sr.id
     INNER JOIN role_permissions rp ON sr.id = rp.role_id
     INNER JOIN permissions p ON rp.permission_id = p.id
     WHERE u.id = $1 AND p.name = $2
+
+    UNION
+
+    -- Check game-specific roles (user_game_roles)
+    SELECT 1
+    FROM user_game_roles ugr
+    INNER JOIN system_roles sr ON ugr.role_id = sr.id
+    INNER JOIN role_permissions rp ON sr.id = rp.role_id
+    INNER JOIN permissions p ON rp.permission_id = p.id
+    WHERE ugr.user_id = $1 AND p.name = $2
   ) AS has_permission
 `;
 
