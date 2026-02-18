@@ -426,8 +426,8 @@ export async function getCurrentUserPermissionsHandler(userId: number, sessionId
              FROM permissions p
              INNER JOIN role_permissions rp ON p.id = rp.permission_id
              WHERE rp.role_id IN (
-                -- Global role (users.role_id)
-                SELECT $1 WHERE $1 IS NOT NULL
+                -- Global role (users.role_id) - cast to help type inference
+                SELECT $1::integer WHERE $1::integer IS NOT NULL
                 UNION
                 -- Game-specific roles (user_game_roles)
                 SELECT role_id FROM user_game_roles WHERE user_id = $2
