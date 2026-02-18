@@ -39,8 +39,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    // Impersonation state
-    const { data: impersonationState } = useImpersonationState();
+
+    // Check if user has admin role (only call impersonation hook for admins)
+    const userIsAdmin = user?.roles?.some(role => role.roleName === 'admin') || false;
+
+    // Impersonation state (only fetch for admin users)
+    const { data: impersonationState } = useImpersonationState(userIsAdmin);
 
     // Load tokens and user from localStorage on mount
     useEffect(() => {
