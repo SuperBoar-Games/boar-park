@@ -280,32 +280,32 @@ sudo systemctl status nginx
 
 ## Step 8: Setup SSL Certificate with Let's Encrypt
 
-Obtain and configure HTTPS certificates.
+Obtain and configure HTTPS certificates for superboar.com.
+
+**Prerequisites:** Ensure DNS records for superboar.com and www.superboar.com are pointing to your VPS IP (62.72.31.96).
 
 ```bash
-# Create directory for certbot validation
-sudo mkdir -p /var/www/certbot
+# Get SSL certificate (automatically updates Nginx config)
+sudo certbot --nginx -d superboar.com -d www.superboar.com
 
-# Get SSL certificate
-sudo certbot certonly --webroot -w /var/www/certbot \
-    -d your-domain.com \
-    -d www.your-domain.com \
-    -m admin@your-domain.com \
-    --agree-tos \
-    --non-interactive
+# Follow the prompts:
+# - Enter your email address
+# - Agree to Let's Encrypt Terms of Service
+# - Choose whether to redirect HTTP to HTTPS (recommended: 2 for redirect)
 
 # Verify certificate was created
-sudo ls -la /etc/letsencrypt/live/your-domain.com/
+sudo ls -la /etc/letsencrypt/live/superboar.com/
 
-# Update nginx to use the certificate (it should be auto-detected)
-sudo nginx -t && sudo systemctl reload nginx
+# Test Nginx configuration
+sudo nginx -t
 
-# Setup auto-renewal
+# Reload Nginx
+sudo systemctl reload nginx
+
+# Setup auto-renewal (certbot automatically creates a systemd timer)
 sudo certbot renew --dry-run
-sudo systemctl enable certbot.timer
-sudo systemctl start certbot.timer
 
-# Check certificate renewal timer
+# Verify auto-renewal timer is active
 sudo systemctl status certbot.timer
 ```
 

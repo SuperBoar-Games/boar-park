@@ -89,6 +89,13 @@ const TALKIES_GAME_SLUG = "talkies";
 // Resolve project root from this file's location (src/index.ts → project root)
 const PROJECT_ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 
+// CORS configuration from environment
+const ALLOWED_ORIGINS = Bun.env.CORS_ORIGIN
+    ? Bun.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+    : ['*'];
+
+const isDevelopment = Bun.env.NODE_ENV !== 'production';
+
 Bun.serve({
     port: PORT,
     async fetch(request: Request) {
@@ -99,12 +106,27 @@ Bun.serve({
         const url = new URL(urlString);
         const method = request.method;
 
-        // CORS headers for development
-        const corsHeaders = {
-            "Access-Control-Allow-Origin": "*",
+        // Get origin from request
+        const origin = request.headers.get('Origin') || '';
+
+        // Determine if origin is allowed
+        const isAllowedOrigin = ALLOWED_ORIGINS[0] === '*'
+            || ALLOWED_ORIGINS.includes(origin)
+            || isDevelopment;
+
+        // CORS headers
+        const corsHeaders: Record<string, string> = {
             "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Credentials": "true",
         };
+
+        // Set origin header based on configuration
+        if (ALLOWED_ORIGINS[0] === '*') {
+            corsHeaders["Access-Control-Allow-Origin"] = "*";
+        } else if (isAllowedOrigin && origin) {
+            corsHeaders["Access-Control-Allow-Origin"] = origin;
+        }
 
         // Handle OPTIONS preflight requests
         if (method === "OPTIONS") {
