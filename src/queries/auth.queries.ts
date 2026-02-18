@@ -131,7 +131,9 @@ export const ASSIGN_USER_ROLE_QUERY = `
 
 export const REMOVE_USER_ROLE_QUERY = `
     DELETE FROM user_game_roles
-    WHERE user_id = $1 AND game_id = $2 AND role_id = $3
+    WHERE user_id = $1
+      AND (game_id = $2 OR (game_id IS NULL AND $2 IS NULL))
+      AND role_id = $3
 `;
 
 export const GET_USER_ROLES_QUERY = `
