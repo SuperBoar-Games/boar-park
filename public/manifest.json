@@ -2,7 +2,7 @@
   "name": "Boar Park",
   "short_name": "Boar Park",
   "description": "Boar Park game management",
-  "start_url": "/",
+  "start_url": "/admin",
   "display": "standalone",
   "background_color": "#1e1e2e",
   "theme_color": "#cba6f7",

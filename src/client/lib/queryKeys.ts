@@ -31,7 +31,6 @@ export const queryKeys = {
   // Auth
   auth: {
     all: ['auth'] as const,
-    me: () => [...queryKeys.auth.all, 'me'] as const,
     currentUser: ['auth', 'currentUser'] as const,
     permissions: ['auth', 'permissions'] as const,
   },

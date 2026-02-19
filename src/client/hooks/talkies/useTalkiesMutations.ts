@@ -136,8 +136,6 @@ export function useCreateCardMutation() {
 
   return useMutation({
     mutationFn: async (data: Partial<Card>) => {
-      console.log('Creating card with data:', data);
-      console.log('Exact payload for card creation:', JSON.stringify(data, null, 2));
       const response = await apiClient.post<{ success: boolean; data: Card }>(
         '/api/talkies/cards',
         data
@@ -164,26 +162,11 @@ export function useUpdateCardMutation() {
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<Card> }) => {
       const payloadToSend = { ...data, user: 'admin' };
-      console.log('Updating card:', { id, data });
-      console.log('Exact payload being sent to API:', JSON.stringify(payloadToSend, null, 2));
-      const response = await apiClient.put(`/api/talkies/cards/${id}`, payloadToSend);
-      console.log('Card update response:', response);
-      console.log('Response data structure:', JSON.stringify(response.data, null, 2));
-      if (response.data?.tags) {
-        console.log('Tags in response:', response.data.tags);
-        console.log('Tag IDs in response:', response.data.tags.map((t: any) => t.id));
-      } else {
-        console.warn('WARNING: No tags in response data!');
-      }
-      return response;
+      return apiClient.put(`/api/talkies/cards/${id}`, payloadToSend);
     },
-    onSuccess: (data) => {
-      console.log('Card mutation success, full response:', JSON.stringify(data, null, 2));
+    onSuccess: () => {
       // Invalidate all talkies queries with partial matching (not exact match)
       queryClient.invalidateQueries({ queryKey: queryKeys.talkies.all, exact: false });
-    },
-    onError: (error) => {
-      console.error('Card mutation error:', error);
     },
   });
 }

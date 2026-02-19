@@ -1,7 +1,7 @@
 // Main application component with routing for all pages and layouts
 
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ThemeProvider } from './components/ThemeProvider';
@@ -25,6 +25,61 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import SetPasswordPage from './pages/auth/SetPasswordPage';
 import { ImpersonationExitButton } from './components/ImpersonationExitButton';
 
+// Injects PWA manifest + registers service worker only on /admin routes
+function PwaLoader() {
+    const { pathname } = useLocation();
+    const isAdmin = pathname.startsWith('/admin');
+
+    useEffect(() => {
+        const linkId = 'pwa-manifest';
+        const existing = document.getElementById(linkId);
+
+        if (isAdmin) {
+            if (!existing) {
+                // Inject manifest link
+                const link = document.createElement('link');
+                link.id = linkId;
+                link.rel = 'manifest';
+                link.href = '/manifest.json';
+                document.head.appendChild(link);
+
+                // Add apple PWA meta tags
+                const metas = [
+                    { name: 'theme-color', content: '#cba6f7' },
+                    { name: 'apple-mobile-web-app-capable', content: 'yes' },
+                    { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+                    { name: 'apple-mobile-web-app-title', content: 'Boar Park' },
+                ];
+                metas.forEach(({ name, content }) => {
+                    const meta = document.createElement('meta');
+                    meta.name = name;
+                    meta.content = content;
+                    meta.dataset.pwa = 'true';
+                    document.head.appendChild(meta);
+                });
+
+                // Add apple touch icon
+                const appleIcon = document.createElement('link');
+                appleIcon.rel = 'apple-touch-icon';
+                appleIcon.href = '/icons/icon-512.png';
+                appleIcon.dataset.pwa = 'true';
+                document.head.appendChild(appleIcon);
+
+                // Register service worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('/sw.js').catch(() => {});
+                }
+            }
+        } else {
+            // Remove manifest and PWA meta tags when not on /admin
+            existing?.remove();
+            document.querySelectorAll('[data-pwa="true"]').forEach(el => el.remove());
+        }
+    }, [isAdmin]);
+
+    return null;
+}
+
 function AppContent() {
     const { refreshAccessToken } = useAuth();
 
@@ -38,6 +93,7 @@ function AppContent() {
 
     return (
         <Router>
+            <PwaLoader />
             <ImpersonationExitButton />
             <Routes>
                 <Route path="/" element={<HomePage />} />

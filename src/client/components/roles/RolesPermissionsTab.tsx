@@ -157,7 +157,7 @@ export function RolesPermissionsTab() {
         confirmText="Delete Role"
         onConfirm={confirmDeleteRole}
         onCancel={() => setDeleteConfirm({ isOpen: false, role: null })}
-        variant="danger"
+        isDangerous={true}
       />
     </div>
   );
