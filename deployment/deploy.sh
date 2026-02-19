@@ -13,6 +13,9 @@ BACKUP_DIR="/var/backups/boar-park"
 SERVICE_NAME="boar-park"
 LOG_FILE="/var/log/boar-park-deploy.log"
 
+# Ensure bun is on PATH (for non-interactive SSH sessions via GitHub Actions)
+export PATH="/root/.bun/bin:/usr/local/bin:$PATH"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'

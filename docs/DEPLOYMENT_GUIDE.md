@@ -21,6 +21,7 @@ This guide covers:
 7. Installing SSL certificates
 8. Firewall configuration
 9. Deployment automation
+10. GitHub Actions CI/CD (auto-deploy on push to main)
 
 ---
 
@@ -157,8 +158,11 @@ SMTP_USER=your-email@domain.com
 SMTP_PASS=your-app-specific-password
 FROM_EMAIL=noreply@your-domain.com
 
-# Application URL (for password reset emails)
+# Application URL (used for password reset email links)
 APP_URL=https://your-domain.com
+
+# CORS Configuration (comma-separated list of allowed origins)
+CORS_ORIGIN=https://your-domain.com,https://www.your-domain.com
 ```
 
 **Generate JWT secrets:**
@@ -657,6 +661,86 @@ echo | openssl s_client -servername your-domain.com -connect your-domain.com:443
 3. **Caching:** Configure Redis if needed for sessions
 4. **Database pooling:** Adjust `DB_POOL_MAX` based on load
 5. **Monitor logs:** Check for N+1 queries or slow queries
+
+---
+
+## Step 10: GitHub Actions CI/CD
+
+Auto-deploy to the VPS on every push or merged PR to `main`.
+
+### How it works
+
+The workflow at `.github/workflows/deploy.yml` SSHes into the VPS and runs `sudo /var/www/boar-park/deployment/deploy.sh` which:
+1. Backs up the database
+2. Pulls latest code from `main`
+3. Runs any new migrations
+4. Installs dependencies & rebuilds
+5. Restarts the systemd service
+6. Runs a health check
+
+### 1. Create a dedicated SSH key for GitHub Actions
+
+Run this **on your local machine** (not the VPS):
+
+```bash
+ssh-keygen -t ed25519 -C "github-actions-boar-park" -f ~/.ssh/github_actions_boar_park -N ""
+```
+
+This creates:
+- `~/.ssh/github_actions_boar_park` — private key (goes into GitHub secrets)
+- `~/.ssh/github_actions_boar_park.pub` — public key (goes onto VPS)
+
+### 2. Add the public key to the VPS
+
+```bash
+# Copy the public key content
+cat ~/.ssh/github_actions_boar_park.pub
+
+# SSH into VPS and add it
+ssh root@your-vps-ip
+echo "PASTE_PUBLIC_KEY_HERE" >> /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
+```
+
+### 3. Allow deploy.sh to run via sudo without a password
+
+On the VPS, add a sudoers rule so the SSH user can run the deploy script:
+
+```bash
+# On VPS as root:
+echo 'root ALL=(ALL) NOPASSWD: /var/www/boar-park/deployment/deploy.sh' > /etc/sudoers.d/boar-park-deploy
+chmod 440 /etc/sudoers.d/boar-park-deploy
+```
+
+> If you SSH in as a non-root user (e.g. `deploy`), replace `root` with that username.
+
+### 4. Add GitHub Secrets
+
+In your GitHub repo → **Settings → Secrets and variables → Actions**, add:
+
+| Secret name | Value |
+|-------------|-------|
+| `VPS_HOST` | Your VPS IP or hostname (e.g. `62.72.31.96`) |
+| `VPS_USER` | SSH user (e.g. `root`) |
+| `VPS_SSH_KEY` | Full contents of `~/.ssh/github_actions_boar_park` (private key) |
+| `VPS_PORT` | SSH port, usually `22` (optional) |
+
+### 5. Add a GitHub Environment (optional but recommended)
+
+In **Settings → Environments**, create a `production` environment. You can add:
+- **Required reviewers** — manual approval before deploy
+- **Wait timer** — delay after merge before deploying
+
+The workflow references `environment: production` — if this environment doesn't exist in GitHub, it still works fine, just without protection rules.
+
+### 6. Verify
+
+Push a commit to `main` (or merge a PR) and watch the **Actions** tab in GitHub. You'll see the deploy workflow run. Logs stream live from the VPS.
+
+```bash
+# To watch VPS logs during deploy:
+sudo tail -f /var/log/boar-park-deploy.log
+```
 
 ---
 
