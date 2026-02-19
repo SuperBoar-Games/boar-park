@@ -2,6 +2,7 @@
 
 import { sql } from "bun";
 import { jsonResponse } from "../../utils";
+import { broadcast } from "../../lib/sse";
 import {
     GET_CARDS_BY_HERO_AND_MOVIE_QUERY,
     GET_ALL_CARDS_BY_HERO_QUERY,
@@ -64,7 +65,7 @@ export async function getAllCardsByHeroHandler(heroId: number): Promise<Response
 
 export async function createCardHandler(body: any): Promise<Response> {
     // Support both camelCase and snake_case for compatibility
-    const { name, type, call_sign, ability_text, ability_text2, user, tag_ids } = body;
+    const { name, type, call_sign, ability_text, ability_text2, user } = body;
     const heroId = body.heroId || body.hero_id;
     const movieId = body.movieId || body.movie_id;
     const tagIds = body.tagIds || body.tag_ids;
@@ -97,6 +98,7 @@ export async function createCardHandler(body: any): Promise<Response> {
         const cardRaw = await sql.unsafe(GET_CARD_BY_ID_QUERY, [cardId]);
         const { tag_ids: returned_tag_ids, tag_names, ...card } = cardRaw[0];
         const result = { ...card, tags: normalizeTags(cardRaw[0]) };
+        broadcast('talkies:cards', { action: 'create', heroId, movieId, cardId });
         return jsonResponse({ success: true, data: result, message: "Card created successfully" });
     } catch (error) {
         console.error("Error creating card:", error);
@@ -131,6 +133,7 @@ export async function updateCardHandler(id: number, body: any): Promise<Response
         const cardRaw = await sql.unsafe(GET_CARD_BY_ID_QUERY, [id]);
         const { tag_ids, tag_names, ...card } = cardRaw[0];
         const result = { ...card, tags: normalizeTags(cardRaw[0]) };
+        broadcast('talkies:cards', { action: 'update', heroId: updated[0]?.hero_id, movieId: updated[0]?.movie_id, cardId: id });
         return jsonResponse({ success: true, data: result, message: "Card updated successfully" });
     } catch (error) {
         console.error("Error updating card:", error);
@@ -144,6 +147,7 @@ export async function deleteCardHandler(id: number): Promise<Response> {
         if (!deleted || deleted.length === 0) {
             return jsonResponse({ success: false, data: null, message: "Card not found" }, 404);
         }
+        broadcast('talkies:cards', { action: 'delete', heroId: deleted[0]?.hero_id, movieId: deleted[0]?.movie_id, cardId: id });
         return jsonResponse({ success: true, data: { id: deleted[0].id }, message: "Card deleted successfully" });
     } catch (error) {
         console.error("Error deleting card:", error);

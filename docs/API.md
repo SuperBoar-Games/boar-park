@@ -11,12 +11,15 @@ This document lists all API endpoints available in the Boar Park application, in
 - [Admin Routes](#admin-routes)
   - [User Management](#user-management)
   - [Roles & Games](#roles--games)
+- [Admin - RBAC System](#admin---rbac-system)
 - [Games](#games)
 - [Talkies Game Routes](#talkies-game-routes)
   - [Heroes](#heroes)
   - [Movies](#movies)
   - [Cards](#cards)
   - [Tags](#tags)
+- [Real-Time Events (SSE)](#real-time-events-sse)
+- [Notifications](#notifications)
 
 ---
 
@@ -43,7 +46,7 @@ This document lists all API endpoints available in the Boar Park application, in
 
 **Handler:** `signupHandler`
 **Access:** Public
-**Description:** Create a new user account (pending admin approval).
+**Description:** Create a new user account (pending admin approval). On success, fires a Web Push notification to all subscribed users and broadcasts an `admin:users` SSE event so admin pages update in real time.
 
 **Request Body:**
 ```json
@@ -1260,6 +1263,165 @@ This document lists all API endpoints available in the Boar Park application, in
 {
   "success": true,
   "message": "Tag deleted successfully"
+}
+```
+
+---
+
+---
+
+## Real-Time Events (SSE)
+
+### GET /api/events
+
+**Handler:** Built-in stream in `src/index.ts`
+**Access:** Authenticated
+**Description:** Server-Sent Events stream. Clients connect once and receive push messages whenever server-side data changes. React Query automatically invalidates the relevant cache keys on each event.
+
+**Authentication:** Because `EventSource` cannot send custom headers, the access token must be passed as a query parameter:
+
+```
+GET /api/events?token=<accessToken>
+```
+
+Standard `Authorization: Bearer` header is also accepted if available.
+
+**Event Types:**
+
+| Event | Data | Triggered by |
+|-------|------|-------------|
+| `connected` | `{ "id": "string" }` | On connection established |
+| `talkies:heroes` | `{ "action": "create"\|"update"\|"delete", "heroId": number }` | Hero created/updated/deleted |
+| `talkies:movies` | `{ "action": "create"\|"update"\|"delete", "movieId": number, "heroId": number }` | Movie created/updated/deleted |
+| `talkies:cards` | `{ "action": "create"\|"update"\|"delete", "cardId": number, "heroId": number, "movieId": number }` | Card created/updated/deleted |
+| `talkies:tags` | `{ "action": "create"\|"update"\|"delete", "tagId": number, "heroId": number }` | Tag created/updated/deleted |
+| `admin:users` | `{ "action": "signup"\|"approve"\|"disable"\|"delete" }` | User management actions |
+
+**Notes:**
+- The connection is long-lived (kept alive by nginx with `proxy_read_timeout 3600s`)
+- `EventSource` auto-reconnects on disconnect
+- The server maintains an in-memory client registry (`src/lib/sse.ts`); clients are cleaned up on disconnect
+- No database persistence — events are fire-and-forget
+
+**Example (browser):**
+```javascript
+const token = localStorage.getItem('accessToken');
+const es = new EventSource(`/api/events?token=${token}`);
+
+es.addEventListener('talkies:heroes', (e) => {
+  const { action, heroId } = JSON.parse(e.data);
+  // invalidate React Query cache for heroes
+});
+```
+
+---
+
+## Notifications
+
+In-app notification storage and Web Push subscription management. Notifications are created server-side (e.g., on user signup) and persist in the database.
+
+### GET /api/notifications/vapid-key
+
+**Handler:** `getVapidKeyHandler`
+**Access:** Public (no auth required — needed before SW token is available)
+**Description:** Returns the VAPID public key for initializing Web Push subscriptions.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "publicKey": "string (VAPID public key)"
+  }
+}
+```
+
+---
+
+### GET /api/notifications
+
+**Handler:** `getNotificationsHandler`
+**Access:** Authenticated
+**Description:** Get the current user's notifications (most recent 50, ordered newest first).
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": number,
+      "title": "string",
+      "body": "string",
+      "url": "string | null",
+      "is_read": boolean,
+      "created_at": "string (ISO timestamp)"
+    }
+  ]
+}
+```
+
+---
+
+### POST /api/notifications/subscribe
+
+**Handler:** `subscribeHandler`
+**Access:** Authenticated
+**Description:** Register a browser push subscription. Upserts on `endpoint` (safe to call on every page load).
+
+**Request Body:**
+```json
+{
+  "endpoint": "string",
+  "p256dh": "string",
+  "auth": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Subscribed successfully"
+}
+```
+
+---
+
+### POST /api/notifications/unsubscribe
+
+**Handler:** `unsubscribeHandler`
+**Access:** Authenticated
+**Description:** Remove a push subscription by endpoint.
+
+**Request Body:**
+```json
+{
+  "endpoint": "string"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Unsubscribed successfully"
+}
+```
+
+---
+
+### POST /api/notifications/read-all
+
+**Handler:** `markAllReadHandler`
+**Access:** Authenticated
+**Description:** Mark all of the current user's notifications as read.
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "All notifications marked as read"
 }
 ```
 

@@ -2,6 +2,7 @@
 
 import { sql } from "bun";
 import { jsonResponse } from "../../utils";
+import { broadcast } from "../../lib/sse";
 import {
     GET_HEROES_QUERY,
     CHECK_HERO_EXISTS_QUERY,
@@ -45,6 +46,7 @@ export async function createHeroHandler(body: any): Promise<Response> {
         }
 
         await sql.unsafe(INSERT_HERO_QUERY, [name, industry, game[0].id, user]);
+        broadcast('talkies:heroes', { action: 'create' });
         return jsonResponse({ success: true, data: null, message: "Hero created successfully." });
     } catch (error) {
         console.error("Error creating hero:", error);
@@ -65,6 +67,7 @@ export async function updateHeroHandler(id: number, body: any): Promise<Response
 
     try {
         await sql.unsafe(UPDATE_HERO_QUERY, [name, industry, user, id]);
+        broadcast('talkies:heroes', { action: 'update', heroId: id });
         return jsonResponse({ success: true, data: null, message: "Hero updated successfully." });
     } catch (error) {
         console.error("Error updating hero:", error);
@@ -75,6 +78,7 @@ export async function updateHeroHandler(id: number, body: any): Promise<Response
 export async function deleteHeroHandler(id: number): Promise<Response> {
     try {
         await sql.unsafe(DELETE_HERO_QUERY, [id]);
+        broadcast('talkies:heroes', { action: 'delete', heroId: id });
         return jsonResponse({ success: true, data: null, message: "Hero deleted successfully." });
     } catch (error) {
         console.error("Error deleting hero:", error);

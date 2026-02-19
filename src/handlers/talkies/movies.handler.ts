@@ -2,6 +2,7 @@
 
 import { sql } from "bun";
 import { jsonResponse } from "../../utils";
+import { broadcast } from "../../lib/sse";
 import {
     GET_MOVIE_CARD_STATS_BY_HERO_ID_QUERY,
     CHECK_MOVIE_EXISTS_QUERY,
@@ -48,6 +49,7 @@ export async function createMovieHandler(body: any): Promise<Response> {
         }
 
         const movie = await sql.unsafe(INSERT_MOVIE_QUERY, [title, heroId, user]);
+        broadcast('talkies:movies', { action: 'create', heroId, movieId: movie[0]?.id });
         return jsonResponse({ success: true, data: movie[0], message: "Movie created successfully" });
     } catch (error) {
         console.error("Error creating movie:", error);
@@ -67,6 +69,7 @@ export async function updateMovieTitleHandler(id: number, body: any): Promise<Re
 
     try {
         const movie = await sql.unsafe(UPDATE_MOVIE_TITLE_QUERY, [title, user, id]);
+        broadcast('talkies:movies', { action: 'update', movieId: id, heroId: movie[0]?.hero_id });
         return jsonResponse({ success: true, data: movie[0], message: "Movie updated successfully" });
     } catch (error) {
         console.error("Error updating movie:", error);
@@ -86,6 +89,7 @@ export async function updateMovieReviewHandler(id: number, body: any): Promise<R
 
     try {
         const movie = await sql.unsafe(UPDATE_MOVIE_NEED_REVIEW_QUERY, [needReview, user, id]);
+        broadcast('talkies:movies', { action: 'update', movieId: id, heroId: movie[0]?.hero_id });
         return jsonResponse({ success: true, data: movie[0], message: "Movie review status updated" });
     } catch (error) {
         console.error("Error updating movie review status:", error);
@@ -105,6 +109,7 @@ export async function updateMovieLockedHandler(id: number, body: any): Promise<R
 
     try {
         const movie = await sql.unsafe(UPDATE_MOVIE_LOCKED_STATUS_QUERY, [locked, user, id]);
+        broadcast('talkies:movies', { action: 'update', movieId: id, heroId: movie[0]?.hero_id });
         return jsonResponse({ success: true, data: movie[0], message: "Movie locked status updated" });
     } catch (error) {
         console.error("Error updating movie locked status:", error);
@@ -115,6 +120,7 @@ export async function updateMovieLockedHandler(id: number, body: any): Promise<R
 export async function deleteMovieHandler(id: number): Promise<Response> {
     try {
         const movie = await sql.unsafe(DELETE_MOVIE_QUERY, [id]);
+        broadcast('talkies:movies', { action: 'delete', movieId: id, heroId: movie[0]?.hero_id });
         return jsonResponse({ success: true, data: movie[0], message: "Movie deleted successfully" });
     } catch (error) {
         console.error("Error deleting movie:", error);

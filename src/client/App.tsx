@@ -9,6 +9,8 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { queryClient } from './lib/queryClient';
 import { initializeApiClient } from './lib/apiClient';
+import { useSSE } from './hooks/useSSE';
+import { usePushSubscription } from './hooks/notifications/usePushSubscription';
 import HomePage from './pages/HomePage';
 import NotFoundPage from './pages/NotFoundPage';
 import UserProfilePage from './pages/UserProfilePage';
@@ -28,7 +30,11 @@ import { ImpersonationExitButton } from './components/ImpersonationExitButton';
 // Injects PWA manifest + registers service worker only on /admin routes
 function PwaLoader() {
     const { pathname } = useLocation();
+    const { isAuthenticated } = useAuth();
     const isAdmin = pathname.startsWith('/admin');
+
+    // Push subscription — set up when user is on /admin and authenticated
+    usePushSubscription(isAdmin && isAuthenticated);
 
     useEffect(() => {
         const linkId = 'pwa-manifest';
@@ -81,7 +87,7 @@ function PwaLoader() {
 }
 
 function AppContent() {
-    const { refreshAccessToken } = useAuth();
+    const { refreshAccessToken, isAuthenticated } = useAuth();
 
     useEffect(() => {
         // Initialize API client with auth callbacks
@@ -90,6 +96,9 @@ function AppContent() {
             refreshToken: refreshAccessToken,
         });
     }, [refreshAccessToken]);
+
+    // SSE real-time sync — active for all authenticated users
+    useSSE(isAuthenticated);
 
     return (
         <Router>

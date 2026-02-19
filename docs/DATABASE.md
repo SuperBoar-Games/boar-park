@@ -26,6 +26,10 @@ PostgreSQL database with migrations, transactions, and automated backups.
 - **user_game_roles**: id, user_id, role_id, game_id, created_at
 - **roles**: id, game_id, name, description, created_at (legacy)
 
+### Push Notifications
+- **push_subscriptions**: id, user_id, endpoint (UNIQUE), p256dh, auth, created_at — browser Web Push subscriptions; stale entries (410/404 from push service) are auto-deleted
+- **notifications**: id, user_id, title, body, url, is_read (default false), created_at — in-app notification inbox; created server-side (e.g., on user signup)
+
 ## Connection
 
 ```env
@@ -46,6 +50,12 @@ Tracked in `schema_migrations` table. Files in `src/db/migrations/`.
 ```
 
 Creates `schema_migrations` table if not exists, runs migrations in order, skips executed ones.
+
+| Migration | Description |
+|-----------|-------------|
+| 0001 | Create push_subscriptions and notifications tables |
+
+> **Note:** Production database was imported from a full dump. Only migrations created after that point need to be applied on production.
 
 ## Backups
 
@@ -82,9 +92,11 @@ Features: keeps 7 backups, removes yesterday's if no changes.
 
 ## Database Utilities
 
-Location: `src/db/utils.ts`
+Query helpers are in `src/db/index.ts`:
 
 ```typescript
+import { query, queryOne, transaction } from './db';
+
 // Query multiple rows
 const users = await query('SELECT * FROM users WHERE status = $1', ['active']);
 
@@ -92,14 +104,13 @@ const users = await query('SELECT * FROM users WHERE status = $1', ['active']);
 const user = await queryOne('SELECT * FROM users WHERE id = $1', [userId]);
 
 // Transaction
-await transaction(async () => {
-  await query('UPDATE users SET status = $1 WHERE id = $2', ['active', userId]);
-  await query('INSERT INTO logs ...');
+await transaction(async (client) => {
+  await client.query('UPDATE users SET status = $1 WHERE id = $2', ['active', userId]);
+  await client.query('INSERT INTO logs ...');
 });
-
-// Native Bun binding
-const results = await exec('SELECT * FROM users WHERE email = ?', email);
 ```
+
+SQL is colocated with its handler in `src/queries/` (e.g., `notifications.queries.ts`, `roles.queries.ts`).
 
 ## Quick Commands
 

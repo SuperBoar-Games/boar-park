@@ -4,6 +4,7 @@ import { sql } from "bun";
 import { jsonResponse } from "../utils";
 import { hashPassword, generateResetToken } from "../auth/password";
 import { sendAccountApprovedEmail, sendSetPasswordEmail, sendPasswordResetEmail } from "../auth/email";
+import { broadcast } from "../lib/sse";
 import {
     GET_ALL_USERS_QUERY,
     GET_PENDING_USERS_QUERY,
@@ -69,6 +70,7 @@ export async function approveUserHandler(userId: number): Promise<Response> {
         // Send approval email
         await sendAccountApprovedEmail(user.email, user.username);
 
+        broadcast('admin:users', { action: 'approve', userId });
         return jsonResponse({ success: true, message: "User approved successfully", data: user });
     } catch (error) {
         console.error("Approve user error:", error);
@@ -87,6 +89,7 @@ export async function disableUserHandler(userId: number): Promise<Response> {
             return jsonResponse({ success: false, message: "User not found" }, 404);
         }
 
+        broadcast('admin:users', { action: 'disable', userId });
         return jsonResponse({ success: true, message: "User disabled successfully", data: result[0] });
     } catch (error) {
         console.error("Disable user error:", error);
@@ -262,6 +265,7 @@ export async function updateUserUsernameHandler(userId: number, body: any): Prom
 export async function deleteUserHandler(userId: number): Promise<Response> {
     try {
         await sql.unsafe(DELETE_USER_QUERY, [userId]);
+        broadcast('admin:users', { action: 'delete', userId });
         return jsonResponse({ success: true, message: "User deleted successfully" });
     } catch (error) {
         console.error("Delete user error:", error);

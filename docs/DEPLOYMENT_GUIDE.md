@@ -163,6 +163,12 @@ APP_URL=https://your-domain.com
 
 # CORS Configuration (comma-separated list of allowed origins)
 CORS_ORIGIN=https://your-domain.com,https://www.your-domain.com
+
+# Web Push / PWA Push Notifications
+# Generate VAPID keys with: bunx web-push generate-vapid-keys
+VAPID_PUBLIC_KEY=your_vapid_public_key
+VAPID_PRIVATE_KEY=your_vapid_private_key
+VAPID_SUBJECT=mailto:admin@your-domain.com
 ```
 
 **Generate JWT secrets:**
@@ -637,6 +643,51 @@ echo | openssl s_client -servername your-domain.com -connect your-domain.com:443
 
 ---
 
+## Feature Setup: Push Notifications & Real-Time Sync
+
+### Push Notifications (PWA)
+
+Push notifications are sent to all users when admin events occur (e.g. new user signup). They require VAPID keys and the `push_subscriptions` + `notifications` DB tables.
+
+**1. Generate VAPID keys** (run once, locally or on VPS):
+
+```bash
+bunx web-push generate-vapid-keys
+```
+
+Copy the output into your `.env`:
+
+```env
+VAPID_PUBLIC_KEY=<generated public key>
+VAPID_PRIVATE_KEY=<generated private key>
+VAPID_SUBJECT=mailto:admin@your-domain.com
+```
+
+**2. Run the DB migration** (on VPS after deploy):
+
+```bash
+cd /var/www/boar-park
+PGPASSWORD="$PGPASSWORD" psql -h "$PGHOST" -U "$PGUSER" -d "$PGDATABASE" \
+  -f src/db/migrations/0009_push_notifications.sql
+```
+
+**3. Update nginx config** (already included in `deployment/nginx.conf`):
+
+```bash
+sudo cp /var/www/boar-park/deployment/nginx.conf /etc/nginx/sites-available/boar-park
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+The nginx config includes `proxy_buffering off` and a dedicated `/api/events` location block with a 1-hour read timeout for SSE (Server-Sent Events) connections.
+
+### Real-Time UI Sync (SSE)
+
+Server-Sent Events are used to push "data changed" signals to all connected browser tabs. When any admin saves a change, other open tabs automatically refresh their data — no page reload needed.
+
+This works automatically once the app is deployed. No extra configuration required. The SSE connection is established at `/api/events` for all authenticated users.
+
+---
+
 ## Security Checklist
 
 - [ ] Changed all default passwords
@@ -651,6 +702,8 @@ echo | openssl s_client -servername your-domain.com -connect your-domain.com:443
 - [ ] Log monitoring in place
 - [ ] Database user has limited permissions
 - [ ] APP_URL in .env matches domain
+- [ ] VAPID keys generated and added to .env (for push notifications)
+- [ ] Push notifications DB migration run (`0009_push_notifications.sql`)
 
 ---
 

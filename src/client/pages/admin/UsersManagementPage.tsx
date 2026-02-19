@@ -276,7 +276,7 @@ export default function UsersManagementPage() {
             reviewer: 'rgba(100, 200, 255, 0.2)',
             viewer: 'rgba(150, 150, 150, 0.2)',
         };
-        return colors[roleName.toLowerCase()] || 'rgba(100, 150, 255, 0.2)';
+        return colors[roleName?.toLowerCase()] || 'rgba(100, 150, 255, 0.2)';
     };
 
     // Filter and sort users
@@ -648,7 +648,7 @@ export default function UsersManagementPage() {
                                                         </div>
                                                     ))
                                                 )}
-                                                {!user.roles.some((role: any) => role.roleName.toLowerCase() === 'admin') && (
+                                                {!user.roles.some((role: any) => role.roleName?.toLowerCase() === 'admin') && (
                                                     <button
                                                         onClick={() => {
                                                             setSelectedUser(user);

@@ -5,6 +5,8 @@ import { jsonResponse } from "../utils";
 import { hashPassword, verifyPassword, generateResetToken } from "../auth/password";
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken, revokeRefreshToken } from "../auth/jwt";
 import { sendPasswordResetEmail, sendSetPasswordEmail } from "../auth/email";
+import { broadcast } from "../lib/sse";
+import { sendPushToAll } from "../lib/push";
 import {
     CREATE_USER_QUERY,
     GET_USER_BY_EMAIL_QUERY,
@@ -77,6 +79,14 @@ export async function signupHandler(body: any): Promise<Response> {
             "pending", // status
             false, // is_verified
         ]);
+
+        // Notify admins of new signup via push + SSE (fire-and-forget)
+        sendPushToAll({
+            title: 'New user signup',
+            body: `${username} signed up and is pending approval`,
+            url: '/admin/users',
+        }).catch(() => {});
+        broadcast('admin:users', { action: 'signup', username });
 
         return jsonResponse({
             success: true,

@@ -35,6 +35,12 @@ export const queryKeys = {
     permissions: ['auth', 'permissions'] as const,
   },
 
+  // Notifications
+  notifications: {
+    all: ['notifications'] as const,
+    unread: () => [...queryKeys.notifications.all, 'unread'] as const,
+  },
+
   // Roles & Permissions
   roles: {
     all: ['roles'] as const,

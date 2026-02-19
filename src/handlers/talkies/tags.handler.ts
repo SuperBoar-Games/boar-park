@@ -2,6 +2,7 @@
 
 import { sql } from "bun";
 import { jsonResponse } from "../../utils";
+import { broadcast } from "../../lib/sse";
 import {
     GET_ALL_TAGS_QUERY,
     CHECK_TAG_EXISTS_QUERY,
@@ -34,6 +35,7 @@ export async function createTagHandler(body: any): Promise<Response> {
         }
 
         const tag = await sql.unsafe(INSERT_TAG_QUERY, [name]);
+        broadcast('talkies:tags', { action: 'create', tagId: tag[0]?.id });
         return jsonResponse({ success: true, data: tag[0], message: "Tag created successfully" });
     } catch (error) {
         console.error("Error creating tag:", error);
@@ -52,6 +54,7 @@ export async function updateTagHandler(id: number, body: any): Promise<Response>
         if (!tag || tag.length === 0) {
             return jsonResponse({ success: false, data: null, message: "Tag not found" }, 404);
         }
+        broadcast('talkies:tags', { action: 'update', tagId: id });
         return jsonResponse({ success: true, data: tag[0], message: "Tag updated successfully" });
     } catch (error) {
         console.error("Error updating tag:", error);
@@ -65,6 +68,7 @@ export async function deleteTagHandler(id: number): Promise<Response> {
         if (!tag || tag.length === 0) {
             return jsonResponse({ success: false, data: null, message: "Tag not found" }, 404);
         }
+        broadcast('talkies:tags', { action: 'delete', tagId: id });
         return jsonResponse({ success: true, data: tag[0], message: "Tag deleted successfully" });
     } catch (error) {
         console.error("Error deleting tag:", error);

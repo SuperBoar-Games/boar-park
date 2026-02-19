@@ -82,7 +82,16 @@ import {
     extractSessionId
 } from "./auth/impersonation.middleware";
 import { authenticate, isAdmin, unauthorizedResponse, forbiddenResponse } from "./auth/middleware";
+import { verifyAccessToken } from "./auth/jwt";
 import { getGameIdFromSlug, canViewGame, canEditGame, getGamesForUser } from "./auth/game-permissions";
+import { addSSEClient, removeSSEClient, broadcast } from "./lib/sse";
+import {
+    getVapidKeyHandler,
+    getNotificationsHandler,
+    subscribeHandler,
+    unsubscribeHandler,
+    markAllReadHandler,
+} from "./handlers/notifications.handler";
 
 const PORT = process.env.PORT || 3000;
 const TALKIES_GAME_SLUG = "talkies";
@@ -98,6 +107,7 @@ const isDevelopment = Bun.env.NODE_ENV !== 'production';
 
 Bun.serve({
     port: PORT,
+    idleTimeout: 0, // disable timeout — SSE connections are long-lived
     async fetch(request: Request) {
         // Handle relative URLs from reverse proxy
         const urlString = request.url.startsWith('http')
@@ -141,6 +151,72 @@ Bun.serve({
             return new Response(JSON.stringify({ status: "ok" }), {
                 headers: { "Content-Type": "application/json", ...corsHeaders }
             });
+        }
+
+        // ========== SSE REAL-TIME EVENTS ==========
+        if (url.pathname === "/api/events" && method === "GET") {
+            // EventSource can't send Authorization headers, so also accept token as query param
+            let user = await authenticate(request);
+            if (!user) {
+                const tokenParam = url.searchParams.get('token');
+                if (tokenParam) {
+                    user = await verifyAccessToken(tokenParam);
+                }
+            }
+            if (!user) return unauthorizedResponse();
+
+            let clientId: string;
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    clientId = addSSEClient(controller);
+                    const connected = new TextEncoder().encode(`event: connected\ndata: {"id":"${clientId}"}\n\n`);
+                    controller.enqueue(connected);
+                },
+                cancel() {
+                    removeSSEClient(clientId);
+                },
+            });
+
+            return new Response(stream, {
+                headers: {
+                    "Content-Type": "text/event-stream",
+                    "Cache-Control": "no-cache",
+                    "Connection": "keep-alive",
+                    "X-Accel-Buffering": "no",
+                    ...corsHeaders,
+                },
+            });
+        }
+
+        // ========== NOTIFICATIONS ROUTES ==========
+        if (url.pathname === "/api/notifications/vapid-key" && method === "GET") {
+            return await getVapidKeyHandler();
+        }
+
+        if (url.pathname === "/api/notifications" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            return await getNotificationsHandler(user.userId);
+        }
+
+        if (url.pathname === "/api/notifications/subscribe" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const body = await request.json();
+            return await subscribeHandler(user.userId, body);
+        }
+
+        if (url.pathname === "/api/notifications/unsubscribe" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const body = await request.json();
+            return await unsubscribeHandler(user.userId, body);
+        }
+
+        if (url.pathname === "/api/notifications/read-all" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            return await markAllReadHandler(user.userId);
         }
 
         // ========== AUTH ROUTES ==========
