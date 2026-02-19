@@ -1,4 +1,4 @@
-const CACHE_NAME = 'boar-park-v1';
+const CACHE_NAME = 'boar-park-v2';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
