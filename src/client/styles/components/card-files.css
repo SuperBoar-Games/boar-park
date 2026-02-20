@@ -149,6 +149,15 @@
     max-height: 400px;
 }
 
+.card-flip-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+    color: var(--ctp-subtext0);
+    font-size: 1.5rem;
+}
+
 .card-flip-no-image {
     text-align: center;
     padding: 2rem 0;

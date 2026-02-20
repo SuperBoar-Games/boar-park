@@ -151,11 +151,47 @@ function CardFilesSection({
 function CardFlipImage({ card }: { card: Card }) {
     const { data: files = [] } = useCardFilesQuery(card.id);
     const imageFile = files.find(f => f.file_type === 2);
+    const [loaded, setLoaded] = useState(false);
+    const [lightbox, setLightbox] = useState(false);
+
+    useEffect(() => {
+        if (!lightbox) return;
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightbox(false); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [lightbox]);
 
     return (
         <div className="card-flip-image-wrapper">
             {imageFile ? (
-                <img src={imageFile.url} alt={card.name} loading="lazy" />
+                <>
+                    {!loaded && (
+                        <div className="card-flip-loading">
+                            <i className="fa-solid fa-spinner fa-spin" />
+                        </div>
+                    )}
+                    <img
+                        src={imageFile.url}
+                        alt={card.name}
+                        loading="lazy"
+                        onLoad={() => setLoaded(true)}
+                        onClick={() => loaded && setLightbox(true)}
+                        style={loaded ? { cursor: 'zoom-in' } : { display: 'none' }}
+                    />
+                    {lightbox && (
+                        <div className="lightbox-overlay" onClick={() => setLightbox(false)}>
+                            <button className="lightbox-close" onClick={() => setLightbox(false)}>
+                                <i className="fa-solid fa-xmark" />
+                            </button>
+                            <img
+                                src={imageFile.url}
+                                alt={card.name}
+                                className="lightbox-img"
+                                onClick={e => e.stopPropagation()}
+                            />
+                        </div>
+                    )}
+                </>
             ) : (
                 <div className="card-flip-no-image">
                     <i className="fa-regular fa-image" />
