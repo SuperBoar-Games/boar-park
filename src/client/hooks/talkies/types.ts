@@ -14,10 +14,24 @@ export interface Movie {
   hero_id: number;
   title: string;
   locked: boolean;
+  files_locked: boolean;
   need_review: boolean;
   total_cards?: number;
   review_cards?: number;
   hero_name?: string;
+}
+
+export interface CardFile {
+  id: number;
+  card_id: number;
+  file_type: 1 | 2 | 3;
+  filename: string;
+  original_name: string;
+  mime_type?: string;
+  url: string;
+  size_bytes: number;
+  uploaded_by?: string;
+  uploaded_at: string;
 }
 
 export interface Card {

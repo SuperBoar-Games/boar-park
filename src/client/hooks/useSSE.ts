@@ -143,5 +143,15 @@ function dispatchEvent(eventName: string, data: string, queryClient: ReturnType<
             queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.notifications.unread() });
             break;
+
+        case 'files:cards': {
+            try {
+                const { cardId } = JSON.parse(data);
+                if (cardId) {
+                    queryClient.invalidateQueries({ queryKey: queryKeys.files.card(cardId) });
+                }
+            } catch { /* ignore */ }
+            break;
+        }
     }
 }

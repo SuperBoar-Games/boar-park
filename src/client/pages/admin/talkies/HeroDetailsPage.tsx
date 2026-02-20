@@ -1,6 +1,6 @@
 // Hero details page for managing movies and cards for a specific hero
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { usePermissionCheck } from '../../../hooks/auth/usePermissions';
@@ -22,6 +22,73 @@ import {
 } from '../../../hooks/talkies/useTalkiesMutations';
 import type { Movie, Card } from '../../../hooks/talkies/types';
 import { exportHeroToCSV } from '../../../utils/csvExport';
+
+const API_BASE_URL = import.meta.env.PROD ? '' : 'http://localhost:3000';
+const FILE_TYPE_LABELS: Record<number, string> = { 1: 'Design', 2: 'Image', 3: 'Print' };
+
+function HeroDownloadDropdown({ heroId }: { heroId: number }) {
+    const [open, setOpen] = useState(false);
+    const [types, setTypes] = useState<Set<number>>(new Set([1, 2, 3]));
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!open) return;
+        const handler = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [open]);
+
+    const toggleType = (t: number) => {
+        setTypes(prev => {
+            const next = new Set(prev);
+            next.has(t) ? next.delete(t) : next.add(t);
+            return next;
+        });
+    };
+
+    const handleDownload = () => {
+        if (!types.size) return;
+        const typesParam = Array.from(types).join(',');
+        window.location.href = `${API_BASE_URL}/api/heroes/${heroId}/download?types=${typesParam}`;
+        setOpen(false);
+    };
+
+    return (
+        <div className="download-dropdown-wrapper" ref={ref}>
+            <button
+                className="btn btn-secondary"
+                onClick={() => setOpen(!open)}
+                title="Download all card files as ZIP"
+            >
+                <i className="fa-solid fa-download" /> <span>Download</span>
+            </button>
+            {open && (
+                <div className="download-dropdown">
+                    <div className="download-dropdown-title">File types</div>
+                    {([1, 2, 3] as const).map(ft => (
+                        <label key={ft} className="download-type-option">
+                            <input
+                                type="checkbox"
+                                checked={types.has(ft)}
+                                onChange={() => toggleType(ft)}
+                            />
+                            {FILE_TYPE_LABELS[ft]}
+                        </label>
+                    ))}
+                    <button
+                        className="download-go-btn"
+                        disabled={!types.size}
+                        onClick={handleDownload}
+                    >
+                        <i className="fa-solid fa-file-zipper" /> Download ZIP
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+}
 
 type MovieSortKey = 'title' | 'total_cards' | 'review_cards' | 'done';
 type CardSortKey = 'movie_title' | 'name' | 'type' | 'call_sign';
@@ -330,9 +397,12 @@ export default function HeroDetailsPage() {
         <AdminLayout
             title={<h1>{heroName}</h1>}
             actions={
-                <Button variant="secondary" onClick={() => navigate('/admin/games/talkies')}>
-                    {Icons.arrowLeft} <span>Back to Heroes</span>
-                </Button>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <HeroDownloadDropdown heroId={parseInt(heroId!)} />
+                    <Button variant="secondary" onClick={() => navigate('/admin/games/talkies')}>
+                        {Icons.arrowLeft} <span>Back to Heroes</span>
+                    </Button>
+                </div>
             }
         >
             <div className="table-controls">

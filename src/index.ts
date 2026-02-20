@@ -93,6 +93,14 @@ import {
     unsubscribeHandler,
     markAllReadHandler,
 } from "./handlers/notifications.handler";
+import {
+    getCardFilesHandler,
+    uploadCardFileHandler,
+    deleteCardFileHandler,
+    toggleMovieFilesLockHandler,
+    downloadMovieFilesHandler,
+    downloadHeroFilesHandler,
+} from "./handlers/files.handler";
 
 const PORT = process.env.PORT || 3000;
 const TALKIES_GAME_SLUG = "talkies";
@@ -225,6 +233,63 @@ Bun.serve({
             const user = await authenticate(request);
             if (!user) return unauthorizedResponse();
             return await markAllReadHandler(user.userId);
+        }
+
+        // ========== CARD FILES ROUTES ==========
+        // GET /api/cards/:cardId/files
+        const cardFilesMatch = url.pathname.match(/^\/api\/cards\/(\d+)\/files$/);
+        if (cardFilesMatch && method === "GET") {
+            const cardId = parseInt(cardFilesMatch[1], 10);
+            return await getCardFilesHandler(cardId);
+        }
+
+        // POST /api/cards/:cardId/files
+        if (cardFilesMatch && method === "POST") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const cardId = parseInt(cardFilesMatch[1], 10);
+            return await uploadCardFileHandler(user, cardId, request);
+        }
+
+        // DELETE /api/cards/:cardId/files/:fileType
+        const cardFileTypeMatch = url.pathname.match(/^\/api\/cards\/(\d+)\/files\/(\d+)$/);
+        if (cardFileTypeMatch && method === "DELETE") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const cardId = parseInt(cardFileTypeMatch[1], 10);
+            const fileType = parseInt(cardFileTypeMatch[2], 10);
+            return await deleteCardFileHandler(user, cardId, fileType);
+        }
+
+        // PATCH /api/movies/:movieId/files-lock
+        const filesLockMatch = url.pathname.match(/^\/api\/movies\/(\d+)\/files-lock$/);
+        if (filesLockMatch && method === "PATCH") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const movieId = parseInt(filesLockMatch[1], 10);
+            return await toggleMovieFilesLockHandler(user, movieId);
+        }
+
+        // GET /api/movies/:movieId/download?types=1,2,3
+        const movieDownloadMatch = url.pathname.match(/^\/api\/movies\/(\d+)\/download$/);
+        if (movieDownloadMatch && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const movieId = parseInt(movieDownloadMatch[1], 10);
+            const typesParam = url.searchParams.get('types') || '1,2,3';
+            const types = typesParam.split(',').map(Number).filter(n => [1,2,3].includes(n));
+            return await downloadMovieFilesHandler(user, movieId, types);
+        }
+
+        // GET /api/heroes/:heroId/download?types=1,2,3
+        const heroDownloadMatch = url.pathname.match(/^\/api\/heroes\/(\d+)\/download$/);
+        if (heroDownloadMatch && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const heroId = parseInt(heroDownloadMatch[1], 10);
+            const typesParam = url.searchParams.get('types') || '1,2,3';
+            const types = typesParam.split(',').map(Number).filter(n => [1,2,3].includes(n));
+            return await downloadHeroFilesHandler(user, heroId, types);
         }
 
         // ========== AUTH ROUTES ==========
@@ -779,6 +844,15 @@ Bun.serve({
             if (method === "DELETE") {
                 return await deleteTagHandler(tagId);
             }
+        }
+
+        // Serve uploaded media files (dev only — nginx handles this in prod)
+        if (url.pathname.startsWith('/media/')) {
+            const mediaFile = Bun.file(`${PROJECT_ROOT}${url.pathname}`);
+            if (await mediaFile.exists()) {
+                return new Response(mediaFile);
+            }
+            return new Response("Not Found", { status: 404 });
         }
 
         // Serve static files from /public directory (PWA assets)

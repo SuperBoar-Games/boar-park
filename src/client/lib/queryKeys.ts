@@ -42,6 +42,11 @@ export const queryKeys = {
     history: () => [...queryKeys.notifications.all, 'history'] as const,
   },
 
+  // Card files
+  files: {
+    card: (cardId: number) => ['files', 'card', cardId] as const,
+  },
+
   // Roles & Permissions
   roles: {
     all: ['roles'] as const,

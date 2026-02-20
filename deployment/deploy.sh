@@ -139,6 +139,11 @@ bun run build || error "Failed to build backend"
 log "Building frontend..."
 bun run build:client || error "Failed to build frontend"
 
+# Ensure media directory exists for card file uploads
+log "Ensuring media directory exists..."
+mkdir -p "$DEPLOY_DIR/media/talkies/cards"
+chown -R boar-park:boar-park "$DEPLOY_DIR/media" || warn "Failed to set media ownership"
+
 # Fix permissions
 log "Setting file permissions..."
 chown -R boar-park:boar-park "$DEPLOY_DIR" || warn "Failed to set ownership"

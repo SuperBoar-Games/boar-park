@@ -162,7 +162,8 @@ function AppContent() {
                     element={
                         <ProtectedRoute
                             requireAnyPermission={[
-                                'talkies:read', 'heroes:read', 'movies:read', 'cards:read', 'tags:read'
+                                'talkies:read', 'heroes:read', 'movies:read', 'cards:read', 'tags:read',
+                                'files:create', 'files:delete'
                             ]}
                         >
                             <HeroDetailsPage />
@@ -174,7 +175,8 @@ function AppContent() {
                     element={
                         <ProtectedRoute
                             requireAnyPermission={[
-                                'talkies:read', 'movies:read', 'cards:read', 'tags:read'
+                                'talkies:read', 'movies:read', 'cards:read', 'tags:read',
+                                'files:create', 'files:delete'
                             ]}
                         >
                             <MovieDetailsPage />
