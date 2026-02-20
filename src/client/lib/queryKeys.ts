@@ -39,6 +39,7 @@ export const queryKeys = {
   notifications: {
     all: ['notifications'] as const,
     unread: () => [...queryKeys.notifications.all, 'unread'] as const,
+    history: () => [...queryKeys.notifications.all, 'history'] as const,
   },
 
   // Roles & Permissions

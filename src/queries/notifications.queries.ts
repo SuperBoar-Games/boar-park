@@ -8,6 +8,19 @@ export const GET_UNREAD_NOTIFICATIONS_QUERY = `
   LIMIT 50
 `;
 
+export const GET_ALL_NOTIFICATIONS_QUERY = `
+  SELECT id, title, body, url, is_read, created_at
+  FROM notifications
+  WHERE user_id = $1
+  ORDER BY created_at DESC
+  LIMIT 100
+`;
+
+export const DELETE_OLD_READ_NOTIFICATIONS_QUERY = `
+  DELETE FROM notifications
+  WHERE user_id = $1 AND is_read = true AND created_at < NOW() - INTERVAL '7 days'
+`;
+
 export const GET_UNREAD_COUNT_QUERY = `
   SELECT COUNT(*)::int AS count
   FROM notifications

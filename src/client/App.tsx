@@ -20,6 +20,7 @@ import TalkiesGamePage from './pages/admin/talkies/TalkiesGamePage';
 import HeroDetailsPage from './pages/admin/talkies/HeroDetailsPage';
 import MovieDetailsPage from './pages/admin/talkies/MovieDetailsPage';
 import UsersManagementPage from './pages/admin/UsersManagementPage';
+import NotificationHistoryPage from './pages/admin/NotificationHistoryPage';
 import LoginPage from './pages/auth/LoginPage';
 import SignupPage from './pages/auth/SignupPage';
 import RequestResetPage from './pages/auth/RequestResetPage';
@@ -176,6 +177,15 @@ function AppContent() {
                             ]}
                         >
                             <MovieDetailsPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/admin/notifications"
+                    element={
+                        <ProtectedRoute>
+                            <NotificationHistoryPage />
                         </ProtectedRoute>
                     }
                 />

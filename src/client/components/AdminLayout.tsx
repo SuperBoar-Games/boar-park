@@ -109,7 +109,7 @@ export function AdminLayout({ title, actions, children }: AdminLayoutProps) {
                                     </div>
                                     <div className="notif-list">
                                         {notifications.length === 0 ? (
-                                            <div className="notif-empty">No notifications</div>
+                                            <div className="notif-empty">No new notifications</div>
                                         ) : (
                                             notifications.map(n => (
                                                 <div
@@ -129,6 +129,15 @@ export function AdminLayout({ title, actions, children }: AdminLayoutProps) {
                                             ))
                                         )}
                                     </div>
+                                    <button
+                                        className="notif-view-all-btn"
+                                        onClick={() => {
+                                            navigate('/admin/notifications');
+                                            setIsBellOpen(false);
+                                        }}
+                                    >
+                                        View all notifications
+                                    </button>
                                 </div>
                             )}
                         </div>

@@ -88,6 +88,7 @@ import { addSSEClient, removeSSEClient, broadcast } from "./lib/sse";
 import {
     getVapidKeyHandler,
     getNotificationsHandler,
+    getAllNotificationsHandler,
     subscribeHandler,
     unsubscribeHandler,
     markAllReadHandler,
@@ -191,6 +192,12 @@ Bun.serve({
         // ========== NOTIFICATIONS ROUTES ==========
         if (url.pathname === "/api/notifications/vapid-key" && method === "GET") {
             return await getVapidKeyHandler();
+        }
+
+        if (url.pathname === "/api/notifications/all" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            return await getAllNotificationsHandler(user.userId);
         }
 
         if (url.pathname === "/api/notifications" && method === "GET") {

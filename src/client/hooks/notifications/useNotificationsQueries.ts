@@ -22,6 +22,17 @@ export function useNotifications() {
     });
 }
 
+export function useNotificationHistory() {
+    return useQuery({
+        queryKey: queryKeys.notifications.history(),
+        queryFn: async (): Promise<Notification[]> => {
+            const res = await apiClient.get<{ success: boolean; data: Notification[] }>('/api/notifications/all');
+            return res.data ?? [];
+        },
+        staleTime: 1000 * 30,
+    });
+}
+
 export function useVapidKey() {
     return useQuery({
         queryKey: ['notifications', 'vapid-key'],

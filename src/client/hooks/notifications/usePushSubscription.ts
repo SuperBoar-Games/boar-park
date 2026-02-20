@@ -38,9 +38,21 @@ export function usePushSubscription(isAuthenticated: boolean) {
                 const registration = await navigator.serviceWorker.ready;
                 const existing = await registration.pushManager.getSubscription();
                 if (existing) {
-                    // Re-send existing subscription to keep DB in sync
-                    subscribe(existing.toJSON() as PushSubscriptionJSON);
-                    return;
+                    // Check if existing subscription uses the same VAPID key
+                    const existingKey = existing.options?.applicationServerKey;
+                    const newKey = urlBase64ToUint8Array(vapidPublicKey);
+                    const existingKeyBase64 = existingKey
+                        ? btoa(String.fromCharCode(...new Uint8Array(existingKey as ArrayBuffer)))
+                        : null;
+                    const newKeyBase64 = btoa(String.fromCharCode(...newKey));
+
+                    if (existingKeyBase64 === newKeyBase64) {
+                        // Same key — re-send to keep DB in sync
+                        subscribe(existing.toJSON() as PushSubscriptionJSON);
+                        return;
+                    }
+                    // Different key — unsubscribe stale subscription first
+                    await existing.unsubscribe();
                 }
 
                 const subscription = await registration.pushManager.subscribe({
@@ -49,8 +61,9 @@ export function usePushSubscription(isAuthenticated: boolean) {
                 });
 
                 subscribe(subscription.toJSON() as PushSubscriptionJSON);
-            } catch (error) {
-                console.error('[push] Failed to set up push subscription:', error);
+            } catch {
+                // Push subscription is best-effort — silently ignore failures
+                // (common on networks that block FCM or browsers without push support)
             }
         }
 

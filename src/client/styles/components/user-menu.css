@@ -284,6 +284,24 @@
     font-size: 0.875rem;
 }
 
+.notif-view-all-btn {
+    display: block;
+    width: 100%;
+    padding: 0.6rem 1rem;
+    background: none;
+    border: none;
+    border-top: 1px solid var(--ctp-surface1);
+    color: var(--ctp-primary);
+    font-size: 0.8rem;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.notif-view-all-btn:hover {
+    background-color: var(--ctp-surface0);
+}
+
 /* Theme Selector (in admin header) */
 .theme-selector {
     display: flex;

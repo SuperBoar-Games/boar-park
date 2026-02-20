@@ -5,6 +5,8 @@ import { jsonResponse } from "../utils";
 import { getVapidPublicKey } from "../lib/push";
 import {
     GET_UNREAD_NOTIFICATIONS_QUERY,
+    GET_ALL_NOTIFICATIONS_QUERY,
+    DELETE_OLD_READ_NOTIFICATIONS_QUERY,
     MARK_ALL_READ_QUERY,
     UPSERT_PUSH_SUBSCRIPTION_QUERY,
     DELETE_PUSH_SUBSCRIPTION_BY_ENDPOINT_QUERY,
@@ -24,6 +26,18 @@ export async function getNotificationsHandler(userId: number): Promise<Response>
         return jsonResponse({ success: true, data: notifications, message: "Notifications fetched" });
     } catch (error) {
         console.error("[notifications] Error fetching notifications:", error);
+        return jsonResponse({ success: false, data: null, message: "Failed to fetch notifications" }, 500);
+    }
+}
+
+export async function getAllNotificationsHandler(userId: number): Promise<Response> {
+    try {
+        // Clean up old read notifications (fire and forget)
+        sql.unsafe(DELETE_OLD_READ_NOTIFICATIONS_QUERY, [userId]).catch(() => {});
+        const notifications = await sql.unsafe(GET_ALL_NOTIFICATIONS_QUERY, [userId]);
+        return jsonResponse({ success: true, data: notifications, message: "Notifications fetched" });
+    } catch (error) {
+        console.error("[notifications] Error fetching all notifications:", error);
         return jsonResponse({ success: false, data: null, message: "Failed to fetch notifications" }, 500);
     }
 }
