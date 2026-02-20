@@ -33,7 +33,13 @@ export function useUploadFileMutation() {
       });
 
       if (!response.ok) {
-        let message = `Upload failed: ${response.statusText}`;
+        if (response.status === 413) {
+          throw new Error('File too large. Maximum upload size is 100 MB.');
+        }
+        if (response.status === 403) {
+          throw new Error('File uploads are locked for this movie.');
+        }
+        let message = `Upload failed (${response.status})`;
         try {
           const err = await response.json();
           if (err.message) message = err.message;
