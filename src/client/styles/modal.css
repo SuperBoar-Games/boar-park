@@ -237,10 +237,12 @@
     cursor: zoom-out;
 }
 
-.lightbox-img {
+.lightbox-img,
+.card-flip-image-wrapper img.lightbox-img {
     width: auto;
     height: 95vh;
     max-width: 95vw;
+    max-height: unset;
     object-fit: contain;
     border-radius: 0.25rem;
     box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6);
