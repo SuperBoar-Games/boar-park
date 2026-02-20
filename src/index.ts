@@ -170,7 +170,8 @@ Bun.serve({
             const stream = new ReadableStream<Uint8Array>({
                 start(controller) {
                     clientId = addSSEClient(controller);
-                    const connected = new TextEncoder().encode(`event: connected\ndata: {"id":"${clientId}"}\n\n`);
+                    // retry: tells clients to wait 5s before reconnecting (our fetch hook handles backoff itself)
+                    const connected = new TextEncoder().encode(`retry: 5000\nevent: connected\ndata: {"id":"${clientId}"}\n\n`);
                     controller.enqueue(connected);
                 },
                 cancel() {
