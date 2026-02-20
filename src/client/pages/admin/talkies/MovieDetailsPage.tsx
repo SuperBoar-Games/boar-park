@@ -154,6 +154,13 @@ function CardFlipImage({ card }: { card: Card }) {
     const [loaded, setLoaded] = useState(false);
     const [lightbox, setLightbox] = useState(false);
 
+    // Reset loaded state if the image URL changes (e.g. after re-upload)
+    const prevUrl = useRef<string | undefined>(undefined);
+    if (imageFile?.url !== prevUrl.current) {
+        prevUrl.current = imageFile?.url;
+        if (loaded) setLoaded(false);
+    }
+
     useEffect(() => {
         if (!lightbox) return;
         const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightbox(false); };
@@ -173,7 +180,6 @@ function CardFlipImage({ card }: { card: Card }) {
                     <img
                         src={imageFile.url}
                         alt={card.name}
-                        loading="lazy"
                         onLoad={() => setLoaded(true)}
                         onClick={() => loaded && setLightbox(true)}
                         style={loaded ? { cursor: 'zoom-in' } : { display: 'none' }}
