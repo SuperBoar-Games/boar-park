@@ -72,8 +72,8 @@ export default function NotificationHistoryPage() {
                                     if (n.url) window.location.href = n.url;
                                 }}
                             >
-                                <span style={{ fontSize: '1.1rem', marginTop: '0.1rem', flexShrink: 0 }}>
-                                    {n.is_read ? '✓' : '🔔'}
+                                <span style={{ fontSize: '1rem', marginTop: '0.1rem', flexShrink: 0, width: '1.2rem', textAlign: 'center', color: n.is_read ? 'var(--ctp-subtext0)' : 'var(--ctp-mauve)' }}>
+                                    <i className={n.is_read ? 'fa-regular fa-circle-check' : 'fa-solid fa-bell'} />
                                 </span>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div style={{

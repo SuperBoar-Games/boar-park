@@ -86,7 +86,7 @@ export function AdminLayout({ title, actions, children }: AdminLayoutProps) {
                                 onClick={() => setIsBellOpen(!isBellOpen)}
                                 title="Notifications"
                             >
-                                🔔
+                                <i className={unreadCount > 0 ? 'fa-solid fa-bell' : 'fa-regular fa-bell'} />
                                 {unreadCount > 0 && (
                                     <span className="notif-badge">
                                         {unreadCount > 99 ? '99+' : unreadCount}
@@ -151,7 +151,7 @@ export function AdminLayout({ title, actions, children }: AdminLayoutProps) {
                                 onClick={() => setIsOpen(!isOpen)}
                                 title="User menu"
                             >
-                                <span className="user-avatar">👤</span>
+                                <span className="user-avatar"><i className="fa-regular fa-circle-user" /></span>
                                 <span className="user-username">{user.username}</span>
                             </button>
 
