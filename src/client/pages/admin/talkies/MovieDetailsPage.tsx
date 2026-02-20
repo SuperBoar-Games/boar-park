@@ -10,6 +10,7 @@ import { Modal } from '../../../components/Modal';
 import { ConfirmDialog } from '../../../components/ConfirmDialog';
 import { Dropdown } from '../../../components/Dropdown';
 import { Icons } from '../../../components/Icons';
+import { Toast } from '../../../components/Toast';
 import { useCardsQuery, useTagsQuery } from '../../../hooks/talkies/useTalkiesQueries';
 import {
   useCreateCardMutation,
@@ -47,6 +48,7 @@ function CardFilesSection({
     canDelete: boolean;
 }) {
     const [open, setOpen] = useState(false);
+    const [toast, setToast] = useState<string | null>(null);
     const { data: files = [] } = useCardFilesQuery(open ? card.id : null);
     const uploadMutation = useUploadFileMutation();
     const deleteMutation = useDeleteFileMutation();
@@ -59,7 +61,7 @@ function CardFilesSection({
         try {
             await uploadMutation.mutateAsync({ cardId: card.id, fileType, file });
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Upload failed');
+            setToast(err instanceof Error ? err.message : 'Upload failed');
         }
     };
 
@@ -67,13 +69,15 @@ function CardFilesSection({
         try {
             await deleteMutation.mutateAsync({ cardId: card.id, fileType });
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Delete failed');
+            setToast(err instanceof Error ? err.message : 'Delete failed');
         }
     };
 
     const canAct = (canUpload || canDelete) && !filesLocked;
 
     return (
+        <>
+        {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
         <div className="card-files-section">
             <button
                 className={`card-files-toggle ${open ? 'open' : ''}`}
@@ -139,6 +143,7 @@ function CardFilesSection({
                 </div>
             )}
         </div>
+        </>
     );
 }
 
