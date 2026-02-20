@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../../components/AdminLayout';
 import { useNotificationHistory } from '../../hooks/notifications/useNotificationsQueries';
 import { useReadAllMutation } from '../../hooks/notifications/useNotificationsMutations';
@@ -15,16 +16,24 @@ function formatTimeAgo(dateStr: string): string {
 }
 
 export default function NotificationHistoryPage() {
+    const navigate = useNavigate();
     const { data: notifications = [], isLoading } = useNotificationHistory();
     const { mutate: markAllRead } = useReadAllMutation();
 
     const unreadCount = notifications.filter(n => !n.is_read).length;
 
-    const actions = unreadCount > 0 ? (
-        <button className="btn btn-secondary" onClick={() => markAllRead()}>
-            Mark all read
-        </button>
-    ) : undefined;
+    const actions = (
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {unreadCount > 0 && (
+                <button className="btn btn-secondary" onClick={() => markAllRead()}>
+                    Mark all read
+                </button>
+            )}
+            <button className="btn btn-secondary" onClick={() => navigate('/admin')}>
+                ← Back
+            </button>
+        </div>
+    );
 
     return (
         <AdminLayout title={<h1>Notifications</h1>} actions={actions}>

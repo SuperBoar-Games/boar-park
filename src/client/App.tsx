@@ -53,6 +53,7 @@ function PwaLoader() {
                 // Add apple PWA meta tags
                 const metas = [
                     { name: 'theme-color', content: '#cba6f7' },
+                    { name: 'mobile-web-app-capable', content: 'yes' },
                     { name: 'apple-mobile-web-app-capable', content: 'yes' },
                     { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
                     { name: 'apple-mobile-web-app-title', content: 'Boar Park' },
