@@ -397,12 +397,9 @@ export default function HeroDetailsPage() {
         <AdminLayout
             title={<h1>{heroName}</h1>}
             actions={
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <HeroDownloadDropdown heroId={parseInt(heroId!)} />
-                    <Button variant="secondary" onClick={() => navigate('/admin/games/talkies')}>
-                        {Icons.arrowLeft} <span>Back to Heroes</span>
-                    </Button>
-                </div>
+                <Button variant="secondary" onClick={() => navigate('/admin/games/talkies')}>
+                    {Icons.arrowLeft} <span>Back to Heroes</span>
+                </Button>
             }
         >
             <div className="table-controls">
@@ -427,9 +424,12 @@ export default function HeroDetailsPage() {
                         )
                     )}
                 </div>
-                <Button variant="secondary" onClick={handleExportCSV}>
-                    {Icons.download} <span>Export CSV</span>
-                </Button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <HeroDownloadDropdown heroId={parseInt(heroId!)} />
+                    <Button variant="secondary" onClick={handleExportCSV}>
+                        <i className="fa-solid fa-file-csv" /> <span>Export CSV</span>
+                    </Button>
+                </div>
             </div>
 
             {viewMode === 'movies' ? (
