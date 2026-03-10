@@ -1,285 +1,255 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boar Park - Play TFI Cards | The Wild Card Game</title>
-    <meta name="description" content="Play TFI Cards - the ultimate card game for Indian cinema fans. Collect heroes, villains, and movies from Telugu, Hindi, Tamil, Kannada & Malayalam cinema.">
-    <link href="https://fonts.googleapis.com/css?family=Comic+Neue:400,700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css-marketing/style.css">
-    <link rel="stylesheet" href="css-marketing/cart.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Talkies - The Card Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: #0a0a0a; color: #fff; line-height: 1.6; }
+    
+    /* Header */
+    header { padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: #ff6b35; }
+    .logo span { color: #fff; }
+    nav a { color: #888; text-decoration: none; margin-left: 1.5rem; font-size: 0.9rem; transition: color 0.2s; }
+    nav a:hover { color: #fff; }
+    nav a.active { color: #ff6b35; }
+    
+    /* Hero */
+    .hero { padding: 4rem 2rem; text-align: center; max-width: 800px; margin: 0 auto; }
+    .hero h1 { font-size: 3rem; margin-bottom: 1rem; line-height: 1.2; }
+    .hero h1 span { color: #ff6b35; }
+    .hero p { font-size: 1.2rem; color: #888; margin-bottom: 2rem; }
+    .hero-img { width: 100%; max-width: 400px; height: 300px; background: linear-gradient(135deg, #1a1a1a, #222); border-radius: 1rem; margin: 2rem auto; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+    
+    /* How to Play */
+    .section { padding: 4rem 2rem; max-width: 800px; margin: 0 auto; }
+    .section h2 { font-size: 2rem; margin-bottom: 2rem; text-align: center; }
+    .steps { display: grid; gap: 1.5rem; }
+    .step { background: #111; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #222; }
+    .step-num { display: inline-block; width: 28px; height: 28px; background: #ff6b35; color: #fff; border-radius: 50%; text-align: center; line-height: 28px; font-weight: 700; margin-right: 0.75rem; font-size: 0.85rem; }
+    .step h3 { display: inline; font-size: 1.1rem; }
+    .step p { color: #888; margin-top: 0.5rem; font-size: 0.95rem; }
+    
+    /* Product */
+    .product { background: #111; border-radius: 1rem; padding: 2rem; margin: 2rem auto; max-width: 500px; border: 1px solid #222; text-align: center; }
+    .product h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .product .price { font-size: 2rem; color: #ff6b35; font-weight: 700; margin: 1rem 0; }
+    .product .price span { font-size: 1rem; color: #666; font-weight: 400; }
+    .product p { color: #888; margin-bottom: 1.5rem; }
+    .btn { display: inline-block; background: #ff6b35; color: #fff; padding: 0.875rem 2rem; border-radius: 0.5rem; text-decoration: none; font-weight: 600; border: none; cursor: pointer; transition: transform 0.2s, background 0.2s; }
+    .btn:hover { background: #ff8555; transform: translateY(-2px); }
+    .btn-secondary { background: #222; }
+    .btn-secondary:hover { background: #333; }
+    
+    /* Cart */
+    .cart-btn { position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; background: #ff6b35; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 20px rgba(255,107,53,0.4); border: none; }
+    .cart-count { position: absolute; top: -5px; right: -5px; background: #fff; color: #0a0a0a; width: 22px; height: 22px; border-radius: 50%; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    
+    /* Modal */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+    .modal.open { display: flex; }
+    .modal-content { background: #111; border-radius: 1rem; padding: 2rem; max-width: 450px; width: 100%; border: 1px solid #222; }
+    .modal h2 { margin-bottom: 1.5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; color: #888; font-size: 0.9rem; }
+    .form-group input { width: 100%; padding: 0.75rem; border: 1px solid #333; border-radius: 0.5rem; background: #0a0a0a; color: #fff; font-size: 1rem; }
+    .form-group input:focus { outline: none; border-color: #ff6b35; }
+    .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .modal-actions .btn { flex: 1; text-align: center; }
+    .close-modal { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: #666; font-size: 1.5rem; cursor: pointer; }
+    
+    /* Order Success */
+    .success-check { font-size: 4rem; text-align: center; display: block; margin-bottom: 1rem; }
+    .order-id { background: #222; padding: 1rem; border-radius: 0.5rem; margin: 1rem 0; font-family: monospace; }
+    
+    /* Track Order */
+    .track-section { padding: 2rem; max-width: 600px; margin: 0 auto; }
+    .track-form { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .track-form input { flex: 1; padding: 0.75rem; border: 1px solid #333; border-radius: 0.5rem; background: #0a0a0a; color: #fff; }
+    .order-status { background: #111; border-radius: 1rem; padding: 2rem; border: 1px solid #222; }
+    .status-badge { display: inline-block; padding: 0.25rem 0.75rem; background: #ff6b35; color: #fff; border-radius: 1rem; font-size: 0.85rem; font-weight: 500; margin-bottom: 1rem; }
+    .status-badge.delivered { background: #22c55e; }
+    .order-items { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #222; }
+    .order-item { display: flex; justify-content: space-between; padding: 0.5rem 0; color: #888; }
+    
+    /* Footer */
+    footer { text-align: center; padding: 2rem; color: #444; font-size: 0.85rem; border-top: 1px solid #222; margin-top: 4rem; }
+  </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-brand">
-            <span class="boar-logo">🐗</span>
-            <span class="brand-text">SUPERBOAR</span>
-        </div>
-        <div class="nav-links">
-            <a href="#about">About</a>
-            <a href="#how-to-play">How to Play</a>
-            <a href="#cards">Cards</a>
-            <a href="#products">Shop</a>
-            <a href="my-orders.html">My Orders</a>
-            <a href="../games/play-cards/" class="btn-primary">Play Now</a>
-            <button class="cart-toggle" onclick="toggleCart()" aria-label="Cart">
-                🛒 <span id="cart-badge" class="cart-badge">0</span>
-            </button>
-        </div>
-        <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+  <header>
+    <div class="logo">Talkies<span>.ai</span></div>
+    <nav>
+      <a href="#how-to-play">How to Play</a>
+      <a href="#buy">Buy</a>
+      <a href="track.html">Track Order</a>
     </nav>
+  </header>
 
-    <!-- Cart Sidebar -->
-    <div id="cart-overlay" class="cart-overlay"></div>
-    <div id="cart-sidebar" class="cart-sidebar">
-        <div class="cart-header">
-            <h3>🛒 Your Cart</h3>
-            <button class="cart-close" onclick="toggleCart()">✕</button>
-        </div>
-        <div id="cart-items" class="cart-items">
-            <!-- Cart items rendered here -->
-        </div>
-        <div class="cart-footer">
-            <div id="cart-total" class="cart-total">Total: ₹0</div>
-            <a href="checkout.html" class="btn-checkout">Proceed to Checkout →</a>
-            <button class="btn-continue" onclick="toggleCart()">Continue Shopping</button>
-        </div>
+  <section class="hero">
+    <h1>The Ultimate <span>Cinema Card Game</span></h1>
+    <p>Collect. Battle. Dominate. The trading card game featuring your favorite actors from Telugu, Tamil, Hindi & more.</p>
+    <div class="hero-img">🎴</div>
+    <a href="#buy" class="btn">Get Your Pack - ₹199</a>
+  </section>
+
+  <section id="how-to-play" class="section">
+    <h2>How to Play</h2>
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">1</span>
+        <h3>Get Your Pack</h3>
+        <p>Buy a Talkies pack with 10 random cards - heroes, villains, and special cards.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <h3>Build Your Deck</h3>
+        <p>Select your best 5 cards to form your battle deck. Each card has unique stats and abilities.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <h3>Battle Friends</h3>
+        <p>Challenge friends offline! Compare card stats, use special abilities, and declare the winner.</p>
+      </div>
     </div>
+  </section>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <div class="hero-badge">🎴 New Game Launch</div>
-            <h1>Welcome to the Wild!</h1>
-            <p class="hero-subtitle">The ultimate card game for Indian cinema fans.<br>Collect, trade, and battle with your favorite stars.</p>
-            <div class="hero-cta">
-                <a href="../games/play-cards/" class="btn-cta">🎮 Play TFI Cards Now</a>
-                <a href="#products" class="btn-secondary">🛍️ Shop Card Packs</a>
-            </div>
-            <div class="hero-stats">
-                <div class="stat">
-                    <span class="stat-number">5</span>
-                    <span class="stat-label">Languages</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-number">100+</span>
-                    <span class="stat-label">Hero Cards</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-number">∞</span>
-                    <span class="stat-label">Fun</span>
-                </div>
-            </div>
-        </div>
-        <div class="hero-visual">
-            <div class="card-float card-1">🎬</div>
-            <div class="card-float card-2">⭐</div>
-            <div class="card-float card-3">🎭</div>
-        </div>
-    </section>
+  <section id="buy" class="section">
+    <h2>Get Your Cards</h2>
+    <div class="product">
+      <h3>🎴 Talkies Starter Pack</h3>
+      <p>10 random cards + 2 rare variants</p>
+      <div class="price">₹199 <span>free shipping</span></div>
+      <button class="btn" onclick="openCheckout()">Buy Now</button>
+    </div>
+  </section>
 
-    <!-- About Section -->
-    <section id="about" class="about">
-        <div class="container">
-            <h2>What is Boar Park?</h2>
-            <div class="about-grid">
-                <div class="about-text">
-                    <p><strong>Boar Park</strong> is a thrilling digital card game platform celebrating Indian cinema. Build your deck with legendary heroes, iconic villains, and blockbuster movies.</p>
-                    <p>From Telugu superstars to Bollywood legends, Tamil icons to Malayalam masters — collect them all and battle your friends!</p>
-                    <ul class="feature-list">
-                        <li>🎴 Collectible card game mechanics</li>
-                        <li>🎬 Authentic movie data & characters</li>
-                        <li>🏆 Competitive multiplayer battles</li>
-                        <li>🌟 Regular new card releases</li>
-                    </ul>
-                </div>
-                <div class="about-visual">
-                    <div class="card-showcase">
-                        <div class="sample-card hero-card">
-                            <div class="card-header">HERO</div>
-                            <div class="card-icon">🦸</div>
-                            <div class="card-name">Superstar</div>
-                        </div>
-                        <div class="sample-card villain-card">
-                            <div class="card-header">VILLAIN</div>
-                            <div class="card-icon">😈</div>
-                            <div class="card-name">Antagonist</div>
-                        </div>
-                        <div class="sample-card movie-card">
-                            <div class="card-header">BLOCKBUSTER</div>
-                            <div class="card-icon">🎬</div>
-                            <div class="card-name">Hit Movie</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <button class="cart-btn" onclick="openCheckout()">
+    🛒
+    <span class="cart-count" id="cartCount">1</span>
+  </button>
 
-    <!-- Languages Section -->
-    <section class="languages">
-        <div class="container">
-            <h2>Cinema From Across India</h2>
-            <p class="section-subtitle">Collect cards from all major Indian film industries</p>
-            <div class="language-grid">
-                <div class="lang-card telugu">
-                    <span class="lang-flag">🌟</span>
-                    <h3>Telugu</h3>
-                    <p>Tollywood legends</p>
-                </div>
-                <div class="lang-card hindi">
-                    <span class="lang-flag">🎭</span>
-                    <h3>Hindi</h3>
-                    <p>Bollywood icons</p>
-                </div>
-                <div class="lang-card tamil">
-                    <span class="lang-flag">🎬</span>
-                    <h3>Tamil</h3>
-                    <p>Kollywood stars</p>
-                </div>
-                <div class="lang-card kannada">
-                    <span class="lang-flag">⭐</span>
-                    <h3>Kannada</h3>
-                    <p>Sandalwood heroes</p>
-                </div>
-                <div class="lang-card malayalam">
-                    <span class="lang-flag">🏆</span>
-                    <h3>Malayalam</h3>
-                    <p>Mollywood masters</p>
-                </div>
-            </div>
+  <!-- Checkout Modal -->
+  <div class="modal" id="checkoutModal">
+    <div class="modal-content">
+      <h2>Order Details</h2>
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="name" placeholder="Your name" required>
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="phone" placeholder="10-digit number" required>
+      </div>
+      <div class="form-group">
+        <label>Address</label>
+        <input type="text" id="address" placeholder="Delivery address" required>
+      </div>
+      <div class="form-group">
+        <label>Pincode</label>
+        <input type="text" id="pincode" placeholder="6-digit pincode" required>
+      </div>
+      <div style="background: #222; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+          <span>Talkies Starter Pack × 1</span>
+          <span>₹199</span>
         </div>
-    </section>
-
-    <!-- How to Play Section -->
-    <section id="how-to-play" class="how-to-play">
-        <div class="container">
-            <h2>How to Play TFI Cards</h2>
-            <p class="section-subtitle">Master the game in 3 simple steps</p>
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-icon">🎁</div>
-                    <h3>Open Packs</h3>
-                    <p>Start by opening card packs to build your collection with heroes, villains, and special cards.</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-icon">🎴</div>
-                    <h3>Build Deck</h3>
-                    <p>Strategically assemble your best cards into a powerful deck for battles.</p>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-icon">⚔️</div>
-                    <h3>Battle & Win</h3>
-                    <p>Challenge friends or AI opponents. Use card abilities to outplay your rivals!</p>
-                </div>
-            </div>
+        <div style="display: flex; justify-content: space-between; color: #888; font-size: 0.9rem;">
+          <span>Shipping</span>
+          <span>Free</span>
         </div>
-    </section>
-
-    <!-- Card Types Section -->
-    <section id="cards" class="card-types">
-        <div class="container">
-            <h2>Card Categories</h2>
-            <p class="section-subtitle">Discover the different card types in your collection</p>
-            <div class="card-types-grid">
-                <div class="type-card">
-                    <div class="type-badge hero">HERO</div>
-                    <div class="type-icon">🦸</div>
-                    <h3>Hero Cards</h3>
-                    <p>The protagonists of cinema. High power, crowd favorites. Each hero belongs to a movie and has unique abilities.</p>
-                </div>
-                <div class="type-card">
-                    <div class="type-badge villain">VILLAIN</div>
-                    <div class="type-icon">😈</div>
-                    <h3>Villain Cards</h3>
-                    <p>The antagonists that make stories thrilling. Often have special disruption abilities in battle.</p>
-                </div>
-                <div class="type-card">
-                    <div class="type-badge sr1">SR1</div>
-                    <div class="type-icon">🌟</div>
-                    <h3>Super Rare 1</h3>
-                    <p>Limited edition cards with enhanced stats. Hard to find, powerful in play.</p>
-                </div>
-                <div class="type-card">
-                    <div class="type-badge sr2">SR2</div>
-                    <div class="type-icon">💫</div>
-                    <h3>Super Rare 2</h3>
-                    <p>Ultra-rare collector's items. The crown jewels of any serious collection.</p>
-                </div>
-                <div class="type-card">
-                    <div class="type-badge wc">WC</div>
-                    <div class="type-icon">🏆</div>
-                    <h3>Wild Card</h3>
-                    <p>Special unpredictable cards that can turn the tide of any battle instantly.</p>
-                </div>
-            </div>
+        <div style="display: flex; justify-content: space-between; font-weight: 700; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #333;">
+          <span>Total</span>
+          <span style="color: #ff6b35;">₹199</span>
         </div>
-    </section>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn" onclick="placeOrder()">Place Order - ₹199</button>
+      </div>
+    </div>
+  </div>
 
-    <!-- Products Section (SHOP) -->
-    <section id="products" class="products">
-        <div class="container">
-            <h2>🛍️ Shop Card Packs</h2>
-            <p class="section-subtitle">Buy card packs to boost your collection</p>
-            <div id="products-grid">
-                <!-- Products rendered by cart.js -->
-            </div>
-        </div>
-    </section>
+  <!-- Success Modal -->
+  <div class="modal" id="successModal">
+    <div class="modal-content" style="text-align: center;">
+      <span class="success-check">✅</span>
+      <h2>Order Placed!</h2>
+      <p>Your Talkies pack is on the way.</p>
+      <div class="order-id">Order ID: <span id="orderId"></span></div>
+      <p style="color: #888; font-size: 0.9rem;">Save this ID to track your order.</p>
+      <button class="btn" onclick="closeSuccess()" style="margin-top: 1rem;">Done</button>
+    </div>
+  </div>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container">
-            <div class="cta-content">
-                <span class="boar-icon-large">🐗</span>
-                <h2>Ready to Enter the Wild?</h2>
-                <p>Join thousands of players collecting and battling with Indian cinema's greatest stars.</p>
-                <a href="../games/play-cards/" class="btn-cta-large">🎮 Start Playing Now - It's Free!</a>
-                <p class="cta-small">No signup required • Play instantly in your browser</p>
-            </div>
-        </div>
-    </section>
+  <footer>
+    <p>Talkies - The Cinema Card Game © 2026</p>
+  </footer>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-brand">
-                    <span class="boar-logo">🐗</span>
-                    <span class="brand-text">SUPERBOAR</span>
-                    <p>The wildest card game experience.</p>
-                </div>
-                <div class="footer-links">
-                    <h4>Shop</h4>
-                    <a href="#products">Card Packs</a>
-                    <a href="my-orders.html">My Orders</a>
-                    <a href="track-order.html">Track Order</a>
-                </div>
-                <div class="footer-links">
-                    <h4>Game</h4>
-                    <a href="../games/play-cards/">Play TFI Cards</a>
-                    <a href="#how-to-play">How to Play</a>
-                    <a href="#cards">Card Types</a>
-                </div>
-                <div class="footer-links">
-                    <h4>Connect</h4>
-                    <a href="#">Discord</a>
-                    <a href="#">Twitter</a>
-                    <a href="#">Instagram</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>© 2026 SuperBoar Games. All rights reserved. 🐗</p>
-                <p>Made with love for Indian cinema fans.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script src="js-marketing/main.js"></script>
-    <script src="js-marketing/cart.js"></script>
+  <script>
+    let orders = JSON.parse(localStorage.getItem('talkies_orders') || '[]');
+    
+    function openCheckout() {
+      document.getElementById('checkoutModal').classList.add('open');
+    }
+    
+    function closeModal() {
+      document.getElementById('checkoutModal').classList.remove('open');
+    }
+    
+    function closeSuccess() {
+      document.getElementById('successModal').classList.remove('open');
+    }
+    
+    function placeOrder() {
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const pincode = document.getElementById('pincode').value.trim();
+      
+      if (!name || !phone || !address || !pincode) {
+        alert('Please fill all fields');
+        return;
+      }
+      
+      const orderId = 'TK' + Date.now().toString().slice(-6);
+      const order = {
+        id: orderId,
+        name, phone, address, pincode,
+        items: [{ name: 'Talkies Starter Pack', qty: 1, price: 199 }],
+        total: 199,
+        status: 'Processing',
+        createdAt: new Date().toISOString()
+      };
+      
+      orders.push(order);
+      localStorage.setItem('talkies_orders', JSON.stringify(orders));
+      
+      document.getElementById('orderId').textContent = orderId;
+      closeModal();
+      document.getElementById('successModal').classList.add('open');
+      
+      // Clear form
+      document.getElementById('name').value = '';
+      document.getElementById('phone').value = '';
+      document.getElementById('address').value = '';
+      document.getElementById('pincode').value = '';
+    }
+    
+    // Check URL for order tracking
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('order')) {
+      setTimeout(() => {
+        const order = orders.find(o => o.id === urlParams.get('order'));
+        if (order) {
+          alert(`Order ${order.id}: ${order.status}`);
+        }
+      }, 100);
+    }
+  </script>
 </body>
 </html>

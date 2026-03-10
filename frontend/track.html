@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order - Talkies</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: #0a0a0a; color: #fff; line-height: 1.6; min-height: 100vh; }
+    
+    header { padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: #ff6b35; }
+    .logo span { color: #fff; }
+    nav a { color: #888; text-decoration: none; margin-left: 1.5rem; font-size: 0.9rem; }
+    nav a:hover { color: #fff; }
+    nav a.active { color: #ff6b35; }
+    
+    .track-section { padding: 2rem; max-width: 600px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 2rem; }
+    
+    .track-form { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .track-form input { flex: 1; padding: 0.875rem; border: 1px solid #333; border-radius: 0.5rem; background: #111; color: #fff; font-size: 1rem; }
+    .track-form input:focus { outline: none; border-color: #ff6b35; }
+    .track-form button { padding: 0.875rem 1.5rem; background: #ff6b35; color: #fff; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; }
+    .track-form button:hover { background: #ff8555; }
+    
+    .order-card { background: #111; border-radius: 1rem; padding: 1.5rem; border: 1px solid #222; display: none; }
+    .order-card.show { display: block; }
+    
+    .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .order-id { font-family: monospace; font-size: 1.1rem; color: #ff6b35; }
+    
+    .status-badge { display: inline-block; padding: 0.25rem 0.75rem; background: #ff6b35; color: #fff; border-radius: 1rem; font-size: 0.8rem; font-weight: 500; }
+    .status-badge.delivered { background: #22c55e; }
+    .status-badge.shipped { background: #3b82f6; }
+    .status-badge.processing { background: #f59e0b; }
+    
+    .order-details { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #222; }
+    .detail-row { display: flex; justify-content: space-between; padding: 0.5rem 0; color: #888; }
+    .detail-row span:last-child { color: #fff; }
+    
+    .order-items { margin-top: 1rem; }
+    .item-row { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #222; }
+    .item-row:last-child { border: none; }
+    
+    .total-row { display: flex; justify-content: space-between; padding: 1rem 0; font-weight: 700; font-size: 1.1rem; }
+    .total-row span:last-child { color: #ff6b35; }
+    
+    .not-found { text-align: center; color: #666; padding: 2rem; display: none; }
+    .not-found.show { display: block; }
+    
+    .back-link { display: block; text-align: center; color: #ff6b35; text-decoration: none; margin-top: 2rem; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Talkies<span>.ai</span></div>
+    <nav>
+      <a href="index.html">Home</a>
+    </nav>
+  </header>
+
+  <div class="track-section">
+    <h1>Track Order</h1>
+    
+    <form class="track-form" onsubmit="trackOrder(event)">
+      <input type="text" id="orderIdInput" placeholder="Enter Order ID (e.g., TK123456)" required>
+      <button type="submit">Track</button>
+    </form>
+    
+    <div class="not-found" id="notFound">
+      <p>Order not found. Please check your Order ID.</p>
+    </div>
+    
+    <div class="order-card" id="orderCard">
+      <div class="order-header">
+        <span class="order-id" id="displayOrderId"></span>
+        <span class="status-badge" id="displayStatus"></span>
+      </div>
+      
+      <div class="order-details">
+        <div class="detail-row">
+          <span>Name</span>
+          <span id="displayName"></span>
+        </div>
+        <div class="detail-row">
+          <span>Phone</span>
+          <span id="displayPhone"></span>
+        </div>
+        <div class="detail-row">
+          <span>Address</span>
+          <span id="displayAddress"></span>
+        </div>
+        <div class="detail-row">
+          <span>Pincode</span>
+          <span id="displayPincode"></span>
+        </div>
+        <div class="detail-row">
+          <span>Ordered On</span>
+          <span id="displayDate"></span>
+        </div>
+      </div>
+      
+      <div class="order-items">
+        <h3 style="margin: 1rem 0 0.5rem; font-size: 0.9rem; color: #666;">Items</h3>
+        <div id="displayItems"></div>
+        <div class="total-row">
+          <span>Total Paid</span>
+          <span id="displayTotal"></span>
+        </div>
+      </div>
+    </div>
+    
+    <a href="index.html" class="back-link">← Back to Home</a>
+  </div>
+
+  <script>
+    const orders = JSON.parse(localStorage.getItem('talkies_orders') || '[]');
+    
+    function getStatusClass(status) {
+      if (status === 'Delivered') return 'delivered';
+      if (status === 'Shipped') return 'shipped';
+      return 'processing';
+    }
+    
+    function trackOrder(e) {
+      e.preventDefault();
+      const orderId = document.getElementById('orderIdInput').value.trim().toUpperCase();
+      const order = orders.find(o => o.id.toUpperCase() === orderId);
+      
+      const card = document.getElementById('orderCard');
+      const notFound = document.getElementById('notFound');
+      
+      if (!order) {
+        card.classList.remove('show');
+        notFound.classList.add('show');
+        return;
+      }
+      
+      notFound.classList.remove('show');
+      card.classList.add('show');
+      
+      document.getElementById('displayOrderId').textContent = order.id;
+      document.getElementById('displayStatus').textContent = order.status;
+      document.getElementById('displayStatus').className = 'status-badge ' + getStatusClass(order.status);
+      document.getElementById('displayName').textContent = order.name;
+      document.getElementById('displayPhone').textContent = order.phone;
+      document.getElementById('displayAddress').textContent = order.address;
+      document.getElementById('displayPincode').textContent = order.pincode;
+      document.getElementById('displayDate').textContent = new Date(order.createdAt).toLocaleDateString('en-IN');
+      document.getElementById('displayTotal').textContent = '₹' + order.total;
+      
+      document.getElementById('displayItems').innerHTML = order.items.map(item => 
+        `<div class="item-row">
+          <span>${item.name} × ${item.qty}</span>
+          <span>₹${item.price * item.qty}</span>
+        </div>`
+      ).join('');
+    }
+    
+    // Check URL for order param
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('id')) {
+      document.getElementById('orderIdInput').value = urlParams.get('id');
+      trackOrder(new Event('submit'));
+    }
+  </script>
+</body>
+</html>
