@@ -39,21 +39,10 @@ jobs:
             sudo install -m 755 /var/www/boar-park/deployment/deploy.sh /tmp/boar-park-deploy.run
             sudo /tmp/boar-park-deploy.run production main 2>&1
 
-      # deploy.sh health-checks against localhost. This confirms the site is
-      # also reachable through nginx and Cloudflare from outside.
-      - name: Verify public health endpoint
-        run: |
-          for i in $(seq 1 5); do
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 https://superboar.com/health || true)
-            if [ "$code" = "200" ]; then
-              echo "Public health check passed"
-              exit 0
-            fi
-            echo "attempt $i: HTTP $code"
-            sleep 5
-          done
-          echo "::error::Public health check failed after deploy"
-          exit 1
+      # No public health check here on purpose. Cloudflare 403s GitHub Actions
+      # runner IPs, so it failed every run regardless of whether the deploy
+      # worked. deploy.sh checks the app and the nginx path from the box, which
+      # covers everything this pipeline actually controls.
 
       - name: Report failure
         if: failure()

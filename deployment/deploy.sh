@@ -175,6 +175,21 @@ for i in $(seq 1 10); do
     sleep 2
 done
 
+# The app answering on :3000 does not prove nginx will serve it — a bad site
+# config, a wrong root, or the SPA fallback breaking all pass the check above.
+# Go through nginx too. Not through Cloudflare: the edge 403s datacenter IPs,
+# so a CI-side public check fails on runs where the deploy was fine.
+if [ "$HEALTHY" -eq 1 ]; then
+    NGINX_CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
+        -H "Host: ${DOMAIN:-superboar.com}" http://127.0.0.1/health || true)
+    if [ "$NGINX_CODE" = "200" ]; then
+        log "nginx path check passed"
+    else
+        warn "App is healthy but nginx returned $NGINX_CODE for /health"
+        HEALTHY=0
+    fi
+fi
+
 if [ "$HEALTHY" -ne 1 ]; then
     warn "Health check failed — rolling back to $(git rev-parse --short "$PREV_COMMIT")"
     systemctl stop "$SERVICE_NAME" || true
