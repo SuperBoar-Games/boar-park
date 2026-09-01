@@ -30,8 +30,14 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           command_timeout: 15m
           script_stop: true
+          # Run from a snapshot, not in place. deploy.sh checks out the new
+          # commit, which rewrites deployment/deploy.sh on disk — and bash
+          # reads a script incrementally, so overwriting the file it is
+          # executing makes it resume at a stale byte offset in new content.
           script: |
-            sudo /var/www/boar-park/deployment/deploy.sh production main 2>&1
+            set -e
+            sudo install -m 755 /var/www/boar-park/deployment/deploy.sh /tmp/boar-park-deploy.run
+            sudo /tmp/boar-park-deploy.run production main 2>&1
 
       # deploy.sh health-checks against localhost. This confirms the site is
       # also reachable through nginx and Cloudflare from outside.
