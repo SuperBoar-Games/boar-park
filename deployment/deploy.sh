@@ -196,8 +196,14 @@ fi
 # ------------------------------------------------------------------ cleanup --
 log "Pruning old backups (keeping 10)..."
 cd "$BACKUP_DIR"
-ls -t db-backup-*.sql 2>/dev/null       | tail -n +11 | xargs -r rm -f
-ls -t files-backup-*.tar.gz 2>/dev/null | tail -n +11 | xargs -r rm -f
-ls -t nginx-boar-park-*.conf 2>/dev/null | tail -n +11 | xargs -r rm -f
+# `ls` exits 2 when a glob matches nothing, and under `set -euo pipefail` that
+# aborts the script — after a fully successful deploy. Housekeeping must never
+# decide the outcome, so each prune swallows its own failure.
+prune_old() {
+    ls -t $1 2>/dev/null | tail -n +11 | xargs -r rm -f || true
+}
+prune_old 'db-backup-*.sql'
+prune_old 'files-backup-*.tar.gz'
+prune_old 'nginx-boar-park-*.conf'
 
 log "Deployed $(cd "$DEPLOY_DIR" && git rev-parse --short HEAD) to $ENVIRONMENT"
