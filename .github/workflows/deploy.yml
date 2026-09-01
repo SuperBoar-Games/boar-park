@@ -1,19 +1,22 @@
 name: Deploy to Production
 
+# Merging a PR into main already produces a `push` event on main, so `push`
+# alone covers the "PR merged" case. Listening for `pull_request: closed` as
+# well fired two concurrent deploys for every merge — both stopping and
+# starting the same service.
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    types:
-      - closed
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
+
+# Never let two deploys touch the VPS at once. Queue rather than cancel: a
+# cancelled run could be killed between `systemctl stop` and `systemctl start`.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    # For PRs: only run when actually merged (not just closed)
-    if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     environment: production
 
@@ -25,11 +28,30 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 15m
+          script_stop: true
           script: |
             sudo /var/www/boar-park/deployment/deploy.sh production main 2>&1
-          script_stop: true
 
-      - name: Notify on failure
+      # deploy.sh health-checks against localhost. This confirms the site is
+      # also reachable through nginx and Cloudflare from outside.
+      - name: Verify public health endpoint
+        run: |
+          for i in $(seq 1 5); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 https://superboar.com/health || true)
+            if [ "$code" = "200" ]; then
+              echo "Public health check passed"
+              exit 0
+            fi
+            echo "attempt $i: HTTP $code"
+            sleep 5
+          done
+          echo "::error::Public health check failed after deploy"
+          exit 1
+
+      - name: Report failure
         if: failure()
         run: |
-          echo "::error::Deployment failed. Check the VPS logs: journalctl -u boar-park -n 50"
+          echo "::error::Deployment failed. deploy.sh rolls the code back on a failed \
+          health check, but verify the service is up: \
+          journalctl -u boar-park -n 50"
