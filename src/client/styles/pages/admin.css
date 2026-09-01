@@ -7,6 +7,12 @@
    ========================================================================== */
 
 .admin-header {
+    /* One source of truth for the title's size and leading: the <h1> and the
+       reserved height of the title column below are both derived from these,
+       so the mobile override moves them together instead of drifting apart. */
+    --header-title-size: var(--text-2xl);
+    --header-title-leading: 1.25;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -24,8 +30,17 @@
 .admin-header-titles {
     display: flex;
     flex-direction: column;
+    /* Bottom-aligned so the <h1> lands in the same place whether or not the
+       page has a trail above it. */
+    justify-content: flex-end;
     gap: 0.125rem;
     min-width: 0;
+    /* Reserve the breadcrumb row on every page. /admin is the root of the tree,
+       so it has no ancestors to show and rendered no trail at all — its header
+       came out a row shorter than every other admin page, and the title plus
+       everything below it jumped when navigating between them. */
+    min-height: calc(var(--text-xs) * 1.4 + 0.125rem +
+                     var(--header-title-size) * var(--header-title-leading));
 }
 
 .breadcrumbs {
@@ -63,7 +78,8 @@
 
 .admin-header h1 {
     font-family: var(--font-display);
-    font-size: var(--text-2xl);
+    font-size: var(--header-title-size);
+    line-height: var(--header-title-leading);
     font-weight: 600;
     letter-spacing: var(--tracking-display);
     color: var(--fg);
@@ -213,13 +229,12 @@ main h2 {
 /* ---- Mobile — collapse labelled buttons to round icon buttons ----------- */
 @media (max-width: 640px) {
     .admin-header {
+        /* Retunes the <h1> and the reserved title-column height together */
+        --header-title-size: var(--text-xl);
+
         gap: var(--sp-2);
         padding-bottom: var(--sp-3);
         margin-bottom: var(--sp-4);
-    }
-
-    .admin-header h1 {
-        font-size: var(--text-xl);
     }
 
     /* Not enough width for a trail — show only the immediate parent, as a
