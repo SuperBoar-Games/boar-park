@@ -1,0 +1,55 @@
+name: CI
+
+# Runs on every PR so main is never merged into from a branch that does not
+# build, and on pushes to main so the README badge reflects the shipped state.
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [main, dev]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # --frozen-lockfile so a PR that changes package.json without committing
+      # the updated bun.lock fails here rather than resolving differently on
+      # the VPS than it did in CI.
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build backend
+        run: bun run build
+
+      - name: Build frontend
+        run: bun run build:client
+
+  scripts:
+    name: Shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # deploy.sh and run-migrations.sh run as root on production and are not
+      # exercised by any build. A syntax error in them only ever surfaced
+      # mid-deploy, with the service already stopped.
+      - name: Check syntax
+        run: |
+          for f in deployment/*.sh scripts/*.sh; do
+            echo "checking $f"
+            bash -n "$f"
+          done
+
+      - name: shellcheck
+        run: shellcheck -S error deployment/*.sh scripts/*.sh
