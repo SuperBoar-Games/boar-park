@@ -1,6 +1,7 @@
 # Boar Park
 
-
+[![CI](https://github.com/SuperBoar-Games/boar-park/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SuperBoar-Games/boar-park/actions/workflows/ci.yml)
+[![Deploy](https://github.com/SuperBoar-Games/boar-park/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/SuperBoar-Games/boar-park/actions/workflows/deploy.yml)
 
 ## Local Development
 
