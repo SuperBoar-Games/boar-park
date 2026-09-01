@@ -1,0 +1,38 @@
+[Unit]
+Description=Boar Park Admin Interface
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=boar-park
+WorkingDirectory=/var/www/boar-park
+
+# Load environment from .env file
+EnvironmentFile=/var/www/boar-park/.env
+
+# Start command — adjust bun path if installed elsewhere
+ExecStart=/usr/local/bin/bun run src/index.ts
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Resource limits
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=boar-park
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/www/boar-park
+PrivateTmp=yes
+
+# Process management
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

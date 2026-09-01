@@ -1,0 +1,340 @@
+/* ============================================================================
+   Users management
+   This file used to carry a full second copy of the table chrome under
+   .users-table — 39 rules duplicating .data-table (head band, hairline rows,
+   radii, filter row, hover) that had to be kept in sync by hand and had
+   already drifted. The page now renders .data-table like every other screen,
+   and only the genuinely users-specific bits live here.
+   ========================================================================== */
+.users-management-container {
+    padding: 0;
+}
+
+/* ---- Users-only table bits ---------------------------------------------- */
+.data-table td.username {
+    font-weight: 500;
+    color: var(--fg);
+}
+
+.data-table td.email {
+    font-size: var(--text-sm);
+    color: var(--fg-subtle);
+}
+
+/* The role filter is a custom select rather than a text input, so it needs to
+   sit above the rows and stay narrow. */
+.data-table thead tr.filter-row {
+    position: relative;
+    z-index: 10;
+}
+
+.data-table thead tr.filter-row td .custom-select {
+    position: relative;
+    z-index: 11;
+}
+
+.data-table thead .custom-select.filter-input {
+    width: 5rem !important;
+    min-width: unset !important;
+    max-width: 5rem !important;
+    padding: 0;
+}
+
+.data-table thead .custom-select.filter-input .custom-select-trigger {
+    border: none;
+    background-color: transparent;
+    height: calc(var(--control-h-sm) - 2px);
+    padding: 0 var(--sp-2);
+    font-size: var(--text-sm);
+}
+
+.data-table thead .custom-select-dropdown {
+    z-index: 1000 !important;
+    position: absolute !important;
+    left: 0 !important;
+    right: auto !important;
+    max-height: 13rem;
+    overflow-y: auto;
+}
+
+/* ---- Toast -------------------------------------------------------------- */
+.toast-notification {
+    position: fixed;
+    top: var(--sp-6);
+    right: var(--sp-6);
+    min-width: 18rem;
+    max-width: 28rem;
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: var(--r-3);
+    box-shadow: var(--shadow-3);
+    z-index: 1000;
+    animation: slideIn var(--dur-3) var(--ease);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-weight: 500;
+    font-size: var(--text-md);
+    background-color: var(--panel);
+    border: 1px solid var(--border-strong);
+    color: var(--fg);
+}
+
+.toast-notification.success {
+    border-color: color-mix(in srgb, var(--success) 45%, transparent);
+    color: var(--success-text);
+}
+
+.toast-notification.error {
+    border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+    color: var(--danger-text);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(1.5rem);
+        opacity: 0;
+    }
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+/* ---- Header ------------------------------------------------------------- */
+.users-management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-6);
+}
+
+.users-management-header h1 {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    color: var(--fg);
+}
+
+/* ---- Role badges --------------------------------------------------------
+   Roles are neutral chips. They used to be tinted from a hardcoded rgba()
+   lookup keyed on role name, which gave five roles five arbitrary colours
+   that meant nothing and ignored the theme. Only `admin` is marked, because
+   only admin actually carries elevated access.
+   ------------------------------------------------------------------------ */
+.user-roles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-1);
+}
+
+.user-roles-empty {
+    font-size: var(--text-xs);
+    color: var(--fg-faint);
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    height: 1.5rem;
+    padding: 0 var(--sp-1) 0 var(--sp-2);
+    background-color: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--fg-muted);
+    border-radius: var(--r-2);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1;
+    width: fit-content;
+    transition: border-color var(--dur-1) var(--ease);
+}
+
+.role-badge:hover {
+    border-color: var(--border-strong);
+}
+
+.role-badge.is-admin {
+    background-color: var(--warning-soft);
+    border-color: color-mix(in srgb, var(--warning) 35%, transparent);
+}
+
+.role-badge.is-admin .role-badge-name {
+    color: var(--warning-text);
+}
+
+.role-badge-name {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+    color: var(--fg);
+    white-space: nowrap;
+}
+
+/* The game scopes the role, so it's an inset segment rather than a second
+   word after a rule. A border-left divider made "viewer | Talkies" read like
+   a broken table cell; recessing it shows containment instead. */
+.role-badge-game {
+    display: inline-flex;
+    align-items: center;
+    height: 1.125rem;
+    padding: 0 var(--sp-1);
+    margin-left: 0.125rem;
+    border-radius: var(--r-1);
+    background-color: var(--bg-sunken);
+    font-size: var(--text-2xs);
+    font-weight: 500;
+    color: var(--fg-subtle);
+    white-space: nowrap;
+}
+
+.role-badge.is-admin .role-badge-game {
+    background-color: color-mix(in srgb, var(--warning) 12%, transparent);
+}
+
+/* currentColor, so the × is legible on the neutral chip AND the warning-tinted
+   admin one — a fixed faint grey disappeared against the orange. */
+.role-badge-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    border-radius: var(--r-1);
+    color: currentColor;
+    opacity: 0.55;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.5rem;
+    line-height: 1;
+    transition: opacity var(--dur-1) var(--ease),
+                color var(--dur-1) var(--ease),
+                background-color var(--dur-1) var(--ease);
+}
+
+.role-badge-remove:hover {
+    opacity: 1;
+    background-color: var(--danger-soft);
+    color: var(--danger-text);
+}
+
+.role-badge.is-admin .role-badge-remove {
+    color: var(--warning-text);
+}
+
+
+.role-badge-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.375rem;
+    height: 1.375rem;
+    padding: 0;
+    background-color: transparent;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--r-2);
+    color: var(--fg-faint);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color var(--dur-2) var(--ease),
+                border-color var(--dur-2) var(--ease),
+                color var(--dur-2) var(--ease);
+}
+
+.role-badge-add:hover {
+    background-color: var(--panel-hover);
+    border-style: solid;
+    border-color: var(--fg-faint);
+    color: var(--fg);
+}
+
+/* ---- Row actions --------------------------------------------------------
+   The row now uses the shared .action-buttons group like every other table.
+   Only Approve/Enable keep a text label — they're the action a pending or
+   disabled account is actually waiting on, and an icon wouldn't say which.
+   ------------------------------------------------------------------------ */
+.user-action-btn {
+    height: var(--control-h-sm);
+    padding: 0 var(--sp-2);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    border: 1px solid transparent;
+    border-radius: var(--r-2);
+    background: none;
+    color: var(--fg-muted);
+    cursor: pointer;
+    transition: background-color var(--dur-1) var(--ease),
+                border-color var(--dur-1) var(--ease),
+                color var(--dur-1) var(--ease);
+    white-space: nowrap;
+}
+
+.user-action-btn:hover {
+    background-color: var(--panel-hover);
+    border-color: var(--border-strong);
+    color: var(--fg);
+}
+
+.user-action-btn.approve {
+    color: var(--success-text);
+}
+
+.user-action-btn.approve:hover {
+    background-color: var(--success-soft);
+    border-color: color-mix(in srgb, var(--success) 40%, transparent);
+    color: var(--success-text);
+}
+
+.user-action-btn.delete {
+    color: var(--danger-text);
+}
+
+.user-action-btn.delete:hover {
+    background-color: var(--danger-soft);
+    border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+    color: var(--danger-text);
+}
+
+/* ---- Empty -------------------------------------------------------------- */
+.users-empty {
+    text-align: center;
+    padding: var(--sp-12);
+    color: var(--fg-subtle);
+}
+
+@media (max-width: 1024px) {
+    .data-table td {
+        padding: var(--sp-2) var(--sp-3);
+    }
+
+    .user-roles {
+        max-width: 18rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .users-management-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--sp-3);
+    }
+
+    .data-table {
+        font-size: var(--text-sm);
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: var(--sp-2);
+    }
+
+    .user-action-btn {
+        width: 100%;
+        text-align: left;
+    }
+}

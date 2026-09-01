@@ -1,0 +1,398 @@
+/* ============================================================================
+   Primitives — the small shared parts the admin screens are built from.
+
+   Colour discipline, stated once so it can be checked:
+     gold (--accent)  = brand and the single primary action. Never a status.
+     warning (orange) = "this needs a human". Pending counts, locks.
+     danger  (red)    = destructive.
+     neutral          = everything else, which is most things.
+   ========================================================================== */
+
+/* ---- Summary strip ------------------------------------------------------- */
+.stat-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-6);
+}
+
+.stat-tile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    padding: var(--sp-4);
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-4);
+}
+
+.stat-label {
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--fg-subtle);
+}
+
+.stat-value {
+    font-family: var(--font-display);
+    font-size: var(--text-3xl);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    line-height: 1.1;
+    color: var(--fg);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-note {
+    font-size: var(--text-xs);
+    color: var(--fg-faint);
+}
+
+/* A tile only earns colour when its number actually demands action */
+.stat-tile-attention {
+    border-color: color-mix(in srgb, var(--warning) 35%, var(--border));
+}
+
+.stat-tile-attention .stat-value {
+    color: var(--warning-text);
+}
+
+/* ---- Search field ------------------------------------------------------- */
+.search-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    flex: 0 1 18rem;
+}
+
+.search-field-icon {
+    position: absolute;
+    left: var(--sp-3);
+    font-size: 0.75rem;
+    color: var(--fg-faint);
+    pointer-events: none;
+    transition: color var(--dur-2) var(--ease);
+}
+
+.search-field:focus-within .search-field-icon {
+    color: var(--accent-text);
+}
+
+.search-field-input {
+    width: 100%;
+    height: var(--control-h);
+    padding: 0 var(--sp-3) 0 2rem;
+    font-family: var(--font-ui);
+    font-size: var(--text-md);
+    letter-spacing: var(--tracking-tight);
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2);
+    color: var(--fg);
+    transition: border-color var(--dur-2) var(--ease),
+                box-shadow var(--dur-2) var(--ease);
+}
+
+.search-field-input::placeholder {
+    color: var(--fg-faint);
+}
+
+.search-field-input:hover {
+    border-color: var(--border-strong);
+}
+
+.search-field-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.search-field-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0.75rem;
+    height: 0.75rem;
+    cursor: pointer;
+    background-color: var(--fg-faint);
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 4l8 8M12 4l-8 8' stroke='%23000' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ---- Segmented control --------------------------------------------------
+   For picking one of two or three mutually exclusive views. A button that
+   renames itself ("View cards" -> "View movies") makes you read it to learn
+   where you are; a segment shows both states at once and marks the current
+   one. Also used by the theme switch in the user menu.
+   ------------------------------------------------------------------------ */
+.segmented {
+    display: inline-grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: 2px;
+    padding: 2px;
+    background-color: var(--bg-sunken);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2);
+}
+
+.segmented-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    height: 1.75rem;
+    padding: 0 var(--sp-3);
+    background: none;
+    border: none;
+    border-radius: var(--r-1);
+    color: var(--fg-subtle);
+    font-family: inherit;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
+}
+
+.segmented-option i {
+    font-size: 0.75rem;
+}
+
+.segmented-option:hover {
+    color: var(--fg);
+}
+
+/* The raised segment is the selected one; gold marks the state, as everywhere */
+.segmented-option.active {
+    background-color: var(--panel);
+    color: var(--fg);
+    box-shadow: var(--shadow-1);
+}
+
+.segmented-option.active i {
+    color: var(--accent-text);
+}
+
+/* Toolbar variant matches the 36px control height of its neighbours */
+.table-controls .segmented {
+    height: var(--control-h);
+    align-items: stretch;
+}
+
+.table-controls .segmented-option {
+    height: auto;
+    font-size: var(--text-md);
+}
+
+/* ---- Toggle state on a secondary button --------------------------------- */
+.btn.is-active {
+    background-color: var(--panel-active);
+    border-color: var(--fg-faint);
+    color: var(--fg);
+}
+
+.btn-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.125rem;
+    height: 1.125rem;
+    padding: 0 var(--sp-1);
+    margin-left: -0.125rem;
+    border-radius: var(--r-full);
+    background-color: var(--accent);
+    color: var(--accent-fg);
+    font-size: var(--text-2xs);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+/* ---- Chip — a neutral qualifier, not a link ----------------------------- */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    height: 1.375rem;
+    padding: 0 var(--sp-2);
+    border-radius: var(--r-2);
+    background-color: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--fg-muted);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* ---- Count pill — a figure that wants attention ------------------------- */
+.count-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.375rem;
+    padding: 0 var(--sp-2);
+    border-radius: var(--r-2);
+    background-color: var(--panel-2);
+    color: var(--fg);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.count-pill-attention {
+    background-color: var(--warning-soft);
+    color: var(--warning-text);
+}
+
+/* ---- Empty state inside a table ----------------------------------------- */
+.empty-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-2);
+}
+
+/* Give the recovery action room; the title and hint stay a tight pair */
+.empty-block .btn {
+    margin-top: var(--sp-2);
+}
+
+.empty-title {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    color: var(--fg);
+}
+
+.empty-hint {
+    font-size: var(--text-md);
+    color: var(--fg-subtle);
+}
+
+/* ---- Count line under a table ------------------------------------------- */
+.table-footnote {
+    margin-top: var(--sp-3);
+    font-size: var(--text-xs);
+    color: var(--fg-faint);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Inline alert -------------------------------------------------------
+   Form-level success/failure. Pages were hand-rolling these inline with
+   hardcoded hex (#ff6464 / #00c864) that ignored the theme entirely.
+   ------------------------------------------------------------------------ */
+.alert {
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: var(--r-3);
+    border: 1px solid transparent;
+    font-size: var(--text-md);
+    line-height: 1.5;
+}
+
+.alert-error {
+    background-color: var(--danger-soft);
+    border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+    color: var(--danger-text);
+}
+
+.alert-success {
+    background-color: var(--success-soft);
+    border-color: color-mix(in srgb, var(--success) 35%, transparent);
+    color: var(--success-text);
+}
+
+/* ---- Route gate ---------------------------------------------------------
+   Shown while auth and permissions resolve, before any layout exists — so it
+   owns the full viewport and centres itself rather than relying on a page
+   shell that hasn't rendered yet.
+   ------------------------------------------------------------------------ */
+.route-loading {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-3);
+    background-color: var(--bg);
+    color: var(--fg-subtle);
+    font-size: var(--text-md);
+}
+
+.route-loading::before {
+    content: "";
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    border: 2px solid var(--border-strong);
+    border-top-color: var(--accent);
+    border-radius: var(--r-full);
+    animation: route-spin 0.7s linear infinite;
+}
+
+@keyframes route-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* A frozen spinner is worse than none — show a static ring instead */
+@media (prefers-reduced-motion: reduce) {
+    .route-loading::before {
+        animation: none;
+        border-top-color: var(--border-strong);
+    }
+}
+
+/* ---- Whole-page loading / error ----------------------------------------- */
+.page-status {
+    padding: var(--sp-10) var(--sp-4);
+    text-align: center;
+    color: var(--fg-subtle);
+    font-size: var(--text-md);
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-4);
+}
+
+.page-status-error {
+    border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+    background-color: var(--danger-soft);
+    color: var(--danger-text);
+}
+
+/* ---- Column sizing ------------------------------------------------------
+   Widths now come from each table's <colgroup> under `table-layout: fixed`
+   (see table.css) — a `width: 1%` here would fight it. The actions header
+   only needs to stop its label wrapping.
+   ------------------------------------------------------------------------ */
+.data-table th.col-actions {
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .stat-strip {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--sp-2);
+        margin-bottom: var(--sp-4);
+    }
+
+    /* Three tiles on two columns: let the first span so nothing is orphaned */
+    .stat-strip .stat-tile:first-child {
+        grid-column: span 2;
+    }
+
+    .stat-tile {
+        padding: var(--sp-3);
+    }
+
+    .stat-value {
+        font-size: var(--text-2xl);
+    }
+
+    .search-field {
+        flex: 1 1 100%;
+        order: -1;
+    }
+}

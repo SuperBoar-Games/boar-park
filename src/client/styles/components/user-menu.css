@@ -1,0 +1,404 @@
+/* ============================================================================
+   Header chrome — user menu, theme switch, notification bell
+   Both header triggers are the same 36px square/pill so the top-right corner
+   reads as one control cluster instead of three unrelated widgets.
+   ========================================================================== */
+.user-menu-dropdown-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.user-menu-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    height: var(--control-h);
+    padding: 0 var(--sp-3);
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2);
+    color: var(--fg-muted);
+    cursor: pointer;
+    font-size: var(--text-md);
+    transition: background-color var(--dur-2) var(--ease),
+                border-color var(--dur-2) var(--ease),
+                color var(--dur-2) var(--ease);
+}
+
+.user-menu-trigger:hover {
+    background-color: var(--panel-hover);
+    border-color: var(--border-strong);
+    color: var(--fg);
+}
+
+.user-avatar {
+    font-size: 0.9375rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.user-username {
+    font-weight: 500;
+    max-width: 8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---- Dropdown -----------------------------------------------------------
+   Was four stacked blocks separated by full-width rules, which made a 3-item
+   menu read as a form. Now: one identity header, then grouped rows with a
+   single hairline before the destructive action.
+   ------------------------------------------------------------------------ */
+.user-menu-dropdown {
+    position: absolute;
+    top: calc(100% + var(--sp-2));
+    right: 0;
+    background-color: var(--panel);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-3);
+    box-shadow: var(--shadow-3);
+    z-index: 50;
+    min-width: 14rem;
+    padding: var(--sp-1);
+    overflow: hidden;
+}
+
+.user-menu-info {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-2) var(--sp-3);
+    margin-bottom: var(--sp-1);
+    border-bottom: 1px solid var(--border);
+}
+
+.user-menu-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    border-radius: var(--r-full);
+    background-color: var(--panel-2);
+    color: var(--fg-subtle);
+    font-size: 0.9375rem;
+}
+
+.user-menu-identity {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.user-menu-name {
+    font-weight: 600;
+    color: var(--fg);
+    font-size: var(--text-md);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-menu-roles {
+    font-size: var(--text-xs);
+    color: var(--fg-subtle);
+    text-transform: capitalize;
+    line-height: 1.3;
+}
+
+.user-menu-section {
+    padding: 0;
+    border-bottom: none;
+}
+
+/* Only the destructive group gets a rule above it */
+.user-menu-section:last-child {
+    margin-top: var(--sp-1);
+    padding-top: var(--sp-1);
+    border-top: 1px solid var(--border);
+}
+
+.user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    width: 100%;
+    height: 2rem;
+    padding: 0 var(--sp-2);
+    background: none;
+    border: none;
+    border-radius: var(--r-2);
+    color: var(--fg-muted);
+    cursor: pointer;
+    font-size: var(--text-md);
+    text-align: left;
+    transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+
+.user-menu-item i {
+    width: 1rem;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--fg-faint);
+    transition: color var(--dur-1) var(--ease);
+}
+
+.user-menu-item:hover {
+    background-color: var(--panel-hover);
+    color: var(--fg);
+}
+
+.user-menu-item:hover i {
+    color: var(--fg-subtle);
+}
+
+/* Quiet until reached for — a permanently red row shouts on every open */
+.user-menu-item.logout {
+    color: var(--fg-muted);
+}
+
+.user-menu-item.logout:hover,
+.user-menu-item.logout:hover i {
+    background-color: var(--danger-soft);
+    color: var(--danger-text);
+}
+
+/* ---- Theme — a segmented control, not two emoji tiles ------------------- */
+.theme-section {
+    padding: var(--sp-2);
+}
+
+.theme-section-label {
+    display: block;
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    color: var(--fg-faint);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-eyebrow);
+    margin-bottom: var(--sp-2);
+}
+
+/* Track spans the menu width; everything else comes from .segmented */
+.theme-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+/* ---- Notification bell -------------------------------------------------- */
+.notif-bell-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.notif-bell-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--control-h);
+    height: var(--control-h);
+    padding: 0;
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2);
+    color: var(--fg-muted);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color var(--dur-2) var(--ease),
+                border-color var(--dur-2) var(--ease),
+                color var(--dur-2) var(--ease);
+    position: relative;
+}
+
+.notif-bell-btn:hover {
+    background-color: var(--panel-hover);
+    border-color: var(--border-strong);
+    color: var(--fg);
+}
+
+.notif-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 1rem;
+    height: 1rem;
+    background-color: var(--danger);
+    border: 2px solid var(--bg);
+    border-radius: var(--r-full);
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+    box-sizing: content-box;
+}
+
+.notif-dropdown {
+    position: absolute;
+    top: calc(100% + var(--sp-2));
+    right: 0;
+    background-color: var(--panel);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-3);
+    box-shadow: var(--shadow-3);
+    z-index: 50;
+    width: 21rem;
+    max-width: calc(100vw - 2rem);
+    overflow: hidden;
+}
+
+.notif-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-4);
+    border-bottom: 1px solid var(--border);
+    background-color: var(--panel-2);
+}
+
+.notif-dropdown-title {
+    font-weight: 600;
+    font-size: var(--text-md);
+    color: var(--fg);
+}
+
+.notif-mark-read-btn {
+    background: none;
+    border: none;
+    color: var(--fg-subtle);
+    font-size: var(--text-xs);
+    cursor: pointer;
+    padding: var(--sp-1) var(--sp-2);
+    border-radius: var(--r-2);
+    transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+
+.notif-mark-read-btn:hover {
+    background-color: var(--panel-hover);
+    color: var(--fg);
+}
+
+.notif-list {
+    max-height: 21rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.notif-item {
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--border);
+    transition: background-color var(--dur-1) var(--ease);
+}
+
+.notif-item:last-child {
+    border-bottom: none;
+}
+
+.notif-item:hover {
+    background-color: var(--panel-hover);
+}
+
+.notif-item.unread {
+    background-color: var(--accent-soft);
+}
+
+.notif-item.unread:hover {
+    background-color: var(--accent-soft-hover);
+}
+
+.notif-item-title {
+    font-weight: 600;
+    font-size: var(--text-md);
+    color: var(--fg);
+    margin-bottom: 0.125rem;
+}
+
+.notif-item-body {
+    font-size: var(--text-sm);
+    color: var(--fg-subtle);
+    margin-bottom: 0.125rem;
+    line-height: 1.45;
+}
+
+.notif-item-time {
+    font-size: var(--text-2xs);
+    color: var(--fg-faint);
+}
+
+.notif-empty {
+    padding: var(--sp-8) var(--sp-4);
+    text-align: center;
+    color: var(--fg-subtle);
+    font-size: var(--text-md);
+}
+
+.notif-view-all-btn {
+    display: block;
+    width: 100%;
+    padding: var(--sp-3);
+    background: none;
+    border: none;
+    border-top: 1px solid var(--border);
+    border-radius: 0;
+    color: var(--fg-muted);
+    font-size: var(--text-md);
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+
+.notif-view-all-btn:hover {
+    background-color: var(--panel-hover);
+    color: var(--fg);
+}
+
+/* ---- Legacy theme selector (header select variant) ---------------------- */
+.theme-selector {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+}
+
+.theme-selector .theme-label {
+    font-size: var(--text-md);
+    display: none;
+}
+
+.theme-selector .custom-select {
+    min-width: var(--control-h);
+    max-width: var(--control-h);
+    height: var(--control-h);
+}
+
+.theme-selector .custom-select-trigger {
+    justify-content: center;
+    font-size: 0.9375rem;
+    height: var(--control-h);
+    padding: 0;
+}
+
+.theme-selector .custom-select-value {
+    line-height: 1;
+}
+
+.theme-selector .custom-select-arrow {
+    display: none;
+}
+
+.theme-selector .custom-select-dropdown {
+    min-width: 9rem;
+    left: auto;
+    right: 0;
+}

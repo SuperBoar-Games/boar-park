@@ -1,0 +1,307 @@
+/* ============================================================================
+   BOAR PARK — DESIGN TOKENS
+   ----------------------------------------------------------------------------
+   Direction: refined neutral + accent.
+
+   Ground is a pure neutral zinc ramp — no blue cast, no warm cast. All the
+   colour in the interface is spent on ONE accent: a marquee gold, borrowed
+   from the subject (Talkies — cinema). Gold carries brand and primary action
+   only. It never carries status; status has its own hues so a "pending" chip
+   can never be mistaken for a call to action.
+
+   Two layers:
+     1. RAMP     — raw neutral + hue scales. Never used directly by components.
+     2. SEMANTIC — what components actually consume (--bg, --panel, --fg, …).
+
+   The legacy --ctp-* names are kept as aliases onto the semantic layer so the
+   ~5,000 lines of existing component CSS inherit the new system unchanged.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   SHARED — identical in both themes
+   ------------------------------------------------------------------------ */
+:root {
+    /* Type ------------------------------------------------------------- */
+    --font-display: 'Space Grotesk', 'Instrument Sans', -apple-system,
+        BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-ui: 'Instrument Sans', -apple-system, BlinkMacSystemFont,
+        'Segoe UI', Roboto, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, 'JetBrains Mono',
+        'Roboto Mono', Menlo, Consolas, monospace;
+
+    /* Type scale — 1.200 minor third, anchored at 14px UI */
+    --text-2xs: 0.6875rem;  /* 11px — eyebrows, table heads */
+    --text-xs: 0.75rem;     /* 12px — meta, badges */
+    --text-sm: 0.8125rem;   /* 13px — dense table body */
+    --text-md: 0.875rem;    /* 14px — UI default */
+    --text-lg: 1rem;        /* 16px — emphasis */
+    --text-xl: 1.25rem;     /* 20px — card titles */
+    --text-2xl: 1.5rem;     /* 24px — page title */
+    --text-3xl: 2rem;       /* 32px — stat figures */
+
+    --tracking-eyebrow: 0.08em;
+    --tracking-tight: -0.011em;
+    --tracking-display: -0.02em;
+
+    /* Space — strict 4px grid ------------------------------------------ */
+    --sp-1: 0.25rem;
+    --sp-2: 0.5rem;
+    --sp-3: 0.75rem;
+    --sp-4: 1rem;
+    --sp-5: 1.25rem;
+    --sp-6: 1.5rem;
+    --sp-8: 2rem;
+    --sp-10: 2.5rem;
+    --sp-12: 3rem;
+
+    /* Radius ------------------------------------------------------------ */
+    --r-1: 4px;
+    --r-2: 6px;
+    --r-3: 8px;
+    --r-4: 10px;
+    --r-5: 14px;
+    --r-full: 999px;
+
+    /* Motion ------------------------------------------------------------ */
+    --ease: cubic-bezier(0.32, 0.72, 0, 1);
+    --dur-1: 90ms;
+    --dur-2: 150ms;
+    --dur-3: 240ms;
+
+    --control-h: 2.25rem;   /* 36px — every button/input agrees on this */
+    --control-h-sm: 1.875rem;
+
+    /* A field must read as a distinct surface from the panel it sits on — a
+       border alone leaves the interior identical to the modal behind it.
+       --field-bg is set per theme (see below); the border is the next step up
+       from the structural hairline, with one more on hover. */
+    --field-border: var(--border-strong);
+    --field-border-hover: var(--fg-faint);
+}
+
+/* ---------------------------------------------------------------------------
+   DARK (default) — zinc ramp, marquee gold
+   ------------------------------------------------------------------------ */
+:root,
+:root[data-theme="slate-dark"] {
+    color-scheme: dark;
+
+    /* 1. RAMP ----------------------------------------------------------- */
+    --n-950: #09090b;
+    --n-900: #0f0f11;
+    --n-850: #141417;
+    --n-800: #18181b;
+    --n-750: #1d1d21;
+    --n-700: #232327;
+    --n-650: #2a2a30;
+    --n-600: #34343b;
+    --n-500: #52525b;
+    --n-400: #71717a;
+    --n-300: #a1a1aa;
+    --n-200: #d4d4d8;
+    --n-100: #ededf0;
+    --n-50: #fafafa;
+
+    /* 2. SEMANTIC — surfaces -------------------------------------------- */
+    --bg: #09090b;            /* page ground */
+    --bg-sunken: #060607;     /* wells, inputs inside panels */
+    --panel: #141417;         /* the primary raised surface */
+    --panel-2: #1a1a1e;       /* nested surface / table head */
+    --panel-hover: #212126;
+    --panel-active: #26262c;
+
+    /* Field interiors sit ABOVE the panel, not below it. The sunken/near-black
+       treatment made inputs read as holes punched in the dialog; this is a
+       clear, legible step up from --panel (#141417). */
+    --field-bg: #1f1f25;
+    --field-bg-focus: #26262d;
+
+    --border: #26262b;        /* hairline, default */
+    --border-strong: #33333a; /* emphasised edge, dividers under heads */
+    --border-accent: color-mix(in srgb, var(--accent) 40%, transparent);
+
+    /* Foreground -------------------------------------------------------- */
+    --fg: #f4f4f5;
+    --fg-muted: #a1a1aa;
+    /* subtle/faint are tuned to clear 4.5:1 and 3:1 against --panel AND the
+       hover row, which is the lightest ground they ever land on. */
+    --fg-subtle: #8b8b95;
+    --fg-faint: #74747e;
+
+    /* Accent — marquee gold, brass rather than neon ---------------------
+       Toned down from #e9b949: that read as a highlighter next to an
+       otherwise achromatic palette, and the primary button was the loudest
+       thing on every screen. Softer and slightly darker keeps the accent
+       identifiable without shouting. The soft/ring variants derive from
+       var(--accent) so a future change propagates on its own. */
+    --accent: #cfa650;             /* solid fills */
+    --accent-hover: #dcb463;
+    --accent-press: #bb9440;
+    --accent-fg: #17140b;          /* text ON a solid accent fill */
+    --accent-text: #dcb463;        /* accent used AS text/icon */
+    --accent-soft: color-mix(in srgb, var(--accent) 13%, transparent);
+    --accent-soft-hover: color-mix(in srgb, var(--accent) 20%, transparent);
+    --accent-ring: color-mix(in srgb, var(--accent) 42%, transparent);
+
+    /* Status — deliberately non-gold ------------------------------------ */
+    --success: #4ec98a;
+    --success-text: #63d69a;
+    --success-soft: color-mix(in srgb, #4ec98a 14%, transparent);
+    --warning: #f97316;
+    --warning-text: #fb8c3c;
+    --warning-soft: color-mix(in srgb, #f97316 15%, transparent);
+    --danger: #ef5f5f;
+    --danger-text: #f47575;
+    --danger-soft: color-mix(in srgb, #ef5f5f 15%, transparent);
+    --info: #5ba9e8;
+    --info-text: #74b7ed;
+    --info-soft: color-mix(in srgb, #5ba9e8 15%, transparent);
+    --violet: #a78bfa;
+    --violet-soft: color-mix(in srgb, #a78bfa 15%, transparent);
+
+    /* Depth — dark mode leans on borders, not shadow -------------------- */
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.45);
+    --shadow-3: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --shadow-4: 0 18px 48px rgba(0, 0, 0, 0.6);
+    --scrim: rgba(0, 0, 0, 0.68);
+
+    /* rgb channel forms (for rgba() consumers) -------------------------- */
+    --danger-rgb: 239, 95, 95;
+    --success-rgb: 78, 201, 138;
+}
+
+/* ---------------------------------------------------------------------------
+   LIGHT — same zinc ramp inverted, deeper gold so it survives on white
+   ------------------------------------------------------------------------ */
+:root[data-theme="slate-light"] {
+    color-scheme: light;
+
+    --n-950: #fafafa;
+    --n-900: #f4f4f5;
+    --n-850: #ededf0;
+    --n-800: #e4e4e7;
+    --n-750: #dcdce0;
+    --n-700: #d4d4d8;
+    --n-650: #c8c8ce;
+    --n-600: #a1a1aa;
+    --n-500: #71717a;
+    --n-400: #52525b;
+    --n-300: #3f3f46;
+    --n-200: #27272a;
+    --n-100: #18181b;
+    --n-50: #09090b;
+
+    --bg: #f7f7f8;
+    --bg-sunken: #efeff1;
+    --panel: #ffffff;
+    --panel-2: #f7f7f8;
+    --panel-hover: #f2f2f4;
+    --panel-active: #e9e9ec;
+
+    /* On white, the step has to go the other way to stay visible */
+    --field-bg: #f4f4f6;
+    --field-bg-focus: #ffffff;
+
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --border-accent: color-mix(in srgb, var(--accent) 55%, transparent);
+
+    --fg: #18181b;
+    --fg-muted: #52525b;
+    --fg-subtle: #71717a;
+    --fg-faint: #86868f;
+
+    /* Gold on white: the solid fill stays bright (dark text sits on it),
+       but gold-as-text drops to a bronze that actually passes contrast. */
+    --accent: #c99b3a;
+    --accent-hover: #b98d2f;
+    --accent-press: #a67d24;
+    --accent-fg: #1a1408;
+    --accent-text: #8a6516;
+    --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent);
+    --accent-soft-hover: color-mix(in srgb, var(--accent) 26%, transparent);
+    --accent-ring: color-mix(in srgb, var(--accent) 45%, transparent);
+
+    --success: #15803d;
+    --success-text: #15803d;
+    --success-soft: color-mix(in srgb, #15803d 12%, transparent);
+    --warning: #c2410c;
+    --warning-text: #c2410c;
+    --warning-soft: color-mix(in srgb, #c2410c 12%, transparent);
+    --danger: #be3a3a;
+    --danger-text: #b02b2b;
+    --danger-soft: color-mix(in srgb, #be3a3a 12%, transparent);
+    --info: #0369a1;
+    --info-text: #0369a1;
+    --info-soft: color-mix(in srgb, #0369a1 12%, transparent);
+    --violet: #6d40d4;
+    --violet-soft: color-mix(in srgb, #6d40d4 12%, transparent);
+
+    --shadow-1: 0 1px 2px rgba(24, 24, 27, 0.06);
+    --shadow-2: 0 2px 6px rgba(24, 24, 27, 0.07);
+    --shadow-3: 0 6px 20px rgba(24, 24, 27, 0.09);
+    --shadow-4: 0 18px 44px rgba(24, 24, 27, 0.14);
+    --scrim: rgba(24, 24, 27, 0.42);
+
+    --danger-rgb: 190, 58, 58;
+    --success-rgb: 21, 128, 61;
+}
+
+/* ---------------------------------------------------------------------------
+   LEGACY ALIASES
+   The pre-existing component CSS speaks --ctp-*. Rather than rewrite every
+   selector, map those names onto the semantic layer. Anything not explicitly
+   restyled still picks up the new palette for free.
+
+   Note: mantle / mauve / *-rgb / info-color were CONSUMED but never DEFINED
+   in the old theme, so those rules silently rendered as nothing. Defined here.
+   ------------------------------------------------------------------------ */
+:root,
+:root[data-theme="slate-dark"],
+:root[data-theme="slate-light"] {
+    --ctp-base: var(--bg);
+    --ctp-crust: var(--bg-sunken);
+    --ctp-mantle: var(--panel-2);
+    --ctp-surface0: var(--panel);
+    --ctp-surface1: var(--panel-2);
+    --ctp-surface2: var(--border-strong);
+
+    --ctp-text: var(--fg);
+    --ctp-subtext1: var(--fg-muted);
+    --ctp-subtext0: var(--fg-subtle);
+    --ctp-text-alt: var(--accent-fg);
+
+    --ctp-overlay2: var(--fg-subtle);
+    --ctp-overlay1: var(--fg-faint);
+    --ctp-overlay0: var(--border-strong);
+
+    --ctp-primary: var(--accent);
+    --ctp-accent: var(--accent);
+    --ctp-secondary: var(--info-text);
+    --ctp-tertiary: var(--accent-text);
+
+    --ctp-success: var(--success-text);
+    --ctp-warning: var(--warning-text);
+    --ctp-danger: var(--danger-text);
+    --ctp-info: var(--info-text);
+    --ctp-info-color: var(--info-text);
+
+    --ctp-red: var(--danger-text);
+    --ctp-green: var(--success-text);
+    --ctp-yellow: var(--accent-text);
+    --ctp-peach: var(--warning-text);
+    --ctp-blue: var(--info-text);
+    --ctp-sapphire: var(--info-text);
+    --ctp-sky: var(--info-text);
+    --ctp-teal: var(--success-text);
+    --ctp-lavender: var(--violet);
+    --ctp-mauve: var(--violet);
+    --ctp-pink: var(--violet);
+    --ctp-maroon: var(--danger-text);
+    --ctp-flamingo: var(--warning-text);
+    --ctp-rosewater: var(--fg-muted);
+
+    --ctp-red-rgb: var(--danger-rgb);
+    --ctp-green-rgb: var(--success-rgb);
+}

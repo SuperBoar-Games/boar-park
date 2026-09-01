@@ -1,0 +1,996 @@
+// Main server entry point - Bun HTTP server with API route handlers and static file serving
+
+import { getGamesHandler } from "./handlers/games.handler";
+import { getGameHandler } from "./handlers/gameSlug.handler";
+import {
+    getHeroesHandler,
+    createHeroHandler,
+    updateHeroHandler,
+    deleteHeroHandler
+} from "./handlers/talkies/heroes.handler";
+import {
+    getMoviesByHeroIdHandler,
+    createMovieHandler,
+    updateMovieTitleHandler,
+    updateMovieReviewHandler,
+    updateMovieLockedHandler,
+    deleteMovieHandler
+} from "./handlers/talkies/movies.handler";
+import {
+    getCardsByHeroAndMovieHandler,
+    getAllCardsByHeroHandler,
+    createCardHandler,
+    updateCardHandler,
+    deleteCardHandler
+} from "./handlers/talkies/cards.handler";
+import {
+    getTagsHandler,
+    createTagHandler,
+    updateTagHandler,
+    deleteTagHandler,
+    getTagCountsByHeroHandler
+} from "./handlers/talkies/tags.handler";
+import {
+    signupHandler,
+    loginHandler,
+    refreshTokenHandler,
+    logoutHandler,
+    requestPasswordResetHandler,
+    resetPasswordHandler,
+    setPasswordHandler,
+    getCurrentUserHandler,
+    updateUserProfileHandler,
+    getCurrentUserPermissionsHandler
+} from "./handlers/auth.handler";
+import {
+    getAllUsersHandler,
+    getPendingUsersHandler,
+    approveUserHandler,
+    disableUserHandler,
+    createUserHandler,
+    updateUserEmailHandler,
+    updateUserUsernameHandler,
+    deleteUserHandler,
+    getAllRolesHandler,
+    getAllGamesHandler as getAdminGamesHandler,
+    assignRoleHandler,
+    removeRoleHandler,
+    getUserRolesHandler,
+    sendResetEmailHandler
+} from "./handlers/admin.handler";
+import {
+    getAllPermissionsHandler,
+    getPermissionByIdHandler,
+    createPermissionHandler,
+    updatePermissionHandler,
+    deletePermissionHandler,
+    getAllRolesHandler as getAllSystemRolesHandler,
+    getRoleByIdHandler,
+    createRoleHandler,
+    updateRoleHandler,
+    deleteRoleHandler,
+    assignPermissionsToRoleHandler,
+    removePermissionFromRoleHandler,
+    getAllUsersWithRolesHandler,
+    updateUserRoleHandler,
+    getUserPermissionsHandler
+} from "./handlers/roles.handler";
+import {
+    startImpersonation,
+    stopImpersonation,
+    getImpersonationState,
+    extractSessionId
+} from "./auth/impersonation.middleware";
+import { authenticate, isAdmin, unauthorizedResponse, forbiddenResponse } from "./auth/middleware";
+import { verifyAccessToken } from "./auth/jwt";
+import { getGameIdFromSlug, canViewGame, canEditGame, getGamesForUser } from "./auth/game-permissions";
+import { cleanupExpiredTokens } from "./auth/jwt";
+import { addSSEClient, removeSSEClient, broadcast } from "./lib/sse";
+import { verifyMediaToken } from "./auth/media-tokens";
+import {
+    getVapidKeyHandler,
+    getNotificationsHandler,
+    getAllNotificationsHandler,
+    subscribeHandler,
+    unsubscribeHandler,
+    markAllReadHandler,
+} from "./handlers/notifications.handler";
+import {
+    getCardFilesHandler,
+    uploadCardFileHandler,
+    deleteCardFileHandler,
+    toggleMovieFilesLockHandler,
+    downloadMovieFilesHandler,
+    downloadHeroFilesHandler,
+} from "./handlers/files.handler";
+
+const PORT = process.env.PORT || 3000;
+// Loopback by default so the API is only reachable through nginx. Set
+// HOST=0.0.0.0 to reach a dev server from another device on the LAN.
+const HOST = process.env.HOST || "127.0.0.1";
+const TALKIES_GAME_SLUG = "talkies";
+// Resolve project root from this file's location (src/index.ts → project root)
+const PROJECT_ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+
+// CORS configuration from environment
+const ALLOWED_ORIGINS = Bun.env.CORS_ORIGIN
+    ? Bun.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+    : ['*'];
+
+const isDevelopment = Bun.env.NODE_ENV !== 'production';
+
+// Cached on first use — the slug->id mapping never changes at runtime.
+let talkiesGameId: number | null = null;
+
+Bun.serve({
+    port: PORT,
+    hostname: HOST,
+    idleTimeout: 0, // disable timeout — SSE connections are long-lived
+    async fetch(request: Request) {
+        try {
+            return await handleRequest(request);
+        } catch (error) {
+            // Malformed JSON bodies and other unexpected throws land here
+            // instead of Bun's default error page.
+            console.error(`Unhandled error on ${request.method} ${request.url}:`, error);
+            return new Response(
+                JSON.stringify({ success: false, message: "Internal server error" }),
+                { status: 500, headers: { "Content-Type": "application/json" } }
+            );
+        }
+    },
+});
+
+async function handleRequest(request: Request): Promise<Response> {
+    {
+        // Handle relative URLs from reverse proxy
+        const urlString = request.url.startsWith('http')
+            ? request.url
+            : `http://localhost:${PORT}${request.url}`;
+        const url = new URL(urlString);
+        const method = request.method;
+
+        // Get origin from request
+        const origin = request.headers.get('Origin') || '';
+
+        // Determine if origin is allowed
+        const isAllowedOrigin = ALLOWED_ORIGINS[0] === '*'
+            || ALLOWED_ORIGINS.includes(origin)
+            || isDevelopment;
+
+        // CORS headers
+        const corsHeaders: Record<string, string> = {
+            "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Credentials": "true",
+        };
+
+        // Set origin header based on configuration
+        if (ALLOWED_ORIGINS[0] === '*') {
+            corsHeaders["Access-Control-Allow-Origin"] = "*";
+        } else if (isAllowedOrigin && origin) {
+            corsHeaders["Access-Control-Allow-Origin"] = origin;
+        }
+
+        // Handle OPTIONS preflight requests
+        if (method === "OPTIONS") {
+            return new Response(null, {
+                status: 204,
+                headers: corsHeaders,
+            });
+        }
+
+        // Health check
+        if (url.pathname === "/health") {
+            return new Response(JSON.stringify({ status: "ok" }), {
+                headers: { "Content-Type": "application/json", ...corsHeaders }
+            });
+        }
+
+        // ========== SSE REAL-TIME EVENTS ==========
+        if (url.pathname === "/api/events" && method === "GET") {
+            // EventSource can't send Authorization headers, so also accept token as query param
+            let user = await authenticate(request);
+            if (!user) {
+                const tokenParam = url.searchParams.get('token');
+                if (tokenParam) {
+                    user = await verifyAccessToken(tokenParam);
+                }
+            }
+            if (!user) return unauthorizedResponse();
+
+            let clientId: string;
+            const stream = new ReadableStream<Uint8Array>({
+                start(controller) {
+                    clientId = addSSEClient(controller);
+                    // retry: tells clients to wait 5s before reconnecting (our fetch hook handles backoff itself)
+                    const connected = new TextEncoder().encode(`retry: 5000\nevent: connected\ndata: {"id":"${clientId}"}\n\n`);
+                    controller.enqueue(connected);
+                },
+                cancel() {
+                    removeSSEClient(clientId);
+                },
+            });
+
+            return new Response(stream, {
+                headers: {
+                    "Content-Type": "text/event-stream",
+                    "Cache-Control": "no-cache",
+                    "Connection": "keep-alive",
+                    "X-Accel-Buffering": "no",
+                    ...corsHeaders,
+                },
+            });
+        }
+
+        // ========== NOTIFICATIONS ROUTES ==========
+        if (url.pathname === "/api/notifications/vapid-key" && method === "GET") {
+            return await getVapidKeyHandler();
+        }
+
+        if (url.pathname === "/api/notifications/all" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            return await getAllNotificationsHandler(user.userId);
+        }
+
+        if (url.pathname === "/api/notifications" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            return await getNotificationsHandler(user.userId);
+        }
+
+        if (url.pathname === "/api/notifications/subscribe" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const body = await request.json();
+            return await subscribeHandler(user.userId, body);
+        }
+
+        if (url.pathname === "/api/notifications/unsubscribe" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const body = await request.json();
+            return await unsubscribeHandler(user.userId, body);
+        }
+
+        if (url.pathname === "/api/notifications/read-all" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            return await markAllReadHandler(user.userId);
+        }
+
+        // ========== CARD FILES ROUTES ==========
+        // GET /api/cards/:cardId/files
+        const cardFilesMatch = url.pathname.match(/^\/api\/cards\/(\d+)\/files$/);
+        if (cardFilesMatch && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const cardId = parseInt(cardFilesMatch[1], 10);
+            return await getCardFilesHandler(user, cardId);
+        }
+
+        // POST /api/cards/:cardId/files
+        if (cardFilesMatch && method === "POST") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const cardId = parseInt(cardFilesMatch[1], 10);
+            return await uploadCardFileHandler(user, cardId, request);
+        }
+
+        // DELETE /api/cards/:cardId/files/:fileType
+        const cardFileTypeMatch = url.pathname.match(/^\/api\/cards\/(\d+)\/files\/(\d+)$/);
+        if (cardFileTypeMatch && method === "DELETE") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const cardId = parseInt(cardFileTypeMatch[1], 10);
+            const fileType = parseInt(cardFileTypeMatch[2], 10);
+            return await deleteCardFileHandler(user, cardId, fileType);
+        }
+
+        // PATCH /api/movies/:movieId/files-lock
+        const filesLockMatch = url.pathname.match(/^\/api\/movies\/(\d+)\/files-lock$/);
+        if (filesLockMatch && method === "PATCH") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const movieId = parseInt(filesLockMatch[1], 10);
+            return await toggleMovieFilesLockHandler(user, movieId);
+        }
+
+        // GET /api/movies/:movieId/download?types=1,2,3
+        const movieDownloadMatch = url.pathname.match(/^\/api\/movies\/(\d+)\/download$/);
+        if (movieDownloadMatch && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const movieId = parseInt(movieDownloadMatch[1], 10);
+            const typesParam = url.searchParams.get('types') || '1,2,3';
+            const types = typesParam.split(',').map(Number).filter(n => [1,2,3].includes(n));
+            return await downloadMovieFilesHandler(user, movieId, types);
+        }
+
+        // GET /api/heroes/:heroId/download?types=1,2,3
+        const heroDownloadMatch = url.pathname.match(/^\/api\/heroes\/(\d+)\/download$/);
+        if (heroDownloadMatch && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) return unauthorizedResponse();
+            const heroId = parseInt(heroDownloadMatch[1], 10);
+            const typesParam = url.searchParams.get('types') || '1,2,3';
+            const types = typesParam.split(',').map(Number).filter(n => [1,2,3].includes(n));
+            return await downloadHeroFilesHandler(user, heroId, types);
+        }
+
+        // ========== AUTH ROUTES ==========
+        if (url.pathname === "/api/auth/signup" && method === "POST") {
+            const body = await request.json();
+            return await signupHandler(body);
+        }
+
+        if (url.pathname === "/api/auth/login" && method === "POST") {
+            const body = await request.json();
+            return await loginHandler(body);
+        }
+
+        if (url.pathname === "/api/auth/refresh" && method === "POST") {
+            const body = await request.json();
+            return await refreshTokenHandler(body);
+        }
+
+        if (url.pathname === "/api/auth/logout" && method === "POST") {
+            const body = await request.json();
+            return await logoutHandler(body);
+        }
+
+        if (url.pathname === "/api/auth/request-reset" && method === "POST") {
+            const body = await request.json();
+            return await requestPasswordResetHandler(body);
+        }
+
+        if (url.pathname === "/api/auth/reset-password" && method === "POST") {
+            const body = await request.json();
+            return await resetPasswordHandler(body);
+        }
+
+        if (url.pathname === "/api/auth/set-password" && method === "POST") {
+            const body = await request.json();
+            return await setPasswordHandler(body);
+        }
+
+        if (url.pathname === "/api/auth/me" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) {
+                return unauthorizedResponse();
+            }
+            return await getCurrentUserHandler(user.userId);
+        }
+
+        if (url.pathname === "/api/auth/me" && method === "PUT") {
+            const user = await authenticate(request);
+            if (!user) {
+                return unauthorizedResponse();
+            }
+            const body = await request.json();
+            return await updateUserProfileHandler(user.userId, body);
+        }
+
+        // Get current user's permissions (with impersonation support)
+        if (url.pathname === "/api/auth/me/permissions" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user) {
+                return unauthorizedResponse();
+            }
+            const sessionId = extractSessionId(request);
+            return await getCurrentUserPermissionsHandler(user.userId, sessionId);
+        }
+
+        // ========== ADMIN ROUTES ==========
+        if (url.pathname === "/api/admin/users" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await getAllUsersHandler();
+        }
+
+        if (url.pathname === "/api/admin/users/pending" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await getPendingUsersHandler();
+        }
+
+        if (url.pathname === "/api/admin/users" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            return await createUserHandler(body);
+        }
+
+        // Match /api/admin/users/{id}/approve
+        const approveUserMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/approve$/);
+        if (approveUserMatch && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const userId = parseInt(approveUserMatch[1]);
+            return await approveUserHandler(userId);
+        }
+
+        // Match /api/admin/users/{id}/disable
+        const disableUserMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/disable$/);
+        if (disableUserMatch && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const userId = parseInt(disableUserMatch[1]);
+            return await disableUserHandler(userId);
+        }
+
+        // Match /api/admin/users/{id}/send-reset-email
+        const sendResetEmailMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/send-reset-email$/);
+        if (sendResetEmailMatch && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const userId = parseInt(sendResetEmailMatch[1]);
+            return await sendResetEmailHandler(userId);
+        }
+
+        // Match /api/admin/users/{id}/email
+        const updateEmailMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/email$/);
+        if (updateEmailMatch && method === "PUT") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const userId = parseInt(updateEmailMatch[1]);
+            const body = await request.json();
+            return await updateUserEmailHandler(userId, body);
+        }
+
+        // Match /api/admin/users/{id}/username
+        const updateUsernameMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/username$/);
+        if (updateUsernameMatch && method === "PUT") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const userId = parseInt(updateUsernameMatch[1]);
+            const body = await request.json();
+            return await updateUserUsernameHandler(userId, body);
+        }
+
+        // Match /api/admin/users/{id}
+        const deleteUserMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)$/);
+        if (deleteUserMatch && method === "DELETE") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const userId = parseInt(deleteUserMatch[1]);
+            return await deleteUserHandler(userId);
+        }
+
+        // Match /api/admin/users/{id}/roles
+        const userRolesMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/roles$/);
+        if (userRolesMatch && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const userId = parseInt(userRolesMatch[1]);
+            return await getUserRolesHandler(userId);
+        }
+
+        if (url.pathname === "/api/admin/roles" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await getAllRolesHandler();
+        }
+
+        if (url.pathname === "/api/admin/games" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await getAdminGamesHandler();
+        }
+
+        if (url.pathname === "/api/admin/assign-role" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            return await assignRoleHandler(body);
+        }
+
+        if (url.pathname === "/api/admin/remove-role" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            return await removeRoleHandler(body);
+        }
+
+        // ========== ROLES & PERMISSIONS ROUTES ==========
+
+        // Permissions CRUD
+        if (url.pathname === "/api/admin/permissions" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await getAllPermissionsHandler();
+        }
+
+        if (url.pathname === "/api/admin/permissions" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            return await createPermissionHandler(body);
+        }
+
+        const permissionIdMatch = url.pathname.match(/^\/api\/admin\/permissions\/(\d+)$/);
+        if (permissionIdMatch) {
+            const permissionId = permissionIdMatch[1];
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+
+            if (method === "GET") {
+                return await getPermissionByIdHandler(permissionId);
+            }
+            if (method === "PUT") {
+                const body = await request.json();
+                return await updatePermissionHandler(permissionId, body);
+            }
+            if (method === "DELETE") {
+                return await deletePermissionHandler(permissionId);
+            }
+        }
+
+        // System Roles CRUD
+        if (url.pathname === "/api/admin/system-roles" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const includePermissions = url.searchParams.get("includePermissions") === "true";
+            return await getAllSystemRolesHandler(includePermissions);
+        }
+
+        if (url.pathname === "/api/admin/system-roles" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            return await createRoleHandler(body);
+        }
+
+        const systemRoleIdMatch = url.pathname.match(/^\/api\/admin\/system-roles\/(\d+)$/);
+        if (systemRoleIdMatch) {
+            const roleId = systemRoleIdMatch[1];
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+
+            if (method === "GET") {
+                const includePermissions = url.searchParams.get("includePermissions") === "true";
+                return await getRoleByIdHandler(roleId, includePermissions);
+            }
+            if (method === "PUT") {
+                const body = await request.json();
+                return await updateRoleHandler(roleId, body);
+            }
+            if (method === "DELETE") {
+                return await deleteRoleHandler(roleId);
+            }
+        }
+
+        // Role-Permission Assignment
+        const rolePermissionsMatch = url.pathname.match(/^\/api\/admin\/system-roles\/(\d+)\/permissions$/);
+        if (rolePermissionsMatch && method === "PUT") {
+            const roleId = rolePermissionsMatch[1];
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            return await assignPermissionsToRoleHandler(roleId, body);
+        }
+
+        const removePermissionMatch = url.pathname.match(/^\/api\/admin\/system-roles\/(\d+)\/permissions\/(\d+)$/);
+        if (removePermissionMatch && method === "DELETE") {
+            const [, roleId, permissionId] = removePermissionMatch;
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await removePermissionFromRoleHandler(roleId, permissionId);
+        }
+
+        // User Role Management
+        if (url.pathname === "/api/admin/users-with-roles" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await getAllUsersWithRolesHandler();
+        }
+
+        const userRoleUpdateMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/role$/);
+        if (userRoleUpdateMatch && method === "PUT") {
+            const userId = userRoleUpdateMatch[1];
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            return await updateUserRoleHandler(userId, body.roleId);
+        }
+
+        // User Permissions
+        const userPermissionsMatch = url.pathname.match(/^\/api\/admin\/users\/(\d+)\/permissions$/);
+        if (userPermissionsMatch && method === "GET") {
+            const userId = userPermissionsMatch[1];
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            return await getUserPermissionsHandler(userId);
+        }
+
+        // ========== IMPERSONATION ROUTES (VIEW AS) ==========
+
+        // Start impersonation (admin only)
+        if (url.pathname === "/api/admin/impersonate/start" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const body = await request.json();
+            const sessionId = extractSessionId(request);
+            if (!sessionId) {
+                return unauthorizedResponse("Session ID not found");
+            }
+            return await startImpersonation(user, body.roleId, sessionId);
+        }
+
+        // Stop impersonation (admin only)
+        if (url.pathname === "/api/admin/impersonate/stop" && method === "POST") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const sessionId = extractSessionId(request);
+            if (!sessionId) {
+                return unauthorizedResponse("Session ID not found");
+            }
+            return await stopImpersonation(sessionId);
+        }
+
+        // Get impersonation state (admin only)
+        if (url.pathname === "/api/admin/impersonate/state" && method === "GET") {
+            const user = await authenticate(request);
+            if (!user || !isAdmin(user)) {
+                return forbiddenResponse("Admin access required");
+            }
+            const sessionId = extractSessionId(request);
+            if (!sessionId) {
+                return unauthorizedResponse("Session ID not found");
+            }
+            const state = await getImpersonationState(sessionId);
+            return new Response(JSON.stringify({ success: true, data: state }), {
+                status: 200,
+                headers: { "Content-Type": "application/json", ...corsHeaders }
+            });
+        }
+
+        // ========== GAMES ==========
+        if (url.pathname === "/api/games" && method === "GET") {
+            // Role-filtered: show only games user has access to
+            const user = await authenticate(request);
+            if (!user) {
+                return unauthorizedResponse("Authentication required");
+            }
+            const games = await getGamesForUser(user);
+            return new Response(JSON.stringify({ success: true, data: games }), {
+                status: 200,
+                headers: { "Content-Type": "application/json", ...corsHeaders }
+            });
+        }
+
+        // Match /api/games/{gameSlug} pattern
+        const gameMatch = url.pathname.match(/^\/api\/games\/([^\/]+)$/);
+        if (gameMatch && method === "GET") {
+            const slug = gameMatch[1];
+            const gameId = await getGameIdFromSlug(slug);
+
+            if (!gameId) {
+                return new Response(JSON.stringify({ success: false, message: "Game not found" }), {
+                    status: 404,
+                    headers: { "Content-Type": "application/json", ...corsHeaders }
+                });
+            }
+
+            const user = await authenticate(request);
+            if (!user) {
+                return unauthorizedResponse("Authentication required");
+            }
+
+            // Require viewer+ role for game
+            if (!canViewGame(user, gameId)) {
+                return forbiddenResponse("You don't have access to this game");
+            }
+
+            return await getGameHandler(slug);
+        }
+
+        // ========== TALKIES GAME ROUTES ==========
+        // One gate for the whole section: any game role to read, editor (or
+        // global admin) to write. Handlers take the audit username from the
+        // verified token, never from the request body.
+        let talkiesUser: Awaited<ReturnType<typeof authenticate>> = null;
+        if (url.pathname.startsWith("/api/talkies/")) {
+            talkiesUser = await authenticate(request);
+            if (!talkiesUser) return unauthorizedResponse();
+
+            talkiesGameId ??= await getGameIdFromSlug(TALKIES_GAME_SLUG);
+            if (!talkiesGameId) {
+                return new Response(JSON.stringify({ success: false, message: "Game not found" }), {
+                    status: 404,
+                    headers: { "Content-Type": "application/json", ...corsHeaders }
+                });
+            }
+
+            if (method === "GET") {
+                if (!canViewGame(talkiesUser, talkiesGameId)) {
+                    return forbiddenResponse("You don't have access to this game");
+                }
+            } else if (!canEditGame(talkiesUser, talkiesGameId)) {
+                return forbiddenResponse("Editor access required");
+            }
+        }
+
+        // Match /api/talkies/heroes pattern
+        if (url.pathname === "/api/talkies/heroes") {
+            if (method === "GET") {
+                return await getHeroesHandler();
+            }
+            if (method === "POST") {
+                const body = await request.json();
+                return await createHeroHandler({ ...body, gameSlug: TALKIES_GAME_SLUG, user: talkiesUser!.username });
+            }
+        }
+
+        // Match /api/talkies/heroes/{id} pattern
+        const heroIdMatch = url.pathname.match(/^\/api\/talkies\/heroes\/(\d+)$/);
+        if (heroIdMatch) {
+            const heroId = parseInt(heroIdMatch[1]);
+
+            if (method === "PUT") {
+                const body = await request.json();
+                return await updateHeroHandler(heroId, { ...body, user: talkiesUser!.username });
+            }
+            if (method === "DELETE") {
+                return await deleteHeroHandler(heroId);
+            }
+        }
+
+        // Match /api/talkies/movies pattern
+        if (url.pathname === "/api/talkies/movies") {
+            if (method === "GET") {
+                const heroId = parseInt(url.searchParams.get("heroId") || "");
+                if (heroId) {
+                    return await getMoviesByHeroIdHandler(heroId);
+                }
+                return new Response("Missing heroId parameter", { status: 400 });
+            }
+            if (method === "POST") {
+                const body = await request.json();
+                return await createMovieHandler({ ...body, user: talkiesUser!.username });
+            }
+        }
+
+        // Match /api/talkies/movies/{id} pattern
+        const movieIdMatch = url.pathname.match(/^\/api\/talkies\/movies\/(\d+)$/);
+        if (movieIdMatch) {
+            const movieId = parseInt(movieIdMatch[1]);
+
+            if (method === "PUT") {
+                const body = await request.json();
+                return await updateMovieTitleHandler(movieId, { ...body, user: talkiesUser!.username });
+            }
+            if (method === "DELETE") {
+                return await deleteMovieHandler(movieId);
+            }
+        }
+
+        // Match /api/talkies/movies/{id}/review pattern
+        const movieReviewMatch = url.pathname.match(/^\/api\/talkies\/movies\/(\d+)\/review$/);
+        if (movieReviewMatch && method === "PATCH") {
+            const movieId = parseInt(movieReviewMatch[1]);
+            const body = await request.json();
+            return await updateMovieReviewHandler(movieId, { ...body, user: talkiesUser!.username });
+        }
+
+        // Match /api/talkies/movies/{id}/locked pattern
+        const movieLockedMatch = url.pathname.match(/^\/api\/talkies\/movies\/(\d+)\/locked$/);
+        if (movieLockedMatch && method === "PATCH") {
+            const movieId = parseInt(movieLockedMatch[1]);
+            const body = await request.json();
+            return await updateMovieLockedHandler(movieId, { ...body, user: talkiesUser!.username });
+        }
+
+        // Match /api/talkies/cards pattern
+        if (url.pathname === "/api/talkies/cards") {
+            if (method === "GET") {
+                const heroId = parseInt(url.searchParams.get("heroId") || "");
+                const movieId = parseInt(url.searchParams.get("movieId") || "");
+
+                if (heroId && movieId) {
+                    return await getCardsByHeroAndMovieHandler(heroId, movieId);
+                } else if (heroId) {
+                    return await getAllCardsByHeroHandler(heroId);
+                }
+                return new Response("Missing heroId parameter", { status: 400 });
+            }
+            if (method === "POST") {
+                const body = await request.json();
+                return await createCardHandler({ ...body, user: talkiesUser!.username });
+            }
+        }
+
+        // Match /api/talkies/cards/{id} pattern
+        const cardIdMatch = url.pathname.match(/^\/api\/talkies\/cards\/(\d+)$/);
+        if (cardIdMatch) {
+            const cardId = parseInt(cardIdMatch[1]);
+
+            if (method === "PUT") {
+                const body = await request.json();
+                return await updateCardHandler(cardId, { ...body, user: talkiesUser!.username });
+            }
+            if (method === "DELETE") {
+                return await deleteCardHandler(cardId);
+            }
+        }
+
+        // Match /api/talkies/tags pattern
+        if (url.pathname === "/api/talkies/tags") {
+            if (method === "GET") {
+                const heroId = url.searchParams.get("heroId");
+                if (heroId) {
+                    return await getTagCountsByHeroHandler(parseInt(heroId));
+                }
+                return await getTagsHandler();
+            }
+            if (method === "POST") {
+                const body = await request.json();
+                return await createTagHandler(body);
+            }
+        }
+
+        // Match /api/talkies/tags/{id} pattern
+        const tagIdMatch = url.pathname.match(/^\/api\/talkies\/tags\/(\d+)$/);
+        if (tagIdMatch) {
+            const tagId = parseInt(tagIdMatch[1]);
+
+            if (method === "PUT") {
+                const body = await request.json();
+                return await updateTagHandler(tagId, body);
+            }
+            if (method === "DELETE") {
+                return await deleteTagHandler(tagId);
+            }
+        }
+
+        // Uploaded media. nginx marks /media/ `internal`, so this route is the
+        // only way in and every request must carry a signature issued by the
+        // files API.
+        if (url.pathname.startsWith('/media/')) {
+            const verdict = verifyMediaToken(
+                url.pathname,
+                url.searchParams.get('exp'),
+                url.searchParams.get('sig'),
+            );
+            if (verdict !== "ok") {
+                // 404 rather than 403: don't confirm which paths exist.
+                return new Response("Not Found", { status: 404 });
+            }
+
+            // Reject traversal before touching the filesystem.
+            const decoded = decodeURIComponent(url.pathname);
+            if (decoded.includes('..') || decoded.includes('\0')) {
+                return new Response("Not Found", { status: 404 });
+            }
+
+            if (!isDevelopment) {
+                // Hand the file back to nginx: it streams from disk with range
+                // support, which Bun would otherwise have to do itself.
+                return new Response(null, {
+                    headers: {
+                        "X-Accel-Redirect": decoded,
+                        "Cache-Control": "private, max-age=3600",
+                    },
+                });
+            }
+
+            const mediaFile = Bun.file(`${PROJECT_ROOT}${decoded}`);
+            if (await mediaFile.exists()) {
+                return new Response(mediaFile, {
+                    headers: { "Cache-Control": "private, max-age=3600" },
+                });
+            }
+            return new Response("Not Found", { status: 404 });
+        }
+
+        // Serve static files from /public directory (PWA assets)
+        try {
+            const publicFile = Bun.file(`${PROJECT_ROOT}/public${url.pathname}`);
+            if (await publicFile.exists()) {
+                return new Response(publicFile);
+            }
+        } catch {
+            // Not in public, continue
+        }
+
+        // Serve static files from /frontend directory
+        try {
+            let filePath = url.pathname === "/"
+                ? `${PROJECT_ROOT}/frontend/index.html`
+                : `${PROJECT_ROOT}/frontend${url.pathname}`;
+
+            // If path ends with / or is a directory, append index.html
+            if (url.pathname.endsWith('/') || !url.pathname.includes('.')) {
+                if (!filePath.endsWith('index.html')) {
+                    filePath = filePath.endsWith('/') ? `${filePath}index.html` : `${filePath}/index.html`;
+                }
+            }
+
+            const file = Bun.file(filePath);
+            if (await file.exists()) {
+                return new Response(file);
+            }
+        } catch (error) {
+            // File not found, continue to SPA fallback
+        }
+
+        // SPA fallback: a client-router route (GET, no file extension, not an
+        // API path) serves index.html so deep-links and refreshes work when the
+        // Bun server is hit directly. In production nginx's try_files does this
+        // first; this keeps single-server / dev setups working too.
+        if (method === "GET"
+            && !url.pathname.startsWith("/api/")
+            && !url.pathname.startsWith("/media/")
+            && !url.pathname.includes(".")) {
+            const index = Bun.file(`${PROJECT_ROOT}/frontend/index.html`);
+            if (await index.exists()) {
+                return new Response(index, { headers: { "Content-Type": "text/html" } });
+            }
+        }
+
+        // 404
+        return new Response("Not Found", { status: 404 });
+    }
+}
+
+// Expired refresh tokens otherwise accumulate forever.
+cleanupExpiredTokens().catch(() => {});
+setInterval(() => cleanupExpiredTokens().catch(() => {}), 24 * 60 * 60 * 1000);
+
+console.log(`🚀 Server running at http://${HOST}:${PORT}`);
+console.log(`📊 Database: ${process.env.DATABASE_URL || "PostgreSQL (auto-detected)"}`);

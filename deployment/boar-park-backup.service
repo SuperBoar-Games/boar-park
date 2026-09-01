@@ -1,0 +1,11 @@
+[Unit]
+Description=Boar Park Daily Database Backup
+After=postgresql.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/var/www/boar-park
+ExecStart=/var/www/boar-park/scripts/daily-backup.sh
+StandardOutput=append:/var/log/boar-park-backup.log
+StandardError=append:/var/log/boar-park-backup.log

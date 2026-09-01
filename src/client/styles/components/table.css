@@ -1,0 +1,402 @@
+/* ============================================================================
+   Data table
+   ----------------------------------------------------------------------------
+   The old table leaned on zebra striping to separate rows. Striping fights a
+   neutral palette — it adds a second background everywhere and leaves nothing
+   in reserve for hover. Here rows sit on one flat panel and are separated by
+   hairlines, which frees the only background change on the row for *state*:
+   hover and selection. Structure comes from the head band and the panel edge.
+
+   Figures are set in the UI face with tabular numerals rather than switched to
+   mono — columns still align, without the row turning into a terminal.
+   ========================================================================== */
+
+.table-wrapper {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-4);
+    box-shadow: var(--shadow-2);
+}
+
+/* While the filter row is open, the wrapper must not be a scroll container.
+   A filter dropdown is absolutely positioned inside it, and once ONE axis is
+   `auto` the other computes to `auto` as well — so an open menu extended the
+   scrollable area, raised a scrollbar, narrowed the content box and re-flowed
+   the flexible columns. It also meant the menu was clipped at the panel edge.
+   Both go away if the wrapper simply doesn't clip while filtering. */
+.table-wrapper.is-filtering {
+    overflow: visible;
+}
+
+/* table-layout: fixed — columns are sized from the <colgroup> alone.
+   Under `auto`, the browser measures EVERY cell to size a column, including
+   the filter row, so revealing filters re-laid the whole table out: inputs
+   and dropdowns have their own intrinsic widths and columns jumped to fit
+   them. Shrinking those controls only reduced the jump; it can't remove it,
+   because the filter row still participates in sizing. With `fixed`, only
+   the first row (and any <col>) decides widths, so toggling filters cannot
+   move a column. Columns without an explicit width share what's left. */
+.data-table {
+    width: 100%;
+    table-layout: fixed;
+    background-color: transparent;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--text-md);
+    line-height: 1.45;
+}
+
+/* Fixed layout will happily overflow a cell, so long unbroken values clip
+   rather than escaping the column. */
+.data-table tbody td {
+    overflow-wrap: anywhere;
+}
+
+/* ---- Head — a quiet band, pinned, closed by a firm rule ------------------ */
+.data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: var(--sp-3) var(--sp-4);
+    background-color: var(--panel-2);
+    color: var(--fg-subtle);
+    font-family: var(--font-ui);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border-strong);
+}
+
+.data-table thead tr:first-child th:first-child {
+    border-top-left-radius: var(--r-4);
+}
+
+.data-table thead tr:first-child th:last-child {
+    border-top-right-radius: var(--r-4);
+}
+
+.data-table thead th.sortable {
+    cursor: pointer;
+    user-select: none;
+    transition: color var(--dur-1) var(--ease), background-color var(--dur-1) var(--ease);
+}
+
+.data-table thead th.sortable:hover {
+    color: var(--fg);
+    background-color: var(--panel-hover);
+}
+
+/* The active sort column is the one thing in the head that gets colour */
+.data-table thead th.sortable.is-sorted {
+    color: var(--fg);
+}
+
+.data-table thead th .sort-header {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+}
+
+.data-table thead th .sort-header svg,
+.data-table thead th .sort-header i {
+    font-size: 0.625rem;
+    opacity: 0.5;
+    transition: opacity var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+
+.data-table thead th.sortable:hover .sort-header svg,
+.data-table thead th.sortable:hover .sort-header i {
+    opacity: 0.9;
+}
+
+.data-table thead th.is-sorted .sort-header svg,
+.data-table thead th.is-sorted .sort-header i {
+    opacity: 1;
+    color: var(--accent-text);
+}
+
+.data-table thead th.text-center,
+.data-table tbody td.text-center {
+    text-align: center;
+}
+
+.data-table thead th.text-right,
+.data-table tbody td.text-right {
+    text-align: right;
+}
+
+.data-table thead th.text-left,
+.data-table tbody td.text-left {
+    text-align: left;
+}
+
+.data-table thead th.text-center .sort-header {
+    justify-content: center;
+}
+
+.data-table thead th.text-right .sort-header {
+    justify-content: flex-end;
+}
+
+.data-table thead th.text-left .sort-header {
+    justify-content: flex-start;
+}
+
+/* ---- Filter row --------------------------------------------------------- */
+.data-table thead tr.filter-row th,
+.data-table thead tr.filter-row td {
+    position: static;
+    padding: var(--sp-2) var(--sp-2);
+    background-color: var(--panel);
+    border-bottom: 1px solid var(--border);
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.data-table thead tr.filter-row td:first-child {
+    padding-left: var(--sp-4);
+}
+
+.data-table thead tr.filter-row td:last-child {
+    padding-right: var(--sp-4);
+}
+
+.data-table thead .filter-input {
+    width: 100%;
+    height: var(--control-h-sm);
+    padding: 0 var(--sp-2);
+    font-family: var(--font-ui);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-tight);
+    background-color: var(--field-bg);
+    border: 1px solid var(--field-border);
+    border-radius: var(--r-2);
+    color: var(--fg);
+    transition: border-color var(--dur-2) var(--ease),
+                box-shadow var(--dur-2) var(--ease),
+                background-color var(--dur-2) var(--ease);
+}
+
+.data-table thead select.filter-input {
+    cursor: pointer;
+}
+
+.data-table thead .filter-input option {
+    background-color: var(--panel);
+    color: var(--fg);
+}
+
+.data-table thead .filter-input:hover {
+    border-color: var(--field-border-hover);
+}
+
+.data-table thead .filter-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.data-table thead .filter-input::placeholder {
+    color: var(--fg-faint);
+}
+
+/* Filter controls must not widen their column.
+   .custom-select carries min-width: 8rem, so showing the filter row forced
+   any column holding a dropdown wider than its content needed — and two
+   side-by-side forced it wider still. The table visibly re-laid itself out
+   every time filters were toggled. Let them shrink to the column instead. */
+.data-table thead tr.filter-row .dropdown-wrapper,
+.data-table thead tr.filter-row .custom-select {
+    min-width: 0;
+    width: 100%;
+}
+
+.data-table thead tr.filter-row .filter-pair {
+    display: flex;
+    gap: var(--sp-2);
+    min-width: 0;
+}
+
+.data-table thead tr.filter-row .filter-pair > * {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+/* ---- Body — flat panel, hairline separators ----------------------------- */
+.data-table tbody td {
+    padding: var(--sp-3) var(--sp-4);
+    color: var(--fg-muted);
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border);
+    background-color: transparent;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: var(--r-4);
+}
+
+.data-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: var(--r-4);
+}
+
+/* The identifier column is the anchor of the row */
+.data-table tbody td:first-child {
+    color: var(--fg);
+    font-weight: 500;
+}
+
+/* Figures: tabular so columns align; no font switch */
+.data-table tbody td.text-center,
+.data-table tbody td.text-right,
+.data-table tbody td.num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    color: var(--fg);
+}
+
+/* A zero is not news — let it recede so non-zero figures carry the scan */
+.data-table tbody td .num-zero {
+    color: var(--fg-faint);
+}
+
+/* ---- Row state ---------------------------------------------------------- */
+.data-table tbody tr {
+    transition: background-color var(--dur-1) var(--ease);
+}
+
+.data-table tbody tr.clickable-row {
+    cursor: pointer;
+}
+
+.data-table tbody tr:hover td {
+    background-color: var(--panel-hover);
+}
+
+/* The gold tint is reserved for rows that actually navigate, so hover answers
+   "will clicking do anything?" before you click. Non-navigable tables (tags,
+   the hero page's card list) get the neutral step above. The two treatments
+   sitting on one page is the point, not an inconsistency. No frame — the tint
+   alone carries it, matching the cards. */
+.data-table tbody tr.clickable-row:hover td {
+    background-color: var(--accent-soft);
+}
+
+/* Keyboard focus keeps a ring — that's an accessibility affordance, not
+   decoration, and it has to be visible without a pointer. */
+.data-table tbody tr.clickable-row:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.data-table tbody tr.clickable-row:focus-visible td {
+    background-color: var(--accent-soft);
+}
+
+.data-table tbody td.empty {
+    text-align: center;
+    padding: var(--sp-12) var(--sp-4);
+    color: var(--fg-subtle);
+    font-size: var(--text-md);
+    border-bottom: none;
+}
+
+/* ---- Row actions — hidden weight until the row is under the cursor ------ */
+.data-table .action-buttons {
+    display: flex;
+    gap: var(--sp-1);
+    justify-content: center;
+}
+
+.data-table .action-btn {
+    background: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border-radius: var(--r-2);
+    color: var(--fg-faint);
+    transition: color var(--dur-1) var(--ease),
+                background-color var(--dur-1) var(--ease),
+                border-color var(--dur-1) var(--ease);
+    font-size: 0.8125rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.data-table tbody tr:hover .action-btn {
+    color: var(--fg-subtle);
+}
+
+/* --panel-active is only ~5% off the hovered row, so the button's own hover
+   was invisible once the row was already lit. A translucent step off the
+   foreground reads on any row background, in either theme. */
+.data-table .action-btn:hover,
+.data-table tbody tr:hover .action-btn:hover {
+    background-color: color-mix(in srgb, var(--fg) 12%, transparent);
+    border-color: var(--border-strong);
+    color: var(--fg);
+}
+
+/* State colours must survive the row-hover rule above, which is more specific
+   than .action-btn.warning on its own and was washing them out mid-hover. */
+.data-table tbody tr:hover .action-btn.warning {
+    color: var(--warning-text);
+}
+
+.data-table tbody tr:hover .action-btn.delete:hover {
+    background-color: var(--danger-soft);
+    color: var(--danger-text);
+}
+
+.data-table tbody tr:hover .action-btn.warning:hover {
+    background-color: var(--warning-soft);
+    color: var(--warning-text);
+}
+
+.data-table .action-btn.edit:hover {
+    color: var(--info-text);
+}
+
+.data-table .action-btn.delete:hover {
+    background-color: var(--danger-soft);
+    border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+    color: var(--danger-text);
+}
+
+.data-table .action-btn.warning {
+    color: var(--warning-text);
+}
+
+.data-table .locked-icon {
+    color: var(--warning-text);
+}
+
+/* ---- Edge gutter --------------------------------------------------------
+   The action icons are the only glyphs that sit hard against the panel edge,
+   and at the default cell padding they read as clipped rather than placed.
+   The trailing column gets a deeper gutter so they sit inside the frame.
+   ------------------------------------------------------------------------ */
+.data-table thead th:last-child,
+.data-table tbody td:last-child {
+    padding-right: var(--sp-6);
+}
+
+/* ---- Cell truncate ------------------------------------------------------ */
+.cell-truncate {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

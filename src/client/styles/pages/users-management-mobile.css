@@ -1,0 +1,386 @@
+/* ============================================================================
+   Users management — mobile card list
+   Same tokens as the desktop table, laid out as cards. Action buttons are
+   tinted rather than solid-filled: three saturated blocks per row turned every
+   card into a traffic light and made the destructive one no louder than the
+   safe one. Only the primary action on a card is filled.
+   ========================================================================== */
+.users-mobile-container {
+    padding: 0;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* ---- Alerts ------------------------------------------------------------- */
+.mobile-alert {
+    padding: var(--sp-3);
+    border-radius: var(--r-3);
+    margin-bottom: var(--sp-3);
+    font-weight: 500;
+    font-size: var(--text-md);
+}
+
+.mobile-alert-error {
+    background-color: var(--danger-soft);
+    color: var(--danger-text);
+    border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+}
+
+.mobile-alert-success {
+    background-color: var(--success-soft);
+    color: var(--success-text);
+    border: 1px solid color-mix(in srgb, var(--success) 35%, transparent);
+}
+
+/* ---- Header ------------------------------------------------------------- */
+.mobile-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-4);
+}
+
+.mobile-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    color: var(--fg);
+}
+
+.mobile-create-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    width: 100%;
+    height: 2.75rem;
+    padding: 0 var(--sp-4);
+    font-family: inherit;
+    font-size: var(--text-md);
+    border: none;
+    border-radius: var(--r-2);
+    background-color: var(--accent);
+    color: var(--accent-fg);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--dur-2) var(--ease), transform var(--dur-1) var(--ease);
+}
+
+.mobile-create-btn:active {
+    background-color: var(--accent-press);
+    transform: scale(0.99);
+}
+
+/* ---- Search ------------------------------------------------------------- */
+.mobile-search-wrapper {
+    margin-bottom: var(--sp-4);
+}
+
+.mobile-search-input {
+    width: 100%;
+    height: 2.75rem;
+    padding: 0 var(--sp-4);
+    font-family: inherit;
+    font-size: var(--text-md);
+    border: 1px solid var(--border);
+    border-radius: var(--r-3);
+    background-color: var(--panel);
+    color: var(--fg);
+    transition: border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+}
+
+.mobile-search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.mobile-search-input::placeholder {
+    color: var(--fg-faint);
+}
+
+/* ---- Empty -------------------------------------------------------------- */
+.mobile-empty-state {
+    text-align: center;
+    padding: var(--sp-10) var(--sp-4);
+    color: var(--fg-subtle);
+    font-size: var(--text-md);
+}
+
+/* ---- User cards --------------------------------------------------------- */
+.mobile-users-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+}
+
+.mobile-user-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-4);
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-4);
+    transition: border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
+}
+
+.mobile-user-card:active {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-2);
+}
+
+.mobile-user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-3);
+}
+
+.mobile-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.mobile-username {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    color: var(--fg);
+    word-break: break-word;
+}
+
+.mobile-email {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--fg-subtle);
+    word-break: break-all;
+}
+
+/* ---- Status ------------------------------------------------------------- */
+.mobile-status-badge {
+    display: inline-flex;
+    align-items: center;
+    height: 1.375rem;
+    padding: 0 var(--sp-2);
+    border-radius: var(--r-2);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: capitalize;
+    white-space: nowrap;
+    flex-shrink: 0;
+    background-color: var(--panel-2);
+    color: var(--fg-muted);
+}
+
+.mobile-status-badge.active {
+    background-color: var(--success-soft);
+    color: var(--success-text);
+}
+
+.mobile-status-badge.pending {
+    background-color: var(--warning-soft);
+    color: var(--warning-text);
+}
+
+.mobile-status-badge.disabled {
+    background-color: var(--danger-soft);
+    color: var(--danger-text);
+}
+
+/* ---- Roles -------------------------------------------------------------- */
+.mobile-roles-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-3);
+    padding-bottom: var(--sp-3);
+    border-bottom: 1px solid var(--border);
+}
+
+.mobile-roles-label {
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    color: var(--fg-subtle);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-eyebrow);
+}
+
+.mobile-roles-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-1);
+    align-items: center;
+}
+
+.mobile-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-1);
+    min-height: 1.5rem;
+    padding: var(--sp-1) var(--sp-2);
+    border-radius: var(--r-2);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    background-color: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--fg);
+}
+
+.mobile-role-name {
+    display: inline;
+}
+
+.mobile-role-game {
+    font-size: var(--text-2xs);
+    color: var(--fg-faint);
+    display: inline;
+}
+
+.mobile-role-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--fg-faint);
+    cursor: pointer;
+    padding: 0;
+    margin-left: var(--sp-1);
+    font-size: 0.875rem;
+    line-height: 1;
+    transition: color var(--dur-1) var(--ease);
+}
+
+.mobile-role-remove:active {
+    color: var(--danger-text);
+}
+
+.mobile-role-add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    background-color: transparent;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--r-2);
+    color: var(--fg-faint);
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: background-color var(--dur-2) var(--ease),
+                border-color var(--dur-2) var(--ease),
+                color var(--dur-2) var(--ease);
+}
+
+.mobile-role-add-btn:active {
+    background-color: var(--panel-hover);
+    border-style: solid;
+    border-color: var(--fg-faint);
+    color: var(--fg);
+}
+
+/* ---- Actions ------------------------------------------------------------ */
+.mobile-actions-section {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-2);
+}
+
+.mobile-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.25rem;
+    padding: 0 var(--sp-2);
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border: 1px solid transparent;
+    border-radius: var(--r-2);
+    cursor: pointer;
+    transition: background-color var(--dur-2) var(--ease), transform var(--dur-1) var(--ease);
+}
+
+.mobile-action-btn:active {
+    transform: scale(0.98);
+}
+
+/* Approve is the one action a pending user is waiting on — it gets the fill */
+.mobile-action-approve {
+    background-color: var(--success);
+    color: #fff;
+}
+
+.mobile-action-primary {
+    background-color: var(--info-soft);
+    border-color: color-mix(in srgb, var(--info) 40%, transparent);
+    color: var(--info-text);
+}
+
+.mobile-action-disable {
+    background-color: var(--warning-soft);
+    border-color: color-mix(in srgb, var(--warning) 40%, transparent);
+    color: var(--warning-text);
+}
+
+.mobile-action-delete {
+    background-color: var(--danger-soft);
+    border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+    color: var(--danger-text);
+}
+
+.mobile-actions-section .mobile-action-btn:only-child {
+    grid-column: 1 / -1;
+}
+
+/* ---- Tablet ------------------------------------------------------------- */
+@media (min-width: 481px) and (max-width: 768px) {
+    .mobile-users-list {
+        gap: var(--sp-4);
+    }
+
+    .mobile-user-card {
+        padding: var(--sp-5);
+    }
+
+    .mobile-actions-section {
+        gap: var(--sp-3);
+    }
+}
+
+/* ---- Accessibility ------------------------------------------------------ */
+@media (prefers-contrast: more) {
+    .mobile-user-card {
+        border-width: 2px;
+    }
+
+    .mobile-action-btn {
+        border: 2px solid currentColor;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mobile-create-btn,
+    .mobile-search-input,
+    .mobile-user-card,
+    .mobile-action-btn,
+    .mobile-role-remove,
+    .mobile-role-add-btn {
+        transition: none;
+    }
+
+    .mobile-action-btn:active,
+    .mobile-create-btn:active {
+        transform: none;
+    }
+}

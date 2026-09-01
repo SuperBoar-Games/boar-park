@@ -1,0 +1,146 @@
+/* ============================================================================
+   Tags — tag badges and the inline tag editor.
+
+   The tags admin table used to have its own .tags-table / .tags-header rules
+   here, but TagsSection renders a plain .data-table — so ~150 lines of styling
+   were dead and drifting out of sync with the real table. Removed; the tags
+   table now provably shares one implementation with every other table.
+   ========================================================================== */
+/* ---- Tag badges --------------------------------------------------------- */
+.card-tags,
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-1);
+}
+
+/* Room on the right for the remove button's own hit area, so the chip isn't
+   padded twice. */
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    height: 1.5rem;
+    padding: 0 var(--sp-1) 0 var(--sp-2);
+    background-color: var(--panel-2);
+    color: var(--fg-muted);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    border-radius: var(--r-2);
+    border: 1px solid var(--border);
+    line-height: 1;
+    white-space: nowrap;
+    transition: border-color var(--dur-1) var(--ease);
+}
+
+.tag-badge:hover {
+    border-color: var(--border-strong);
+}
+
+/* No remove button — keep the symmetric padding */
+.tag-badge.muted {
+    padding: 0 var(--sp-2);
+    color: var(--fg-faint);
+    border-style: dashed;
+    background-color: transparent;
+}
+
+/* The ✕ was bare text at the same size and weight as the tag name, with no
+   padding — it read as part of the label ("Any-Player X") and gave a ~10px
+   click target. It's now a real button: smaller glyph, quieter by default,
+   with its own square hit area that turns red on hover so the destructive
+   action announces itself only when you reach for it. */
+.remove-tag-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+    padding: 0;
+    margin: 0;
+    background: none;
+    border: none;
+    border-radius: var(--r-1);
+    cursor: pointer;
+    color: var(--fg-faint);
+    transition: color var(--dur-1) var(--ease), background-color var(--dur-1) var(--ease);
+}
+
+.remove-tag-btn:hover {
+    background-color: var(--danger-soft);
+    color: var(--danger-text);
+}
+
+.remove-tag-btn i {
+    font-size: 0.5rem;
+    line-height: 1;
+}
+
+/* ---- Tag editor --------------------------------------------------------- */
+.tag-editor-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.add-tag-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.375rem;
+    padding: 0 var(--sp-2);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1;
+    background-color: transparent;
+    color: var(--fg-faint);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--r-2);
+    cursor: pointer;
+    transition: background-color var(--dur-2) var(--ease),
+                color var(--dur-2) var(--ease),
+                border-color var(--dur-2) var(--ease);
+}
+
+.add-tag-btn:hover {
+    background-color: var(--panel-hover);
+    color: var(--fg);
+    border-style: solid;
+    border-color: var(--fg-faint);
+}
+
+.tag-editor-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: var(--sp-1);
+    z-index: 50;
+    min-width: 13rem;
+    max-width: 19rem;
+    padding: 0;
+}
+
+.tag-search-input {
+    width: 100%;
+    height: var(--control-h-sm);
+    padding: 0 var(--sp-3);
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: var(--text-md);
+    outline: none;
+}
+
+.tag-search-input::placeholder {
+    color: var(--fg-faint);
+}
+
+.tag-suggestions {
+    max-height: 13rem;
+    overflow-y: auto;
+    padding: var(--sp-1);
+}

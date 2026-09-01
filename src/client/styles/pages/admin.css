@@ -1,0 +1,287 @@
+/* ============================================================================
+   Admin shell — page header, toolbar, dashboard cards
+   The header used to be a boxed panel floating on the page, which read as a
+   second card competing with the content below it. It's now a plain bar closed
+   by a hairline: the page title sits directly on the ground, and the only
+   raised things on screen are the things holding data.
+   ========================================================================== */
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-6);
+    padding-bottom: var(--sp-4);
+    border-bottom: 1px solid var(--border);
+    background: none;
+    position: relative;
+}
+
+/* Title column: breadcrumb trail sits above the page title, on the left with
+   the page identity — navigation and account chrome are different jobs and
+   shouldn't share the same cluster. */
+.admin-header-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+}
+
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: var(--text-xs);
+    line-height: 1.4;
+}
+
+.breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Neutral, not gold — the accent is reserved for the primary action, and a
+   trail of gold links at the top of every page would spend it on navigation. */
+.breadcrumb-link {
+    color: var(--fg-subtle);
+    text-decoration: none;
+    border-radius: var(--r-1);
+    transition: color var(--dur-2) var(--ease);
+}
+
+.breadcrumb-link:hover {
+    color: var(--fg);
+    text-decoration: none;
+}
+
+.breadcrumb-sep {
+    color: var(--fg-faint);
+    margin: 0 var(--sp-2);
+    user-select: none;
+}
+
+.admin-header h1 {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    color: var(--fg);
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-header-actions {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* ---- Toolbar above a table ---------------------------------------------- */
+.table-controls {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+    margin-bottom: var(--sp-4);
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+/* Grow to claim the free space. Left as `flex: 0 1 auto` the group was sized
+   from its intrinsic width, which came out narrower than its own contents and
+   wrapped the Filters button onto a second line while the row still had ~900px
+   spare. */
+.table-controls-left {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+    flex-wrap: wrap;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* The trailing group must NOT grow — two growing siblings split the row
+   evenly and leave `justify-content: space-between` with no free space to
+   distribute, so the right-hand group lands mid-row instead of at the edge.
+   `margin-left: auto` pins it right even if the left group is absent. */
+.table-controls-right {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+    flex-wrap: wrap;
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+/* ---- Section headings --------------------------------------------------- */
+.section-title {
+    margin: var(--sp-8) 0 var(--sp-3);
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    color: var(--fg);
+}
+
+.section-separator {
+    margin: var(--sp-8) 0;
+    border: none;
+    border-top: 1px solid var(--border);
+}
+
+main h2 {
+    margin-bottom: var(--sp-4);
+}
+
+/* ---- Dashboard game cards ----------------------------------------------- */
+.game-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--sp-3);
+}
+
+.game-card {
+    display: block;
+    padding: var(--sp-4);
+    background-color: var(--panel);
+    border-radius: var(--r-4);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    transition: background-color var(--dur-2) var(--ease),
+                border-color var(--dur-2) var(--ease),
+                box-shadow var(--dur-2) var(--ease);
+}
+
+.game-card:hover {
+    background-color: var(--panel-hover);
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-2);
+}
+
+.game-card h3 {
+    margin-bottom: var(--sp-1);
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    color: var(--fg);
+}
+
+.game-card:hover h3 {
+    color: var(--accent-text);
+}
+
+.game-card p {
+    font-size: var(--text-md);
+    color: var(--fg-subtle);
+    line-height: 1.5;
+}
+
+/* ---- Back link ---------------------------------------------------------- */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    text-decoration: none;
+    color: var(--fg-muted);
+    font-size: var(--text-md);
+    transition: color var(--dur-2) var(--ease);
+}
+
+.back-link:hover {
+    color: var(--fg);
+}
+
+/* ---- Custom select inside a table head ---------------------------------- */
+.data-table thead .custom-select {
+    width: 100%;
+}
+
+.data-table thead .custom-select .custom-select-trigger {
+    height: var(--control-h-sm);
+    background-color: transparent;
+    border-color: var(--border);
+}
+
+.data-table thead .custom-select .custom-select-trigger:hover {
+    background-color: var(--panel);
+    border-color: var(--border-strong);
+}
+
+/* ---- Mobile — collapse labelled buttons to round icon buttons ----------- */
+@media (max-width: 640px) {
+    .admin-header {
+        gap: var(--sp-2);
+        padding-bottom: var(--sp-3);
+        margin-bottom: var(--sp-4);
+    }
+
+    .admin-header h1 {
+        font-size: var(--text-xl);
+    }
+
+    /* Not enough width for a trail — show only the immediate parent, as a
+       back link. Same markup, no JS branch. */
+    .breadcrumb-item:not(:last-child) {
+        display: none;
+    }
+
+    .breadcrumb-item:last-child .breadcrumb-link::before {
+        content: "\2190";
+        margin-right: var(--sp-1);
+    }
+
+    .admin-header-actions {
+        gap: var(--sp-1);
+    }
+
+    .user-menu-trigger {
+        padding: 0;
+        width: var(--control-h);
+        height: var(--control-h);
+        min-height: var(--control-h);
+        border-radius: var(--r-full);
+        background-color: var(--panel);
+        border: 1px solid var(--border);
+        box-shadow: none;
+        justify-content: center;
+    }
+
+    .user-username {
+        display: none;
+    }
+
+    .user-menu-dropdown {
+        right: -0.25rem;
+        min-width: 220px;
+    }
+
+    .admin-header-actions .btn {
+        width: var(--control-h);
+        height: var(--control-h);
+        padding: 0 !important;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: var(--r-full);
+    }
+
+    .admin-header-actions .btn span {
+        display: none;
+    }
+
+    .admin-header-actions .btn svg,
+    .admin-header-actions .btn i {
+        margin: 0;
+    }
+
+    .table-controls {
+        gap: var(--sp-2);
+        margin-bottom: var(--sp-3);
+    }
+
+    .game-cards {
+        grid-template-columns: 1fr;
+    }
+}

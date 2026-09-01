@@ -1,0 +1,124 @@
+/* ============================================================================
+   Buttons
+   One height (--control-h) so buttons, inputs and selects line up on any row.
+   Gold is reserved for the single primary action on a screen; everything else
+   is a bordered neutral. Danger is outlined until hovered — destructive
+   actions should be reachable, not eye-catching.
+   ========================================================================== */
+.btn {
+    height: var(--control-h);
+    padding: 0 var(--sp-3);
+    border-radius: var(--r-2);
+    font-family: var(--font-ui);
+    font-weight: 500;
+    font-size: var(--text-md);
+    letter-spacing: var(--tracking-tight);
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    border: 1px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    transition: background-color var(--dur-2) var(--ease),
+                border-color var(--dur-2) var(--ease),
+                color var(--dur-2) var(--ease),
+                box-shadow var(--dur-2) var(--ease);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0.5px);
+}
+
+.btn svg,
+.btn i {
+    font-size: 0.8125rem;
+    flex-shrink: 0;
+}
+
+/* ---- Primary — the one gold thing on the screen -------------------------- */
+.btn-primary {
+    background-color: var(--accent);
+    color: var(--accent-fg);
+    font-weight: 600;
+    box-shadow: var(--shadow-1);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+    background-color: var(--accent-press);
+}
+
+/* ---- Secondary — bordered neutral, the default -------------------------- */
+.btn-secondary {
+    background-color: var(--panel);
+    border-color: var(--border-strong);
+    color: var(--fg-muted);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--panel-hover);
+    border-color: var(--fg-faint);
+    color: var(--fg);
+}
+
+.btn-secondary:active:not(:disabled) {
+    background-color: var(--panel-active);
+}
+
+/* ---- Ghost — for toolbars where a border would be noise ------------------ */
+.btn-ghost {
+    background-color: transparent;
+    color: var(--fg-muted);
+}
+
+.btn-ghost:hover:not(:disabled) {
+    background-color: var(--panel-hover);
+    color: var(--fg);
+}
+
+/* ---- Danger — quiet until you reach for it ------------------------------ */
+.btn-danger {
+    background-color: transparent;
+    border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+    color: var(--danger-text);
+}
+
+.btn-danger:hover:not(:disabled) {
+    background-color: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+}
+
+/* ---- Lock — a state toggle, so it uses the warning hue, not gold -------- */
+.btn-lock {
+    background-color: var(--warning-soft);
+    border-color: color-mix(in srgb, var(--warning) 40%, transparent);
+    color: var(--warning-text);
+}
+
+.btn-lock:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--warning) 24%, transparent);
+}
+
+/* ---- Sizes -------------------------------------------------------------- */
+.btn-sm {
+    height: var(--control-h-sm);
+    padding: 0 var(--sp-2);
+    font-size: var(--text-sm);
+}
+
+/* Icon-only: square, so it never reads as a truncated label */
+.btn-icon {
+    width: var(--control-h);
+    padding: 0;
+}
+
+.btn-icon.btn-sm {
+    width: var(--control-h-sm);
+}

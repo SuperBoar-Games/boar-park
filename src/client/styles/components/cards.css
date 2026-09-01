@@ -1,0 +1,322 @@
+/* ============================================================================
+   Card grid — the game-card records on a movie page
+   Field labels used to be uppercase orange, which put warning-coloured text on
+   every row of every card and left nothing for actual warnings. They're now
+   neutral eyebrows; the value is what gets the contrast.
+   ========================================================================== */
+/* Cards stretch to the tallest in their row. The slack is routed to just
+   above the tags row (see .card-body > .card-tags), so every card's
+   tags + FILES footer lands on the same line instead of the gap opening up
+   in an arbitrary place. */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--sp-3);
+    margin-top: var(--sp-5);
+}
+
+/* Padding lives on .card-main, not on the card, so the type marker can bleed
+   out to the card's edges with negative margins. overflow:hidden clips it to
+   the rounded corners. */
+.card-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-4);
+    overflow: hidden;
+    transition: border-color var(--dur-2) var(--ease),
+                box-shadow var(--dur-2) var(--ease),
+                transform var(--dur-2) var(--ease);
+}
+
+.card-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    padding: var(--sp-4);
+}
+
+/* Hover: the card lifts on a stronger shadow, and its type marker brightens.
+   No border tint — a card can move, unlike a table row, so depth carries the
+   state on its own and the frame stays quiet. It also leaves the border free
+   to mean one thing only: review state, below. */
+.card-item:hover {
+    box-shadow: var(--shadow-4);
+    transform: translateY(-2px);
+}
+
+/* A card waiting on review should be findable while scanning the grid, not
+   only by squinting at its flag button. Constant — it does not react to
+   hover, so the border always means exactly this. */
+.card-item.needs-review {
+    border-color: color-mix(in srgb, var(--warning) 45%, var(--border));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card-item:hover {
+        transform: none;
+    }
+}
+
+/* Header is one row: type, name, actions. It used to stack the actions on a
+   second line under the title, spending a whole row on three icon buttons. */
+.card-header {
+    display: flex;
+    flex-direction: row;
+    /* stretch so the type marker fills the header's height */
+    align-items: stretch;
+    gap: var(--sp-3);
+    /* Full-bleed band: negative side margins cancel .card-main's padding so
+       the rule under the header reaches both card edges rather than stopping
+       at the content column. padding-left is 0 — the type marker sits flush
+       to the card edge and supplies the left inset itself.
+       Bottom spacing stays asymmetric (tighter above the rule than below) so
+       the rule reads as closing the header rather than floating between the
+       name and the first ability. */
+    margin: 0 calc(var(--sp-4) * -1) var(--sp-4);
+    padding: 0 var(--sp-4) var(--sp-3) 0;
+    border-bottom: 1px solid var(--border);
+}
+
+/* Identity: name plus its call sign, which is flavour text rather than a
+   data field. Given a label and a rule of its own it looked exactly like an
+   ability, so the card read as four interchangeable rows. As an italic
+   subtitle it is instantly a different kind of thing, and it costs no rule. */
+.card-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.card-header h3 {
+    font-family: var(--font-display);
+    color: var(--fg);
+    font-size: var(--text-lg);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    line-height: 1.25;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.card-callsign {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-style: italic;
+    color: var(--fg-subtle);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+/* Type marker — spans the header's full height and bleeds left to the card
+   edge. The negative margins cancel .card-main's padding on three sides and
+   the header's own padding-bottom, so the band ends exactly on the header
+   rule. The code is short (H, V, SR1, WC), set in mono and centred. */
+.card-type-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    flex-shrink: 0;
+    padding: 0 var(--sp-1);
+    /* The header now bleeds sideways, so only the vertical bleed is left:
+       up to the card's top edge, down to the header rule. */
+    margin: calc(var(--sp-4) * -1) 0 calc(var(--sp-3) * -1);
+    background-color: var(--panel-2);
+    border: none;
+    border-right: 1px solid var(--border);
+    border-radius: 0;
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: background-color var(--dur-2) var(--ease), color var(--dur-2) var(--ease);
+}
+
+/* Gold on hover. This is the card's only accent moment, and hover is UI state
+   rather than data status, so it stays inside the colour rule: gold marks
+   brand, the primary action, and interaction state — never a data value.
+   Declared BEFORE the needs-review rule below, which is equally specific and
+   therefore wins — a card awaiting review keeps its warning spine even while
+   hovered, so the accent can never mask the state. */
+.card-item:hover .card-type-badge {
+    background-color: var(--accent);
+    border-right-color: var(--accent);
+    color: var(--accent-fg);
+}
+
+/* A card awaiting review tints its spine too, so the state is legible from
+   the grid without reading the border alone. */
+.card-item.needs-review .card-type-badge {
+    background-color: var(--warning-soft);
+    color: var(--warning-text);
+    border-right-color: color-mix(in srgb, var(--warning) 35%, transparent);
+}
+
+/* Actions keep to the top edge — only the type marker stretches */
+.card-header .card-actions {
+    align-self: flex-start;
+}
+
+/* Actions stay out of the way until the card is under the cursor. Only where
+   hover exists — on touch there is no hover, so they must stay visible. */
+.card-actions {
+    display: flex;
+    gap: var(--sp-1);
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+@media (hover: hover) {
+    .card-actions {
+        opacity: 0;
+        transition: opacity var(--dur-2) var(--ease);
+    }
+
+    .card-item:hover .card-actions,
+    .card-item:focus-within .card-actions {
+        opacity: 1;
+    }
+}
+
+.card-actions .action-btn {
+    background: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--r-2);
+    padding: 0;
+    color: var(--fg-faint);
+    font-size: 0.8125rem;
+    transition: color var(--dur-1) var(--ease),
+                background-color var(--dur-1) var(--ease),
+                border-color var(--dur-1) var(--ease);
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-actions .action-btn:hover {
+    color: var(--fg);
+    background-color: var(--panel-hover);
+    border-color: var(--border-strong);
+}
+
+.card-actions .action-btn.edit:hover {
+    color: var(--info-text);
+}
+
+.card-actions .action-btn.delete:hover {
+    color: var(--danger-text);
+    background-color: var(--danger-soft);
+    border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+}
+
+/* The review flag is a state, so it keeps its colour and stays visible */
+.card-actions .action-btn.warning {
+    color: var(--warning-text);
+    opacity: 1;
+}
+
+.card-actions .action-btn.warning:hover {
+    color: var(--warning-text);
+    background-color: var(--warning-soft);
+    border-color: color-mix(in srgb, var(--warning) 40%, transparent);
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.card-body > * + * {
+    margin-top: var(--sp-4);
+    padding-top: var(--sp-3);
+    border-top: 1px solid var(--border);
+}
+
+/* Abilities are the substance of a card, and they are genuinely an ordered
+   pair — so they are a list, numbered by the marker instead of by a repeated
+   "ABILITY 1" / "ABILITY 2" eyebrow. That removes two label lines per card,
+   separates the two abilities from each other far more clearly than a rule
+   did, and leaves the rules text as the only full-contrast copy in the body. */
+/* Each ability is its own inset well.
+   Two previous attempts failed for the same reason: a labelled field and a
+   numbered list both separate abilities with nothing but WHITESPACE, and
+   whitespace loses to the line spacing inside a wrapped paragraph — so two
+   two-line abilities always fused into one four-line block, no matter how the
+   gap was tuned. A container settles it: the boundary is a real edge, and the
+   padding inside gives the text room without pushing the abilities apart.
+   The numeral stays because Ability 1 / Ability 2 are distinct slots. */
+/* margin-bottom: auto absorbs the card's spare height HERE, below the last
+   ability, which both pushes the tags/FILES footer to the bottom (so footers
+   align across a row) and leaves the divider's own margin intact. Putting the
+   auto margin on .card-tags instead — as this did — collapsed that gap to zero
+   on the tallest card in a row, where there is no spare height for auto to
+   resolve to, so the rule sat flush against the last ability box. */
+.card-abilities {
+    list-style: none;
+    counter-reset: ability;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    margin: 0 0 auto;
+    padding: 0;
+}
+
+.card-abilities li {
+    counter-increment: ability;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--sp-3);
+    align-items: start;
+    padding: var(--sp-3);
+    /* --bg-sunken is the input well colour — nearly black, so these read as
+       holes punched in the card. --panel-2 is the nested-surface token: one
+       step ABOVE the card, so an ability reads as a raised block. */
+    background-color: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r-3);
+    color: var(--fg);
+    font-size: var(--text-md);
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+/* No badge — the well is already the container, so a boxed numeral inside a
+   box would be double framing. Just the figure, quiet, in mono. */
+.card-abilities li::before {
+    content: counter(ability);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--fg-faint);
+    line-height: 1.55;
+    font-variant-numeric: tabular-nums;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: var(--sp-12) var(--sp-4);
+    color: var(--fg-subtle);
+    background-color: var(--panel);
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--r-4);
+}
+
+@media (max-width: 640px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+}

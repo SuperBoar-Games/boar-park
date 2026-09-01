@@ -1,0 +1,298 @@
+/* ============================================================================
+   Card files — upload rows, flip-to-image view, download menu
+   A few of these used a *border* token as a text colour (--ctp-surface2), so
+   "no file" labels were nearly invisible. They now use the faint foreground,
+   which is the lowest step that still passes.
+   ========================================================================== */
+
+/* ---- Files section (below the card body) -------------------------------- */
+.card-files-section {
+    margin-top: var(--sp-3);
+    padding-top: var(--sp-3);
+    border-top: 1px solid var(--border);
+}
+
+.card-files-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--fg-subtle);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-eyebrow);
+    transition: color var(--dur-2) var(--ease);
+    width: 100%;
+    text-align: left;
+    margin-bottom: var(--sp-2);
+}
+
+.card-files-toggle:hover {
+    color: var(--fg);
+}
+
+.card-files-toggle i {
+    font-size: 0.625rem;
+    transition: transform var(--dur-2) var(--ease);
+}
+
+.card-files-toggle.open i.fa-chevron-right {
+    transform: rotate(90deg);
+}
+
+.card-files-locked-badge {
+    margin-left: auto;
+    color: var(--warning-text);
+    font-size: var(--text-2xs);
+}
+
+/* ---- File rows ---------------------------------------------------------- */
+.card-file-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-1) 0;
+    border-bottom: 1px solid var(--border);
+    font-size: var(--text-sm);
+}
+
+.card-file-row:last-child {
+    border-bottom: none;
+}
+
+.card-file-label {
+    width: 4.5rem;
+    flex-shrink: 0;
+    color: var(--fg-faint);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-eyebrow);
+}
+
+.card-file-name {
+    flex: 1;
+    color: var(--fg-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.card-file-name.empty {
+    color: var(--fg-faint);
+    font-style: italic;
+}
+
+.card-file-actions {
+    display: flex;
+    gap: var(--sp-1);
+    flex-shrink: 0;
+}
+
+.card-file-btn {
+    background: none;
+    border: 1px solid transparent;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    color: var(--fg-faint);
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: var(--r-1);
+    transition: color var(--dur-1) var(--ease),
+                background-color var(--dur-1) var(--ease),
+                border-color var(--dur-1) var(--ease);
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-file-btn:hover {
+    color: var(--fg);
+    background-color: var(--panel-hover);
+    border-color: var(--border-strong);
+}
+
+.card-file-btn.delete:hover {
+    color: var(--danger-text);
+    background-color: var(--danger-soft);
+    border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+}
+
+.card-file-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.card-file-uploading {
+    color: var(--accent-text);
+    font-size: var(--text-2xs);
+}
+
+/* ---- Flip view — card shows its image instead of its text --------------- */
+.card-item.flipped .card-body,
+.card-item.flipped .card-files-section {
+    display: none;
+}
+
+.card-flip-image-wrapper {
+    display: none;
+    width: 100%;
+    margin-top: var(--sp-2);
+}
+
+.card-item.flipped .card-flip-image-wrapper {
+    display: block;
+}
+
+.card-flip-image-wrapper img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--r-3);
+    border: 1px solid var(--border);
+    display: block;
+    object-fit: contain;
+    max-height: 25rem;
+    cursor: zoom-in;
+}
+
+.card-flip-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-12) 0;
+    color: var(--fg-faint);
+    font-size: 1.25rem;
+}
+
+.card-flip-no-image {
+    text-align: center;
+    padding: var(--sp-8) 0;
+    color: var(--fg-faint);
+    font-size: var(--text-sm);
+}
+
+.card-flip-no-image i {
+    display: block;
+    font-size: 1.75rem;
+    margin-bottom: var(--sp-2);
+    color: var(--border-strong);
+}
+
+/* ---- Download menu ------------------------------------------------------ */
+.download-dropdown-wrapper {
+    position: relative;
+}
+
+.download-dropdown {
+    position: absolute;
+    top: calc(100% + var(--sp-2));
+    right: 0;
+    background-color: var(--panel);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-3);
+    padding: var(--sp-3);
+    z-index: 100;
+    min-width: 12rem;
+    box-shadow: var(--shadow-3);
+}
+
+.download-dropdown-title {
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-eyebrow);
+    color: var(--fg-subtle);
+    margin-bottom: var(--sp-2);
+}
+
+.download-type-option {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-1) 0;
+    font-size: var(--text-md);
+    color: var(--fg-muted);
+    cursor: pointer;
+}
+
+.download-type-option:hover {
+    color: var(--fg);
+}
+
+.download-type-option input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 0.875rem;
+    height: 0.875rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.download-go-btn {
+    width: 100%;
+    height: var(--control-h-sm);
+    margin-top: var(--sp-3);
+    background-color: var(--accent);
+    color: var(--accent-fg);
+    border: none;
+    border-radius: var(--r-2);
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--dur-2) var(--ease);
+}
+
+.download-go-btn:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+}
+
+.download-go-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.download-dropdown-divider {
+    height: 1px;
+    background-color: var(--border);
+    margin: var(--sp-3) 0 var(--sp-2);
+}
+
+/* Secondary export sits in the same menu but stays visually subordinate to
+   the primary ZIP action above it. */
+.download-secondary-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    width: 100%;
+    height: var(--control-h-sm);
+    padding: 0 var(--sp-2);
+    margin: 0 0 calc(var(--sp-1) * -1);
+    background: none;
+    border: none;
+    border-radius: var(--r-2);
+    color: var(--fg-muted);
+    font-family: inherit;
+    font-size: var(--text-md);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+
+.download-secondary-btn i {
+    width: 1rem;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--fg-faint);
+}
+
+.download-secondary-btn:hover {
+    background-color: var(--panel-hover);
+    color: var(--fg);
+}

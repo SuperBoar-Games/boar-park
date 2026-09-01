@@ -1,0 +1,409 @@
+/* ============================================================================
+   Modal, lightbox, toast
+   The dialog is the one place a heavier shadow is earned — it has to read as
+   detached from a page that is otherwise almost flat.
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: var(--scrim);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-4);
+    z-index: 1000;
+    animation: fadeIn var(--dur-2) var(--ease);
+}
+
+/* Column layout so the header stays put and only the body scrolls — the whole
+   dialog used to scroll as one block, which took the title off screen on a
+   long form. */
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--panel);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-5);
+    box-shadow: var(--shadow-4);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    max-height: 90dvh;
+    overflow: hidden;
+    animation: slideUp var(--dur-3) var(--ease);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(8px) scale(0.99);
+        opacity: 0;
+    }
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--sp-4);
+    flex-shrink: 0;
+    padding: var(--sp-5) var(--sp-6) var(--sp-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+}
+
+.modal-header h2,
+.modal-title {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    color: var(--fg);
+    margin: 0;
+}
+
+.modal-description {
+    margin: 0;
+    font-size: var(--text-md);
+    color: var(--fg-subtle);
+    line-height: 1.45;
+}
+
+.modal-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--sp-5) var(--sp-6) var(--sp-6);
+}
+
+.modal-close {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--fg-subtle);
+    font-size: 0.875rem;
+    cursor: pointer;
+    padding: 0;
+    width: var(--control-h-sm);
+    height: var(--control-h-sm);
+    border-radius: var(--r-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color var(--dur-2) var(--ease),
+                background-color var(--dur-2) var(--ease);
+}
+
+.modal-close:hover {
+    color: var(--fg);
+    background-color: var(--panel-hover);
+}
+
+.modal-form-group {
+    margin-bottom: var(--sp-4);
+}
+
+.modal-form-group:last-child {
+    margin-bottom: 0;
+}
+
+.modal-label {
+    display: block;
+    margin-bottom: var(--sp-2);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--fg-subtle);
+}
+
+.modal-input,
+.modal-select,
+.modal-textarea {
+    width: 100%;
+    height: var(--control-h);
+    padding: 0 var(--sp-3);
+    background-color: var(--field-bg);
+    border: 1px solid var(--field-border);
+    border-radius: var(--r-2);
+    color: var(--fg);
+    font-family: inherit;
+    font-size: var(--text-md);
+    transition: border-color var(--dur-2) var(--ease),
+                box-shadow var(--dur-2) var(--ease),
+                background-color var(--dur-2) var(--ease);
+}
+
+.modal-textarea {
+    height: auto;
+    min-height: 5rem;
+    padding: var(--sp-2) var(--sp-3);
+    line-height: 1.55;
+}
+
+.modal-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%2371717a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='M3 4.5l3 3 3-3'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--sp-3) center;
+    padding-right: var(--sp-8);
+    cursor: pointer;
+}
+
+.modal-select option {
+    background-color: var(--panel);
+    color: var(--fg);
+}
+
+.modal-input:hover,
+.modal-select:hover,
+.modal-textarea:hover {
+    border-color: var(--field-border-hover);
+}
+
+.modal-input:focus,
+.modal-select:focus,
+.modal-textarea:focus {
+    outline: none;
+    background-color: var(--field-bg-focus);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+.modal-input::placeholder,
+.modal-textarea::placeholder {
+    color: var(--fg-faint);
+}
+
+/* ---- Inline feedback ---------------------------------------------------- */
+.modal-error,
+.modal-success {
+    padding: var(--sp-3);
+    border-radius: var(--r-2);
+    margin-bottom: var(--sp-4);
+    font-size: var(--text-md);
+    border: 1px solid transparent;
+}
+
+.modal-error {
+    background-color: var(--danger-soft);
+    border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+    color: var(--danger-text);
+}
+
+.modal-success {
+    background-color: var(--success-soft);
+    border-color: color-mix(in srgb, var(--success) 35%, transparent);
+    color: var(--success-text);
+}
+
+/* Footer bar: pinned outside the scrolling body, bled to the dialog edges */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--sp-2);
+    flex-shrink: 0;
+    padding: var(--sp-4) var(--sp-6);
+    border-top: 1px solid var(--border);
+    background-color: var(--panel);
+}
+
+/* A short confirm dialog needs no rule between its one sentence and the
+   buttons — the message is the whole body. */
+.modal-content-sm .modal-header {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.modal-content-sm .modal-body {
+    padding-top: var(--sp-2);
+}
+
+.modal-content-sm .modal-footer {
+    border-top: none;
+    padding-top: 0;
+}
+
+.modal-message {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: var(--text-md);
+    line-height: 1.55;
+}
+
+.modal-btn {
+    height: var(--control-h);
+    padding: 0 var(--sp-4);
+    border: 1px solid transparent;
+    border-radius: var(--r-2);
+    font-family: inherit;
+    font-weight: 500;
+    font-size: var(--text-md);
+    cursor: pointer;
+    transition: background-color var(--dur-2) var(--ease),
+                border-color var(--dur-2) var(--ease),
+                color var(--dur-2) var(--ease);
+}
+
+.modal-btn-primary {
+    background-color: var(--accent);
+    color: var(--accent-fg);
+    font-weight: 600;
+}
+
+.modal-btn-primary:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+}
+
+.modal-btn-secondary {
+    background-color: var(--panel);
+    border-color: var(--border-strong);
+    color: var(--fg-muted);
+}
+
+.modal-btn-secondary:hover:not(:disabled) {
+    background-color: var(--panel-hover);
+    color: var(--fg);
+}
+
+.modal-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+    .modal-overlay {
+        padding: var(--sp-3);
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        border-radius: var(--r-4);
+        max-height: 92dvh;
+    }
+
+    .modal-header {
+        padding: var(--sp-4) var(--sp-4) var(--sp-3);
+    }
+
+    .modal-body {
+        padding: var(--sp-4);
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .modal-btn {
+        width: 100%;
+    }
+}
+
+/* ============================================================================
+   Lightbox — full-screen image viewer
+   ========================================================================== */
+.lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.93);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn var(--dur-2) var(--ease);
+    cursor: zoom-out;
+}
+
+.lightbox-img,
+.card-flip-image-wrapper img.lightbox-img {
+    width: auto;
+    height: 95vh;
+    max-width: 95vw;
+    max-height: unset;
+    object-fit: contain;
+    border-radius: var(--r-2);
+    box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6);
+    cursor: default;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: var(--sp-4);
+    right: var(--sp-4);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    font-size: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--r-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background var(--dur-2) var(--ease);
+}
+
+.lightbox-close:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+/* ============================================================================
+   Toast — non-blocking, bottom-right
+   ========================================================================== */
+.toast {
+    position: fixed;
+    bottom: var(--sp-6);
+    right: var(--sp-6);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: var(--r-3);
+    font-size: var(--text-md);
+    font-weight: 500;
+    max-width: 360px;
+    z-index: 2000;
+    cursor: pointer;
+    animation: slideUp var(--dur-3) var(--ease);
+    box-shadow: var(--shadow-3);
+    background-color: var(--panel);
+    border: 1px solid var(--border-strong);
+    color: var(--fg);
+}
+
+.toast-error {
+    border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+    color: var(--danger-text);
+}
+
+.toast-success {
+    border-color: color-mix(in srgb, var(--success) 45%, transparent);
+    color: var(--success-text);
+}
+
+@media (max-width: 640px) {
+    .toast {
+        bottom: var(--sp-4);
+        right: var(--sp-4);
+        left: var(--sp-4);
+        max-width: unset;
+    }
+}

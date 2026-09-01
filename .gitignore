@@ -1,0 +1,24 @@
+# Ignore Emacs temporary files
+*~
+\#*#
+.\#*
+
+node_modules/
+
+.dev.vars
+
+.vscode/
+
+# Environment variables (may contain sensitive data)
+.env
+.env.local
+
+# Seed data files (contain user emails and sensitive information)
+src/db/seeds/
+
+dist/
+# Database dumps — contain user emails, password hashes and session tokens
+bkps/
+
+# Uploaded card files — user content, not source
+media/

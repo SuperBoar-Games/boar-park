@@ -1,0 +1,122 @@
+/* ============================================================================
+   Talkies — hero and movie detail screens
+   .lock-toggle is used for three different toggles (content lock, file lock,
+   text/image flip), so its "on" state is styled as *engaged control* rather
+   than as a warning. The padlock glyph carries the lock meaning on its own.
+   ========================================================================== */
+
+.hero-title-section {
+    display: flex;
+    gap: var(--sp-3);
+    align-items: center;
+    min-width: 0;
+}
+
+.movie-title-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    min-width: 0;
+}
+
+.movie-title-section h1 {
+    font-family: var(--font-display);
+    color: var(--fg);
+    font-size: var(--text-2xl);
+    letter-spacing: var(--tracking-display);
+    margin: 0;
+}
+
+/* ---- Toggle control ----------------------------------------------------- */
+.lock-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    height: var(--control-h);
+    padding: 0 var(--sp-3);
+    background-color: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-2);
+    color: var(--fg-muted);
+    font-family: inherit;
+    font-size: var(--text-md);
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color var(--dur-2) var(--ease),
+                border-color var(--dur-2) var(--ease),
+                color var(--dur-2) var(--ease);
+}
+
+.lock-toggle svg,
+.lock-toggle i {
+    font-size: 0.8125rem;
+    flex-shrink: 0;
+}
+
+.lock-toggle:hover {
+    background-color: var(--panel-hover);
+    border-color: var(--border-strong);
+    color: var(--fg);
+}
+
+/* Locked. Now that the Text/Images view switch uses .segmented instead of
+   borrowing this class, .locked always means a genuine restriction — so it
+   takes the warning hue, matching the padlock in the movies table and the
+   files-locked badge on each card. */
+.lock-toggle.locked {
+    background-color: var(--warning-soft);
+    border-color: color-mix(in srgb, var(--warning) 40%, transparent);
+    color: var(--warning-text);
+}
+
+.lock-toggle.locked:hover {
+    background-color: color-mix(in srgb, var(--warning) 24%, transparent);
+}
+
+/* ---- Movie toolbar ------------------------------------------------------
+   Layout comes from .table-controls; this modifier exists only to scope the
+   mobile label-collapse below, so it can't reach other pages' toolbars.
+   (.movie-status-badges lived here but no markup ever used it — removed.)
+   ------------------------------------------------------------------------ */
+.movie-controls {
+    margin-bottom: var(--sp-5);
+}
+
+/* ---- Ability text columns ----------------------------------------------- */
+/* Width comes from the <colgroup> under table-layout: fixed — min/max-width
+   here would be ignored anyway. Only the text behaviour belongs here. */
+.data-table td.ability-column {
+    white-space: normal;
+    color: var(--fg-muted);
+    line-height: 1.5;
+}
+
+
+@media (max-width: 640px) {
+    .movie-controls {
+        gap: var(--sp-1);
+        margin-bottom: var(--sp-4);
+    }
+
+    /* Collapse labelled toolbar controls to icons so the row still fits.
+       The segmented control is exempt — its options are text-only, so hiding
+       the label would leave two blank buttons. */
+    .movie-controls .lock-toggle span,
+    .movie-controls .btn span {
+        display: none;
+    }
+
+    .movie-controls .lock-toggle,
+    .movie-controls .btn {
+        width: var(--control-h);
+        padding: 0;
+    }
+
+    .movie-controls .segmented {
+        flex: 1 1 auto;
+    }
+
+}

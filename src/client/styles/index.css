@@ -1,0 +1,268 @@
+/* ============================================================================
+   Global base — fonts, reset, defaults.
+   Type pairing: Space Grotesk carries display (titles, figures); Instrument
+   Sans is the UI workhorse — narrower than Inter, which buys column width
+   back in dense tables. Mono is system, used only for tabular figures.
+   ========================================================================== */
+/* Fonts are loaded from index.html, not @import-ed here.
+   A CSS @import is discovered only AFTER this file has downloaded and parsed,
+   so it serialises two network round-trips before the first paint. Font
+   Awesome was worse — it was @import-ed here AND <link>-ed in index.html, so
+   it downloaded twice. Both now live in the document head with preconnect. */
+
+/* Theme */
+@import './theme.css';
+
+/* Reusable Components */
+@import './components/primitives.css';
+@import './components/table.css';
+@import './components/cards.css';
+@import './components/tags.css';
+@import './components/badges.css';
+@import './components/forms.css';
+@import './components/user-menu.css';
+@import './components/roles.css';
+@import './components/card-files.css';
+@import './modal.css';
+
+/* Pages */
+@import './pages/admin.css';
+@import './pages/admin-talkies.css';
+@import './pages/users-management.css';
+@import './pages/auth.css';
+@import './pages/profile.css';
+@import './pages/home.css';
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    /* Always reserve the scrollbar gutter. .container is centred with
+       `margin: 0 auto`, so on a page long enough to scroll the scrollbar ate
+       ~15px of viewport width and shifted the whole layout ~7px left —
+       content visibly jumped sideways when navigating between a page that
+       scrolls and one that doesn't. */
+    scrollbar-gutter: stable;
+}
+
+body {
+    font-family: var(--font-ui);
+    font-size: var(--text-md);
+    font-weight: 400;
+    letter-spacing: var(--tracking-tight);
+    background-color: var(--bg);
+    color: var(--fg);
+    line-height: 1.55;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+#root {
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* Display face for headings — tight, confident, never shouty */
+h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: var(--tracking-display);
+    line-height: 1.2;
+    color: var(--fg);
+}
+
+h1 { font-size: var(--text-2xl); }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
+
+/* Figures anywhere: never let digits jitter between renders */
+.tabular,
+[class*="-count"],
+[class*="-value"] {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- Page transition ------------------------------------------------------
+   One quiet fade on the content region only. Headers stay put so the chrome
+   doesn't flicker on every navigation. */
+main,
+.table-wrapper,
+.table-controls,
+.stat-strip {
+    animation: fadeInContent var(--dur-3) var(--ease);
+}
+
+@keyframes fadeInContent {
+    from {
+        opacity: 0;
+        transform: translateY(3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* ---- Layout ------------------------------------------------------------- */
+.container {
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: var(--sp-8) var(--sp-6) var(--sp-12);
+    width: 100%;
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding: var(--sp-4) var(--sp-4) var(--sp-10);
+    }
+}
+
+/* ---- Controls ----------------------------------------------------------- */
+button {
+    font-family: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+    border: none;
+    border-radius: var(--r-2);
+    padding: 0 var(--sp-3);
+    font-size: var(--text-md);
+    font-weight: 500;
+    color: var(--fg);
+    background: none;
+    transition: background-color var(--dur-2) var(--ease),
+                border-color var(--dur-2) var(--ease),
+                color var(--dur-2) var(--ease),
+                opacity var(--dur-2) var(--ease);
+}
+
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* Base field styling.
+   NOTE ON SPECIFICITY: this used to be `input:not(.filter-input)`, which scores
+   (0,1,1) — higher than any single component class like `.search-field-input`
+   (0,1,0). Because this file imports the components first and then declares
+   these rules, the base rule won every tie and silently overrode component
+   padding (the search icon sat on top of the placeholder; combobox chevrons
+   overlapped typed text). `:where()` contributes ZERO specificity, so this is
+   now (0,0,1) and any component class beats it, as a base layer should. */
+input:where(:not([type="checkbox"], [type="radio"], [type="file"], [type="range"])),
+textarea,
+select {
+    font-family: inherit;
+    font-size: var(--text-md);
+    letter-spacing: inherit;
+    background-color: var(--field-bg);
+    color: var(--fg);
+    border: 1px solid var(--field-border);
+    border-radius: var(--r-2);
+    padding: 0 var(--sp-3);
+    transition: border-color var(--dur-2) var(--ease),
+                box-shadow var(--dur-2) var(--ease),
+                background-color var(--dur-2) var(--ease);
+}
+
+input:where(:not([type="checkbox"], [type="radio"], [type="file"], [type="range"])),
+select {
+    height: var(--control-h);
+}
+
+textarea {
+    padding: var(--sp-2) var(--sp-3);
+    line-height: 1.55;
+    resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--fg-faint);
+}
+
+input:where(:not([type="checkbox"], [type="radio"], [type="file"], [type="range"])):hover,
+textarea:hover,
+select:hover {
+    border-color: var(--field-border-hover);
+}
+
+input:where(:not([type="checkbox"], [type="radio"], [type="file"], [type="range"])):focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+/* ---- Focus — one ring, everywhere, always visible ----------------------- */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--r-1);
+}
+
+/* ---- Links -------------------------------------------------------------- */
+a {
+    color: var(--accent-text);
+    text-decoration: none;
+    transition: color var(--dur-2) var(--ease);
+}
+
+a:hover {
+    color: var(--accent);
+}
+
+/* ---- Selection ---------------------------------------------------------- */
+::selection {
+    background: var(--accent-soft-hover);
+    color: var(--fg);
+}
+
+/* ---- Scrollbars — thin, only visible against the surface they sit on ----- */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: var(--r-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--fg-faint);
+    background-clip: padding-box;
+}
+
+/* ---- Reduced motion ----------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
