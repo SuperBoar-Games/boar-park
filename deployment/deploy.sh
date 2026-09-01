@@ -96,7 +96,15 @@ git rev-parse --verify "origin/$BRANCH" >/dev/null 2>&1 \
     || error "origin/$BRANCH does not exist on the remote"
 
 log "Checking out $BRANCH..."
-git checkout -B "$BRANCH" "origin/$BRANCH" || error "Failed to check out $BRANCH"
+# The deploy directory is a build artifact, not a workspace: whatever is in
+# origin/$BRANCH wins. A plain checkout aborts on any locally modified tracked
+# file (a hand-patched script, an edit made while debugging on the box) and
+# takes the deploy with it. Force, but log the drift rather than hiding it.
+if ! git diff --quiet HEAD; then
+    warn "Local modifications will be discarded:"
+    git diff --name-only HEAD | sed 's/^/           /' | tee -a "$LOG_FILE"
+fi
+git checkout -f -B "$BRANCH" "origin/$BRANCH" || error "Failed to check out $BRANCH"
 NEW_COMMIT=$(git rev-parse HEAD)
 log "New commit: $(git rev-parse --short HEAD)"
 
