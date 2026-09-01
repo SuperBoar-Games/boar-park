@@ -1,398 +1,135 @@
 /* ============================================================================
-   Home — the public landing screen
-   The cooking animation is the site's one piece of character, so it stays as
-   drawn; everything around it is re-set in the new type and colour system.
+   Home — the public landing screen.
 
-   Fix: .game-card was declared here AND in admin.css. Because home.css imports
-   last, the home version was silently overriding the admin dashboard cards.
-   It's now scoped under .home-games so the two can't collide.
+   The visual is three cards dealing into a fan: the company makes card games,
+   so the product carries the page rather than an unrelated illustration. It is
+   drawn entirely from theme tokens, so it follows light and dark.
    ========================================================================== */
 .home-container {
     min-height: 100vh;
     min-height: 100dvh;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--sp-8);
+    padding: var(--sp-8) var(--sp-4);
     background-color: var(--bg);
 }
 
-.home-header {
+.home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    margin-bottom: var(--sp-12);
+    max-width: 30rem;
 }
 
-.home-title {
-    font-family: var(--font-display);
-    font-size: clamp(2.5rem, 9vw, 4rem);
-    font-weight: 700;
-    color: var(--fg);
-    margin-bottom: var(--sp-2);
-    letter-spacing: -0.03em;
-    line-height: 1;
-}
-
-.home-subtitle {
-    font-size: var(--text-lg);
-    color: var(--fg-subtle);
+/* ---- Card fan ------------------------------------------------------------ */
+.deck {
+    position: relative;
+    width: 11rem;
+    height: 9.5rem;
     margin-bottom: var(--sp-8);
 }
 
-/* ---- Cooking animation — kept as authored ------------------------------- */
-.cooking-animation {
-    position: relative;
-    width: 280px;
-    height: 280px;
-    margin: 0 auto var(--sp-12);
-}
-
-.fire {
+.deck-card {
     position: absolute;
-    bottom: 60px;
     left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 80px;
-}
-
-.flame {
-    position: absolute;
     bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-bottom: 40px solid #ff6b1a;
-    filter: drop-shadow(0 0 8px #ff6b1a);
-    animation: flameFlicker 0.4s ease-in-out infinite;
-}
-
-.flame.flame-1 {
-    animation: flameFlicker 0.4s ease-in-out infinite;
-}
-
-.flame.flame-2 {
-    left: calc(50% - 20px);
-    border-left: 12px solid transparent;
-    border-right: 12px solid transparent;
-    border-bottom: 35px solid #ffa500;
-    animation: flameFlicker 0.5s ease-in-out 0.1s infinite;
-}
-
-.flame.flame-3 {
-    left: calc(50% + 20px);
-    border-left: 12px solid transparent;
-    border-right: 12px solid transparent;
-    border-bottom: 30px solid #ffcc00;
-    animation: flameFlicker 0.45s ease-in-out 0.15s infinite;
-}
-
-.pan {
-    width: 160px;
-    height: 80px;
-    background: linear-gradient(180deg, #c0c0c0, #808080);
-    border-radius: 0 0 40px 40px;
-    border: 3px solid #404040;
-    position: absolute;
-    bottom: 100px;
-    left: 60px;
-    box-shadow: inset -5px -5px 10px rgba(0, 0, 0, 0.4),
-                0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.pan-handle {
-    width: 50px;
-    height: 12px;
-    background: linear-gradient(90deg, #c0c0c0, #808080);
-    border-radius: 6px;
-    position: absolute;
-    right: -50px;
-    top: 25px;
-    border: 2px solid #404040;
-}
-
-.pan-content {
-    position: absolute;
-    width: 140px;
-    height: 50px;
-    left: 70px;
-    bottom: 110px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.vegetable {
-    position: relative;
-    animation: cookBounce 0.6s ease-in-out infinite;
-}
-
-.vegetable.carrot {
-    width: 20px;
-    height: 15px;
-    background: #ff9900;
-    border-radius: 50% 50% 0 0;
-    transform: rotate(-45deg);
-    animation: cookBounce 0.6s ease-in-out infinite;
-}
-
-.vegetable.pepper {
-    width: 18px;
-    height: 25px;
-    background: #ff3333;
-    border-radius: 40% 40% 50% 50%;
-    animation: cookBounce 0.65s ease-in-out 0.1s infinite;
-}
-
-.vegetable.onion {
-    width: 16px;
-    height: 16px;
-    background: #ffeb99;
-    border-radius: 50%;
-    animation: cookBounce 0.7s ease-in-out 0.2s infinite;
-}
-
-.vegetable.pea {
-    width: 10px;
-    height: 10px;
-    background: #00cc00;
-    border-radius: 50%;
-    animation: cookBounce 0.55s ease-in-out 0.3s infinite;
-}
-
-.steam {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent);
-    border-radius: 50%;
-    opacity: 0;
-    top: 100px;
-}
-
-.steam-1 {
-    left: 90px;
-    animation: steamRise 1.2s ease-out infinite;
-}
-
-.steam-2 {
-    left: 110px;
-    animation: steamRise 1.4s ease-out 0.2s infinite;
-}
-
-.steam-3 {
-    left: 130px;
-    animation: steamRise 1.3s ease-out 0.4s infinite;
-}
-
-@keyframes flameFlicker {
-    0%, 100% {
-        height: 40px;
-        opacity: 1;
-    }
-    50% {
-        height: 45px;
-        opacity: 0.8;
-    }
-}
-
-@keyframes cookBounce {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-8px);
-    }
-}
-
-@keyframes steamRise {
-    0% {
-        opacity: 0;
-        transform: translateY(0);
-    }
-    20% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-60px) scaleX(0.5);
-    }
-}
-
-/* ---- Content ------------------------------------------------------------ */
-.home-content {
-    text-align: center;
-    max-width: 600px;
-    width: 100%;
-}
-
-.home-games {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--sp-3);
-    margin-top: var(--sp-8);
-    text-align: left;
-}
-
-.home-games .game-card {
-    padding: var(--sp-5);
-    background-color: var(--panel);
-    border: 1px solid var(--border);
+    width: 5.25rem;
+    height: 7.5rem;
+    margin-left: -2.625rem;
     border-radius: var(--r-4);
-    text-decoration: none;
-    color: inherit;
-    transition: background-color var(--dur-3) var(--ease),
-                border-color var(--dur-3) var(--ease),
-                box-shadow var(--dur-3) var(--ease),
-                transform var(--dur-3) var(--ease);
-    cursor: pointer;
-}
-
-.home-games .game-card:hover {
+    /* One step above --panel: against the page ground the back cards need
+       their own value or the fan disappears into the background */
     background-color: var(--panel-hover);
-    border-color: var(--border-accent);
+    border: 1px solid var(--border-strong);
     box-shadow: var(--shadow-3);
-    transform: translateY(-2px);
+    /* Pivot below the card so the fan opens like a hand */
+    transform-origin: 50% 130%;
+    animation: deck-deal 900ms var(--ease) backwards;
 }
 
-.game-card-title {
+.deck-card-1 {
+    transform: rotate(-16deg);
+    animation-delay: 0ms;
+}
+
+.deck-card-2 {
+    transform: rotate(0deg);
+    animation-delay: 110ms;
+}
+
+/* The front card carries the accent — the one gold moment on the page */
+.deck-card-3 {
+    transform: rotate(16deg);
+    animation-delay: 220ms;
+    background-color: var(--accent);
+    border-color: var(--accent-hover);
+}
+
+/* Cards arrive squared-up and settle into the fan */
+@keyframes deck-deal {
+    from {
+        transform: rotate(0deg) translateY(0.75rem);
+        opacity: 0;
+    }
+}
+
+/* ---- Wordmark ------------------------------------------------------------ */
+.home-title {
     font-family: var(--font-display);
-    font-size: var(--text-lg);
-    font-weight: 600;
-    letter-spacing: var(--tracking-display);
+    /* Letterspaced uppercase reads as a logotype rather than a heading */
+    font-size: clamp(2rem, 8vw, 3.25rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    line-height: 1;
     color: var(--fg);
-    margin-bottom: var(--sp-1);
+    margin: 0;
 }
 
-.home-games .game-card:hover .game-card-title {
-    color: var(--accent-text);
+.home-tagline {
+    margin-top: var(--sp-3);
+    font-size: var(--text-lg);
+    color: var(--fg-muted);
 }
 
-.game-card-description {
+/* A short gold rule rather than a full divider — enough to mark the break */
+.home-rule {
+    width: 3rem;
+    height: 2px;
+    margin: var(--sp-6) 0;
+    border-radius: var(--r-full);
+    background-color: var(--accent);
+}
+
+.home-note {
     font-size: var(--text-md);
     color: var(--fg-subtle);
-    line-height: 1.5;
-}
-
-.home-footer {
-    position: fixed;
-    top: var(--sp-6);
-    right: var(--sp-6);
-    z-index: 100;
+    line-height: 1.65;
+    text-wrap: pretty;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .home-games .game-card:hover {
-        transform: none;
+    .deck-card {
+        animation: none;
     }
 }
 
-@media (max-width: 768px) {
-    .home-container {
-        padding: var(--sp-4);
+@media (max-width: 640px) {
+    .deck {
+        width: 9rem;
+        height: 8rem;
+        margin-bottom: var(--sp-6);
     }
 
-    .home-header {
-        margin-bottom: var(--sp-8);
+    .deck-card {
+        width: 4.25rem;
+        height: 6rem;
+        margin-left: -2.125rem;
     }
 
-    .home-subtitle {
+    .home-tagline {
         font-size: var(--text-md);
-    }
-
-    .cooking-animation {
-        width: 200px;
-        height: 200px;
-        margin: 0 auto var(--sp-8);
-    }
-
-    .fire {
-        bottom: 40px;
-        width: 70px;
-        height: 60px;
-    }
-
-    .flame {
-        border-left: 10px solid transparent;
-        border-right: 10px solid transparent;
-        border-bottom: 30px solid #ff6b1a;
-    }
-
-    .flame.flame-2,
-    .flame.flame-3 {
-        border-left: 8px solid transparent;
-        border-right: 8px solid transparent;
-        border-bottom: 25px solid #ffa500;
-    }
-
-    .flame.flame-2 {
-        left: calc(50% - 15px);
-    }
-
-    .flame.flame-3 {
-        left: calc(50% + 15px);
-        border-bottom-color: #ffcc00;
-    }
-
-    .pan {
-        width: 120px;
-        height: 60px;
-        border-radius: 0 0 30px 30px;
-        bottom: 70px;
-        left: 40px;
-    }
-
-    .pan-handle {
-        width: 35px;
-        height: 10px;
-        right: -35px;
-        top: 20px;
-    }
-
-    .pan-content {
-        width: 100px;
-        height: 40px;
-        left: 50px;
-        bottom: 80px;
-        gap: 5px;
-    }
-
-    .vegetable.carrot {
-        width: 15px;
-        height: 12px;
-    }
-
-    .vegetable.pepper {
-        width: 14px;
-        height: 20px;
-    }
-
-    .vegetable.onion {
-        width: 12px;
-        height: 12px;
-    }
-
-    .vegetable.pea {
-        width: 8px;
-        height: 8px;
-    }
-
-    .steam {
-        width: 10px;
-        height: 10px;
-        top: 70px;
-    }
-
-    .steam-1 { left: 65px; }
-    .steam-2 { left: 80px; }
-    .steam-3 { left: 95px; }
-
-    .home-footer {
-        top: var(--sp-4);
-        right: var(--sp-4);
     }
 }

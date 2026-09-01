@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Superboar">
+  <rect width="64" height="64" rx="14" fill="#111114"/>
+  <g transform="translate(32 34)">
+    <g transform="rotate(-17)">
+      <rect x="-9.5" y="-16" width="19" height="30" rx="3.2" fill="#44444e" stroke="#60606c" stroke-width="1.4"/>
+    </g>
+    <g>
+      <rect x="-9.5" y="-16" width="19" height="30" rx="3.2" fill="#44444e" stroke="#60606c" stroke-width="1.4"/>
+    </g>
+    <g transform="rotate(17)">
+      <rect x="-9.5" y="-16" width="19" height="30" rx="3.2" fill="#cfa650" stroke="#eece8a" stroke-width="1.4"/>
+    </g>
+  </g>
+</svg>

@@ -1,45 +1,27 @@
-// Home page with theme selector and animated cooking pan
-
-import { ThemeSelector } from '../components/ThemeSelector';
+// Public landing page
 
 export default function HomePage() {
     return (
         <div className="home-container">
-            <div className="home-footer">
-                <ThemeSelector />
-            </div>
-
-            <header className="home-header">
-                <h1 className="home-title">🐗 SUPERBOAR</h1>
-            </header>
-
-            <div className="cooking-animation">
-                {/* Fire */}
-                <div className="fire">
-                    <div className="flame flame-1"></div>
-                    <div className="flame flame-2"></div>
-                    <div className="flame flame-3"></div>
+            <main className="home">
+                {/* Three cards dealing into a fan — the company makes card
+                    games, so the visual is the product, not decoration */}
+                <div className="deck" aria-hidden="true">
+                    <span className="deck-card deck-card-1" />
+                    <span className="deck-card deck-card-2" />
+                    <span className="deck-card deck-card-3" />
                 </div>
 
-                {/* Pan */}
-                <div className="pan">
-                    <div className="pan-handle"></div>
-                </div>
+                <h1 className="home-title">Superboar</h1>
+                <p className="home-tagline">Tabletop games, made with care.</p>
 
-                {/* Vegetables cooking */}
-                <div className="pan-content">
-                    <div className="vegetable carrot"></div>
-                    <div className="vegetable pepper"></div>
-                    <div className="vegetable onion"></div>
-                    <div className="vegetable pea"></div>
-                </div>
+                <div className="home-rule" aria-hidden="true" />
 
-                {/* Steam */}
-                <div className="steam steam-1"></div>
-                <div className="steam steam-2"></div>
-                <div className="steam steam-3"></div>
-            </div>
-
+                <p className="home-note">
+                    Our first game is in production. There will be more to show
+                    here once it&rsquo;s ready.
+                </p>
+            </main>
         </div>
     );
 }
